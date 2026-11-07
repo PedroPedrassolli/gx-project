@@ -21,8 +21,8 @@ module Duel
     LOG_ERROR = 0 # OCG_LOG_TYPE_ERROR
     MAX_ERRORS = 20
 
-    # Regra do Destiny Draw (destiny_draw.lua). O limite de PV vem da Yugipedia,
-    # "Destiny Draw (rule)"; a pergunta é a descrição do SELECT_YESNO (aux.Stringid).
+    # Regra do Destiny Draw do jogo de referência (destiny_draw.lua): vale com PV até 4000
+    # (Yugipedia). A pergunta é a descrição do SELECT_YESNO (aux.Stringid).
     DESTINY_DRAW_SCRIPT = File.binread(File.join(__dir__, "destiny_draw.lua")).freeze
     DESTINY_DRAW_LP = 4000
     DESTINY_DRAW_QUESTION = 511_004_000 << 20
@@ -60,8 +60,9 @@ module Duel
 
     attr_reader :status, :errors
 
-    # starting_lp é o PV de cada lado; no Tag, o PV é da dupla.
-    def initialize(seed:, decks:, flags: MODE_MR1, starting_lp: 8000, destiny_draw: false)
+    # starting_lp é o PV de cada lado; no Tag, o PV é da dupla (8000, como no OCG).
+    # O Destiny Draw vem ligado, como nas configurações do jogo; destiny_draw: false desliga.
+    def initialize(seed:, decks:, flags: MODE_MR1, starting_lp: 8000, destiny_draw: true)
       raise ArgumentError, "são 2 decks (1x1) ou 4 (Tag), não #{decks.size}" unless [ 2, 4 ].include?(decks.size)
 
       @seed = seed

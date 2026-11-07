@@ -1,14 +1,14 @@
--- Destiny Draw do GX Project, com as regras da série Tag Force (Yugipedia, "Destiny Draw
--- (rule)"): quando o lado está perdendo, o duelista da vez pode pôr no topo do deck uma
--- das cartas Destiny que marcou, sorteada. Perdendo quer dizer: PV abaixo do limite, o
--- oponente controla monstro e nenhum monstro do lado tem ATK maior que o do monstro mais
--- forte do oponente. Uma vez por duelo para cada lado, inclusive no Tag.
+-- Destiny Draw do GX Project, com a regra do jogo de referência, que mantém o sistema do
+-- jogo anterior da série (Yugipedia: "Destiny Draw (rule)" e as páginas dos dois jogos):
+-- * o lado está em apuros quando tem PV até 4000, o oponente controla monstro e nenhum
+--   monstro do lado tem ATK maior que o do monstro mais forte do oponente;
+-- * se a situação não virou até a segunda Fase de Compra, o duelista da vez pode usar: no
+--   lugar da compra normal, compra uma das cartas Destiny que marcou, sorteada (aqui, ela
+--   vai para o topo do deck antes da compra);
+-- * uma vez por duelo para cada lado, inclusive no Tag.
 --
--- A fonte não diz em que momento do turno; aqui a pergunta vem no começo da Fase de
--- Compra (EVENT_PREDRAW), antes de comprar, como na regra do Project Ignis em que este
--- arquivo se baseia (CardScripts, c511004000.lua, AGPL-3.0).
---
--- O servidor (Duel::Engine) carrega este arquivo e depois chama GXDestinyDraw.setup.
+-- Baseado na regra c511004000 do Project Ignis (CardScripts, AGPL-3.0). O servidor
+-- (Duel::Engine) carrega este arquivo e depois chama GXDestinyDraw.setup.
 
 GXDestinyDraw = {}
 
@@ -24,8 +24,9 @@ local function strongest_attack(player)
 	return best
 end
 
-local function losing(player)
-	return Duel.GetFieldGroupCount(player, 0, LOCATION_MZONE) > 0
+local function in_a_pinch(player)
+	return Duel.GetLP(player) <= GXDestinyDraw.lp_limit
+		and Duel.GetFieldGroupCount(player, 0, LOCATION_MZONE) > 0
 		and strongest_attack(player) <= strongest_attack(1 - player)
 end
 
@@ -42,30 +43,35 @@ local function destiny_cards(player)
 end
 
 function GXDestinyDraw.condition(effect, player)
-	return Duel.GetTurnPlayer() == player
-		and not GXDestinyDraw.used[player]
-		and Duel.GetLP(player) < GXDestinyDraw.lp_limit
-		and losing(player)
-		and #destiny_cards(player) > 0
+	return Duel.GetTurnPlayer() == player and not GXDestinyDraw.used[player]
 end
 
--- Recusar não gasta: a pergunta volta no próximo turno do lado, se ele continuar perdendo.
+-- Roda no começo de cada Fase de Compra do lado, antes da compra. Conta há quantas Fases
+-- de Compra seguidas o lado está em apuros; da segunda em diante (enquanto a situação não
+-- virar), a pergunta aparece. Recusar não gasta.
 function GXDestinyDraw.operation(effect, player)
-	if not Duel.SelectYesNo(player, aux.Stringid(ID, 0)) then
+	if in_a_pinch(player) then
+		GXDestinyDraw.pinch[player] = GXDestinyDraw.pinch[player] + 1
+	else
+		GXDestinyDraw.pinch[player] = 0
+	end
+	local cards = destiny_cards(player)
+	if GXDestinyDraw.pinch[player] < 2 or #cards == 0 or not Duel.SelectYesNo(player, aux.Stringid(ID, 0)) then
 		return
 	end
 	GXDestinyDraw.used[player] = true
 	Duel.Hint(HINT_CARD, 0, ID)
 	-- O sorteio usa o gerador da engine, que segue a semente: o replay sorteia igual.
-	Duel.MoveSequence(destiny_cards(player):RandomSelect(player, 1):GetFirst(), SEQ_DECKTOP)
+	Duel.MoveSequence(cards:RandomSelect(player, 1):GetFirst(), SEQ_DECKTOP)
 end
 
--- lp_limit: PV abaixo do qual vale a regra.
+-- lp_limit: o lado está em apuros com PV até esse valor.
 -- cards[lado] = { {códigos do 1º duelista}, {códigos do 2º} } (no 1x1, uma lista só).
 function GXDestinyDraw.setup(lp_limit, cards)
 	GXDestinyDraw.lp_limit = lp_limit
 	GXDestinyDraw.cards = cards
 	GXDestinyDraw.used = { [0] = false, [1] = false }
+	GXDestinyDraw.pinch = { [0] = 0, [1] = 0 }
 	for player = 0, 1 do
 		local effect = Effect.GlobalEffect()
 		effect:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_CONTINUOUS)

@@ -33,13 +33,13 @@
   - no Deck Edit, o jogador marca cartas como *Destiny*;
   - ao usar, uma Destiny do Main Deck é sorteada e vai para o topo do deck;
   - só **uma vez por duelo por lado**, inclusive em Tag;
-  - só aparece em situação de derrota iminente (a condição exata precisa ser confirmada);
-  - liga e desliga nas configurações.
+  - aparece quando o lado está em apuros (PV até 4000, o oponente com monstro e nenhum monstro do lado mais forte que o mais forte dele) e a situação não vira até a segunda Fase de Compra; substitui a compra normal;
+  - liga e desliga nas configurações; vem ligado.
 - **Deck:** Main Deck de 40 a 60 cartas, Extra Deck (Fusão/Sincro) de até 15, até 3 cópias, sujeito à banlist.
 - **Tag Duel:**
   - a dupla divide 5 zonas de monstro, 5 de magia/armadilha, o cemitério, as banidas e a zona de campo;
   - Main Deck, Extra Deck e mão trocam conforme quem é o jogador da vez;
-  - o LP é da dupla (valor a confirmar; no OCG é 8000);
+  - o LP é da dupla: 8000, configurável;
   - ordem dos turnos: A1 → B1 → A2 → B2.
 
 ### 1.3 Telas (referência)
@@ -358,15 +358,15 @@ Fonte: Yugipedia (página de bônus e desafios do jogo de referência). Fórmula
 6. Os 104 desafios com as condições.
 7. Regra de subida de nível.
 8. Banlist padrão.
-9. Condição exata do Destiny Draw e se ele vem ligado por padrão.
-10. LP do Tag Duel.
+9. Condição exata do Destiny Draw e se ele vem ligado por padrão. Feito: regra pela Yugipedia (ADR 0001); ligado por padrão, confirmado pelo Pedro.
+10. LP do Tag Duel. Feito: 8000, configurável, confirmado pelo Pedro.
 
 Fontes: Yugipedia (CC BY-SA, dar crédito), guias do GameFAQs e Supercheats (só para conferir), YGOPRODeck (dados e imagens), BabelCDB/CardScripts (passcodes e scripts).
 
 ## Anexo C: conferência de memória do jogo
 - [ ] Como se decide quem começa (cara ou coroa, ou pedra-papel-tesoura)?
-- [ ] Quando o botão de Destiny Draw aparece?
-- [ ] LP da dupla no Tag (8000?)
-- [ ] Destiny Draw vem ligado por padrão?
+- [x] Quando o botão de Destiny Draw aparece? Segue a regra do jogo (pesquisada: em apuros com PV até 4000, até a segunda Fase de Compra).
+- [x] LP da dupla no Tag (8000?) Sim, 8000, configurável.
+- [x] Destiny Draw vem ligado por padrão? Sim.
 - [ ] O layout das telas (seção 1.3) bate com o que você lembra? Algo marcante ficou de fora?
 - [ ] O que cada pacote de UMD/nota de prova deve exigir aqui?
