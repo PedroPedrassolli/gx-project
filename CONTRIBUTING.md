@@ -27,7 +27,7 @@ mudar o projeto sem quebrar nada.
 
 | Pasta | Comando | Para quê |
 | --- | --- | --- |
-| `backend` | `bin/build-engine` | Compila a engine de duelo (precisa de g++, meson e ninja) |
+| `backend` | `bin/build-engine` | Compila a engine de duelo (precisa de g++, ninja e meson ≥ 1.12, do PyPI) |
 | `backend` | `bin/rails test` | Testes (cobertura mínima de 100%) |
 | `backend` | `bin/rubocop` / `bin/brakeman` / `bin/bundler-audit` | Estilo e segurança |
 | `frontend` | `npm test` / `npm run lint` / `npm run typecheck` / `npm run format:check` | Unitários, ESLint, tipos e Prettier |

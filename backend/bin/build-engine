@@ -2,7 +2,8 @@
 # Compila a engine de duelo (ygopro-core + Lua) como biblioteca compartilhada.
 # O Ruby carrega o resultado via FFI (app/services/duel/native.rb).
 #
-# Precisa de g++, meson e ninja. Resultado: vendor/engine/build/libocgcore.so.
+# Precisa de g++, ninja e meson 1.12 ou mais novo (o do apt do Ubuntu 24.04 é antigo:
+# use "pipx install meson"). Resultado: vendor/engine/build/libocgcore.so.
 # Roda no bin/setup, na CI e no Dockerfile.vercel.
 set -euo pipefail
 

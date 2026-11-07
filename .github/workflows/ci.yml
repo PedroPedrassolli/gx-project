@@ -73,12 +73,17 @@ jobs:
           working-directory: backend
           bundler-cache: true
 
-      # A engine de duelo (C++ e Lua) é chamada pelos testes via FFI.
+      # A engine de duelo (C++ e Lua) é chamada pelos testes via FFI. O meson vem do PyPI:
+      # o do apt do Ubuntu 24.04 (1.3) não entende o meson.build da engine.
       - name: Compilar a engine
         run: |
+          pipx install meson==1.12.1
           sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends meson ninja-build
-          bin/build-engine
+          sudo apt-get install -y -qq --no-install-recommends ninja-build
+          if ! bin/build-engine > build-engine.log 2>&1; then
+            tail -n 15 build-engine.log | while IFS= read -r line; do echo "::error title=bin/build-engine::$line"; done
+            exit 1
+          fi
 
       - name: Versão do Ruby igual no Docker e no .ruby-version
         run: grep -q "ARG RUBY_VERSION=$(cat .ruby-version)$" Dockerfile.vercel
@@ -113,7 +118,11 @@ jobs:
           submodules: recursive
 
       - name: Construir a imagem
-        run: docker build -f Dockerfile.vercel -t gx-backend .
+        run: |
+          if ! docker build -f Dockerfile.vercel -t gx-backend . > docker-build.log 2>&1; then
+            tail -n 20 docker-build.log | while IFS= read -r line; do echo "::error title=docker build::$line"; done
+            exit 1
+          fi
 
       - name: Subir o container e testar as rotas
         run: |

@@ -10,8 +10,10 @@
 ARG RUBY_VERSION=3.3
 
 FROM ruby:${RUBY_VERSION}-slim AS engine
+# O meson vem do PyPI: o do apt do Debian é antigo demais para o meson.build da engine.
 RUN apt-get update -qq \
-  && apt-get install -y --no-install-recommends g++ meson ninja-build \
+  && apt-get install -y --no-install-recommends g++ ninja-build python3-pip \
+  && pip3 install --no-cache-dir --break-system-packages meson==1.12.1 \
   && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY bin/build-engine bin/
