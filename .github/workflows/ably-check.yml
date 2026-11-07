@@ -3,7 +3,7 @@
 # 1. o Ably aceita o pedido de token assinado pelo Rails (Realtime::TokenRequest) e o token
 #    só tem permissão de assinar o canal do jogador;
 # 2. com esse token, o canal do jogador recebe o evento publicado pelo Rails
-#    (Realtime::AblyPublisher) e o canal de outro jogador é recusado.
+#    (Realtime::AblyPublisher) e o canal de outro jogador não entrega nada.
 #
 # Custo: menos de 1 minuto de runner (repositório público: sem limite) e 3 mensagens do
 # plano grátis do Ably (2 publicadas e 1 entregue).
@@ -65,34 +65,30 @@ jobs:
             exit 1
           fi
 
-          # 2. Assina o canal do jogador por SSE em segundo plano. O mesmo token no canal de
-          #    outro jogador tem que ser recusado.
+          # 2. Com o mesmo token, assina por SSE (em segundo plano, durante a publicação) o
+          #    canal do jogador e o de outro jogador. O do jogador recebe o evento; o do outro
+          #    não pode entregar nada (o Ably recusa na hora ou manda um evento de erro).
           channel() { echo "private%3Auser%3A$1"; }
-          curl --silent --no-buffer --max-time 15 \
-            "$ABLY_HOST/sse?v=1.2&channels=$(channel "$me")&accessToken=$token" > mine.txt &
-          listener=$!
-          other_code=$(curl --silent --output other.txt --write-out "%{http_code}" --max-time 5 \
-            "$ABLY_HOST/sse?v=1.2&channels=$(channel "$other")&accessToken=$token" || true)
+          listen() {
+            curl --silent --no-buffer --max-time 15 --write-out "\nHTTP %{http_code}\n" \
+              "$ABLY_HOST/sse?v=1.2&channels=$(channel "$1")&accessToken=$token" > "$2" || true
+          }
+          listen "$me" mine.txt &
+          listen "$other" other.txt &
           sleep 3
           ME="$me" OTHER="$other" bin/rails runner '
             publisher = Realtime::AblyPublisher.new(ENV.fetch("ABLY_API_KEY"))
             publisher.publish(user_id: ENV.fetch("ME"), event: "teste", data: "para-o-jogador")
             publisher.publish(user_id: ENV.fetch("OTHER"), event: "teste", data: "para-outro")'
-          wait "$listener" || true
+          wait
 
           if ! grep -q "para-o-jogador" mine.txt; then
             echo "::error title=Canal do jogador::o evento não chegou. Resposta: $(head -c 300 mine.txt)"
             exit 1
           fi
-          if grep -q "para-outro" mine.txt; then
-            echo "::error title=Canal do jogador::recebeu o evento de outro jogador."
+          if grep -q "para-outro" mine.txt other.txt; then
+            echo "::error title=Vazamento::o token de um jogador recebeu o evento do canal de outro."
             exit 1
           fi
-          case "$other_code" in
-            401 | 403) echo "::notice title=Canal de outro jogador::recusado (HTTP $other_code): $(head -c 200 other.txt)" ;;
-            *)
-              echo "::error title=Canal de outro jogador::esperado 401 ou 403, recebido $other_code: $(head -c 200 other.txt)"
-              exit 1
-              ;;
-          esac
+          echo "::notice title=Canal de outro jogador::nada entregue. Resposta do Ably: $(grep -v '^:keepalive' other.txt | tr -s '\n' ' ' | head -c 300)"
           echo "::notice title=Ably::o evento chegou só no canal certo (3 mensagens do plano)."
