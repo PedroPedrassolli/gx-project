@@ -61,6 +61,9 @@ mudar o projeto sem quebrar nada.
 - Workflows disparados por `workflow_run` ou `status` só usam a versão que está na `main`.
 - **Actions fixadas pelo SHA do commit**, com a versão num comentário. Não troque por `@v7`:
   uma tag pode ser movida para outro código. O Dependabot atualiza o SHA e o comentário juntos.
+- **`overrides` no `frontend/package.json`**: força o `minimatch` 11 (alerta
+  GHSA-g3hv-75wg-m249) enquanto o ESLint ainda pede o 10. Quando o ESLint passar a pedir o
+  11 (`npm view eslint dependencies.minimatch`), apague o override.
 - **Rodapé automático**: o `rodape-pr.yml` tira sozinho do corpo de PRs e comentários o
   rodapé que ferramentas acrescentam ao criar o texto pela API.
 - **Segredos** (`SECRET_KEY_BASE`, `DATABASE_URL`, tokens) ficam só nos painéis da Vercel e do
