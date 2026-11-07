@@ -1,0 +1,57 @@
+name: Banco de produção
+
+# Roda as migrações e grava o catálogo no Supabase quando a main muda o que vai para o banco.
+# Usa o pooler em modo sessão (porta 5432): ele aceita IPv4, como o runner do GitHub, e a
+# trava de sessão que as migrações usam (ADR 0004). A URL fica no secret
+# DATABASE_MIGRATION_URL, que o Pedro cola; sem ele, o workflow só avisa.
+
+on:
+  push:
+    branches: [main]
+    paths: ["backend/db/migrate/**", "backend/db/seeds/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: banco
+  cancel-in-progress: false
+
+jobs:
+  migrar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      RAILS_ENV: production
+      SECRET_KEY_BASE_DUMMY: "1"
+      DATABASE_URL: ${{ secrets.DATABASE_MIGRATION_URL }}
+    steps:
+      - name: Conferir o secret
+        id: secret
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::warning::Falta o secret DATABASE_MIGRATION_URL (Supabase, modo sessão): nada foi feito."
+            echo "pronto=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "pronto=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.secret.outputs.pronto == 'true'
+
+      - uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
+        if: steps.secret.outputs.pronto == 'true'
+        with:
+          working-directory: backend
+          bundler-cache: true
+
+      - name: Migrações
+        if: steps.secret.outputs.pronto == 'true'
+        working-directory: backend
+        run: bin/rails db:migrate
+
+      - name: Catálogo
+        if: steps.secret.outputs.pronto == 'true'
+        working-directory: backend
+        run: bin/rails catalogo:importar

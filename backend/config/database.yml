@@ -17,3 +17,7 @@ test:
 production:
   <<: *default
   database: gx_production
+  # Supabase pelo pooler em modo transação (porta 6543), que é o indicado para funções
+  # serverless: ele não aceita prepared statements (ADR 0004). A URL vem da DATABASE_URL.
+  prepared_statements: false
+  sslmode: require
