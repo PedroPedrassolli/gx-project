@@ -75,7 +75,7 @@ mudar o projeto sem quebrar nada.
   11 (`npm view eslint dependencies.minimatch`), apague o override.
 - **Rodapé automático**: o `rodape-pr.yml` tira sozinho do corpo de PRs e comentários o
   rodapé que ferramentas acrescentam ao criar o texto pela API.
-- **Segredos** (`SECRET_KEY_BASE`, `DATABASE_URL`, `ABLY_API_KEY`, tokens) ficam só nos painéis da
+- **Segredos** (`SECRET_KEY_BASE`, `DATABASE_URL`, `DATABASE_MIGRATION_URL`, `ABLY_API_KEY`, tokens) ficam só nos painéis da
   Vercel e do GitHub. Nunca no repositório, em issue ou em PR. Sem a `ABLY_API_KEY`, os eventos
   de tempo real ficam na memória (ADR 0002).
 - Não apague dados permanentemente (branches, issues, cards, imagens, deploys) sem o Pedro pedir.
