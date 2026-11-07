@@ -24,6 +24,12 @@ class Realtime::AblyPublisherTest < ActiveSupport::TestCase
                    [ request.path, request["Authorization"] ]
     end
 
+    it "se identifica como o servidor (canal privado pode exigir cliente identificado)" do
+      sent = answer_with(Net::HTTPCreated.new("1.1", "201", "Created"))
+      subject.publish(user_id: 7, event: "duel.delta", data: { seq: 3 })
+      assert_equal "gx-project-server", Base64.strict_decode64(sent.first["X-Ably-ClientId"])
+    end
+
     it "manda o nome e os dados do evento em JSON" do
       sent = answer_with(Net::HTTPCreated.new("1.1", "201", "Created"))
       subject.publish(user_id: 7, event: "duel.delta", data: { seq: 3 })

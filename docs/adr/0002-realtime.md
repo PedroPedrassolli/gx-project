@@ -16,7 +16,10 @@ permite assinar esse canal, e escolheu o Ably (decisão 3).
    o Ably recusa, e o front cai para consultar o servidor a cada 2 s (escopo, 5.5).
 2. **Publicar pelo REST do Ably**, com `Net::HTTP` (`Realtime::AblyPublisher`): um `POST`
    por evento, com a chave em Basic auth. A gem `ably-rest` traria typhoeus e libcurl para a
-   imagem por causa de uma chamada HTTP.
+   imagem por causa de uma chamada HTTP. O servidor se identifica como `gx-project-server`
+   (cabeçalho `X-Ably-ClientId`, em base64): sem isso, o Ably recusa publicar no canal
+   privado com o erro 40161 ("requer cliente identificado"), como apareceu no primeiro
+   teste ao vivo.
 3. **Token:** o Rails assina um pedido de token (`Realtime::TokenRequest`, conforme a "REST
    API Token Request Spec" do Ably) com permissão só de `subscribe` em
    `private:user:{id}`, `clientId` igual ao id do jogador e validade de 1 hora. O navegador
