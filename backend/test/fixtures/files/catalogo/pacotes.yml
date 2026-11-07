@@ -1,0 +1,31 @@
+- nome: "Pack A"
+  ordem: 1
+  preco: 50
+  cartas_por_pacote: 5
+  fonte: 10
+  cartas:
+    - { nome: "Night Assailant", passcode: 100, raridade: "ultra_rara" }
+    - { nome: "Clear Wall", numero_interno: 3, raridade: "rara" }
+    - { nome: "Labyrinth", numero_interno: 4, raridade: "comum" }
+- nome: "Pack B"
+  ordem: 2
+  preco: 100
+  cartas_por_pacote: 10
+  fonte: 11
+  cartas:
+    - { nome: "Trap Hole", passcode: 200, raridade: "comum" }
+- nome: "Flag"
+  ordem: 3
+  preco: 250
+  cartas_por_pacote: 5
+  inclui: { primeiros_pacotes: 2, exceto: ["Pack B"] }
+  fonte: 12
+  cartas: []
+- nome: "Everything"
+  ordem: 4
+  preco: 300
+  cartas_por_pacote: 5
+  inclui: { todos_os_pacotes: true }
+  fonte: 13
+  cartas:
+    - { nome: "Ancient Gear", passcode: 500, raridade: "super_rara" }

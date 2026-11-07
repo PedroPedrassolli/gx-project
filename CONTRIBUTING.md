@@ -34,6 +34,7 @@ mudar o projeto sem quebrar nada.
 | `backend` | `bin/rails "duel:benchmark[200]"` | Mede aqui a ação fria e a quente, como o `/up/engine` |
 | `backend` | `bin/rails dados:jogo` | Baixa de novo da Yugipedia os dados do jogo para `db/seeds/jogo` (uns 3 minutos; veja o README da pasta) |
 | `backend` | `bin/rails dados:cobertura` | Cruza o pool com os scripts da engine e as imagens do YGOPRODeck (depois de atualizar a engine ou os dados) |
+| `backend` | `bin/rails catalogo:importar` | Grava no banco o catálogo dos YAML (cartas, pacotes, banlist e conversor); pode rodar de novo |
 | `frontend` | `npm test` / `npm run lint` / `npm run typecheck` / `npm run format:check` | Unitários, ESLint, tipos e Prettier |
 | `frontend` | `npm run test:e2e` | Playwright + axe contra o build de produção |
 

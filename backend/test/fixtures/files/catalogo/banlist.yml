@@ -1,0 +1,4 @@
+fonte: 20
+cartas:
+  - { nome: "Trap Hole", passcode: 200, status: "limitada" }
+  - { nome: "Labyrinth", numero_interno: 4, status: "proibida" }

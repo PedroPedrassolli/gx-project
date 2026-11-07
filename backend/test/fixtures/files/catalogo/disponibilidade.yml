@@ -1,0 +1,4 @@
+"Pack A": { regra: sempre }
+"Pack B": { regra: nivel, nivel: 10 }
+"Flag": { regra: porcentagem_do_total, porcentagem: 60 }
+"Everything": { regra: missao, missao: torneio_slifer_red }

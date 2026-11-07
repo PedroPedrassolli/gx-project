@@ -18,6 +18,10 @@ mão. As decisões estão no [ADR 0006](../../../../docs/adr/0006-dados-do-jogo.
 
 Os itens 9 (Destiny Draw) e 10 (PV do Tag) estão no ADR 0001.
 
+Para gravar o catálogo no banco: `bin/rails catalogo:importar`. Ele usa o código da engine
+do `cobertura.yml`, deixa de fora as cartas que saíram do pool e monta a lista dos pacotes
+que juntam outros. Pode rodar quantas vezes quiser.
+
 ## Fonte e licença
 
 - Cada `fonte` é o número da revisão da página lida na Yugipedia:

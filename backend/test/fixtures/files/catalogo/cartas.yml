@@ -1,0 +1,6 @@
+- { nome: "Night Assailant", passcode: 100, fonte: 1 }
+- { nome: "Trap Hole", passcode: 200, fonte: 2 }
+- { nome: "Clear Wall", numero_interno: 3, fonte: 3 }
+- { nome: "Labyrinth", numero_interno: 4, fonte: 4 }
+- { nome: "Ancient Gear", passcode: 500, fonte: 5 }
+- { nome: "Ancient Gear", fonte: 6 }
