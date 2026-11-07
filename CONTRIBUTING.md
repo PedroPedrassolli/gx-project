@@ -77,5 +77,6 @@ mudar o projeto sem quebrar nada.
   rodapé que ferramentas acrescentam ao criar o texto pela API.
 - **Segredos** (`SECRET_KEY_BASE`, `DATABASE_PASSWORD`, `ABLY_API_KEY`, tokens) ficam só nos painéis da
   Vercel e do GitHub. Nunca no repositório, em issue ou em PR. Sem a `ABLY_API_KEY`, os eventos
-  de tempo real ficam na memória (ADR 0002).
+  de tempo real ficam na memória (ADR 0002). A `DATABASE_PASSWORD` vai só no GitHub: o workflow
+  *Banco de produção* copia para a Vercel.
 - Não apague dados permanentemente (branches, issues, cards, imagens, deploys) sem o Pedro pedir.
