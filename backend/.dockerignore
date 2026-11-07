@@ -4,3 +4,16 @@ log/*
 tmp/*
 test
 .rubocop.yml
+
+# Da engine, só vão para a imagem os scripts e os dados das cartas usados no duelo
+# (a biblioteca é compilada na própria imagem, a partir dos fontes).
+vendor/engine/build
+vendor/engine/CardScripts/rush
+vendor/engine/CardScripts/skill
+vendor/engine/CardScripts/goat
+vendor/engine/CardScripts/pre-release
+vendor/engine/CardScripts/.github
+vendor/engine/BabelCDB/*
+!vendor/engine/BabelCDB/cards.cdb
+!vendor/engine/BabelCDB/cards-unofficial.cdb
+**/.git

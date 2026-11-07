@@ -10,6 +10,7 @@ backend/tmp/*
 !backend/tmp/.keep
 backend/coverage/
 backend/vendor/bundle/
+backend/vendor/engine/build/
 
 # Gerados pelo frontend
 frontend/node_modules/

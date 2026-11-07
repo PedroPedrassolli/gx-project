@@ -23,18 +23,22 @@ React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──
 - **Backend** (`backend/`): Rails 8.1 em modo API. O servidor é a autoridade do duelo: cada
   jogador só recebe o que pode ver.
 - **Engine de duelo**: a `ygopro-core` do Project Ignis, chamada pelo Ruby via FFI, com os
-  scripts de carta do mesmo projeto (entra no card GXP-2).
+  scripts de carta do mesmo projeto ([ADR 0001](docs/adr/0001-engine.md)). O `/up/engine`
+  roda um duelo curto para conferir que ela está no ar.
 - Tudo roda em planos gratuitos (Vercel Hobby, Supabase Free, GitHub Actions em repositório
   público).
 
 ## Rodar no seu computador
 
-Precisa de Ruby 3.3, Postgres 16 e Node 24.
+Precisa de Ruby 3.3, Postgres 16, Node 24 e, para compilar a engine, g++, meson e ninja.
 
 ```bash
+# A engine, os scripts e os dados das cartas são submódulos
+git clone --recurse-submodules --shallow-submodules https://github.com/PedroPedrassolli/gx-project
+
 # Backend (porta 3000)
 cd backend
-bin/setup            # instala as gems e prepara o banco
+bin/setup            # instala as gems, compila a engine e prepara o banco
 bin/rails test       # testes, com cobertura mínima de 100%
 
 # Frontend (porta 5173; /api e /up vão para o Rails)
@@ -54,7 +58,12 @@ npm run test:e2e     # navegador + acessibilidade (axe)
 O fluxo (card no Jira → branch → PR pequeno → CI → merge automático), os comandos e as
 armadilhas conhecidas estão no [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Licença
+## Licença e créditos
 
 [AGPL-3.0](LICENSE). Se você rodar uma versão modificada num servidor, precisa oferecer o
 código-fonte a quem usa (o site tem o link no rodapé).
+
+- Engine: [ygopro-core](https://github.com/edo9300/ygopro-core) (edo9300, AGPL-3.0).
+- Scripts das cartas: [CardScripts](https://github.com/ProjectIgnis/CardScripts) (Project Ignis, AGPL-3.0).
+- Dados das cartas para a engine: [BabelCDB](https://github.com/ProjectIgnis/BabelCDB) (Project
+  Ignis), usado só como submódulo; os dados não ficam neste repositório.

@@ -27,6 +27,7 @@ mudar o projeto sem quebrar nada.
 
 | Pasta | Comando | Para quê |
 | --- | --- | --- |
+| `backend` | `bin/build-engine` | Compila a engine de duelo (precisa de g++, meson e ninja) |
 | `backend` | `bin/rails test` | Testes (cobertura mínima de 100%) |
 | `backend` | `bin/rubocop` / `bin/brakeman` / `bin/bundler-audit` | Estilo e segurança |
 | `frontend` | `npm test` / `npm run lint` / `npm run typecheck` / `npm run format:check` | Unitários, ESLint, tipos e Prettier |
@@ -46,6 +47,11 @@ mudar o projeto sem quebrar nada.
 
 ## Armadilhas conhecidas
 
+- **Engine em submódulos** (`backend/vendor/engine/`): clone com `--recurse-submodules` ou rode
+  `git submodule update --init --recursive --depth 1`. Atualizar a engine, os scripts ou o
+  BabelCDB é sempre um PR à parte, com os testes de contrato passando (ADR 0001).
+- **A engine não embaralha o deck no começo**: a partida embaralha e guarda a ordem. Sem
+  isso, o replay não sai igual.
 - **Marcador de pular a CI** (colchetes + `skip ci`) em **qualquer** mensagem de commit pula a
   CI de push e de pull request. Nunca cite o marcador em commits nem no corpo do PR.
 - **Merge pelo `GITHUB_TOKEN` não dispara workflows**: por isso o `auto-merge.yml` move o

@@ -1,0 +1,12 @@
+[submodule "backend/vendor/engine/ygopro-core"]
+	path = backend/vendor/engine/ygopro-core
+	url = https://github.com/edo9300/ygopro-core
+	shallow = true
+[submodule "backend/vendor/engine/CardScripts"]
+	path = backend/vendor/engine/CardScripts
+	url = https://github.com/ProjectIgnis/CardScripts
+	shallow = true
+[submodule "backend/vendor/engine/BabelCDB"]
+	path = backend/vendor/engine/BabelCDB
+	url = https://github.com/ProjectIgnis/BabelCDB
+	shallow = true

@@ -2,11 +2,22 @@
 # A Vercel detecta este arquivo (vercel.json, serviço "backend") e roda o container
 # como uma Vercel Function.
 #
-# Duas etapas: a primeira compila as gems (precisa de compilador);
-# a segunda copia só o resultado, deixando a imagem final menor.
+# Três etapas: a primeira compila a engine de duelo (C++ e Lua), a segunda as gems
+# (as duas precisam de compilador); a última copia só o resultado, deixando a imagem
+# final menor.
 
 # Mantenha igual ao backend/.ruby-version (a CI confere).
 ARG RUBY_VERSION=3.3
+
+FROM ruby:${RUBY_VERSION}-slim AS engine
+RUN apt-get update -qq \
+  && apt-get install -y --no-install-recommends g++ meson ninja-build \
+  && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY bin/build-engine bin/
+COPY vendor/engine/ygopro-core vendor/engine/ygopro-core
+RUN bin/build-engine
+
 FROM ruby:${RUBY_VERSION}-slim AS build
 ENV BUNDLE_WITHOUT="development:test"
 RUN apt-get update -qq \
@@ -22,8 +33,10 @@ RUN bundle install --jobs 4 \
   && rm -rf /usr/local/bundle/cache \
   && find /usr/local/bundle -name "*.o" -delete
 COPY . .
-# Cache do Bootsnap pronto na imagem: o Rails sobe mais rápido no início frio.
-RUN bundle exec bootsnap precompile --gemfile app/ lib/
+# Os fontes da engine já viraram a biblioteca na primeira etapa: não vão para a imagem.
+# O cache do Bootsnap fica pronto na imagem: o Rails sobe mais rápido no início frio.
+RUN rm -rf vendor/engine/ygopro-core \
+  && bundle exec bootsnap precompile --gemfile app/ lib/
 
 FROM ruby:${RUBY_VERSION}-slim
 ENV RAILS_ENV=production \
@@ -34,6 +47,7 @@ ENV RAILS_ENV=production \
 WORKDIR /app
 COPY --from=build /usr/local/bundle /usr/local/bundle
 COPY --from=build /app /app
+COPY --from=engine /app/vendor/engine/build/libocgcore.so vendor/engine/build/
 
 # A Vercel encaminha as requisições para a porta 80 por padrão.
 EXPOSE 80

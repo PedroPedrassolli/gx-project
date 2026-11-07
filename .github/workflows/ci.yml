@@ -65,11 +65,20 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
 
       - uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
         with:
           working-directory: backend
           bundler-cache: true
+
+      # A engine de duelo (C++ e Lua) é chamada pelos testes via FFI.
+      - name: Compilar a engine
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends meson ninja-build
+          bin/build-engine
 
       - name: Versão do Ruby igual no Docker e no .ruby-version
         run: grep -q "ARG RUBY_VERSION=$(cat .ruby-version)$" Dockerfile.vercel
@@ -100,6 +109,8 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
 
       - name: Construir a imagem
         run: docker build -f Dockerfile.vercel -t gx-backend .
