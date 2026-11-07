@@ -1,0 +1,79 @@
+# Mantém no máximo 10 imagens do container do Rails no registro da Vercel
+# (repositório "backend"). Cada deploy cria uma imagem nova;
+# o registro tem limite de imagens e, cheio, recusa o deploy (aconteceu no portfólio).
+#
+# Quando um deploy começa (a Vercel marca o commit como "pending"), este workflow
+# apaga as mais antigas e deixa as 9 mais recentes; com a imagem que está sendo
+# criada, ficam 10. A imagem do deploy de produção atual nunca é apagada.
+#
+# Precisa do secret VERCEL_TOKEN (Settings → Secrets and variables → Actions).
+# Sem ele, só avisa e não faz nada.
+name: Imagens da Vercel
+
+on:
+  status:
+  schedule:
+    - cron: "40 9 * * 1"
+  workflow_dispatch:
+
+# Não lê nem escreve nada no repositório: só fala com a API da Vercel.
+permissions: {}
+
+concurrency:
+  group: vercel-images
+  cancel-in-progress: false
+
+env:
+  TEAM_ID: team_eX4xb41M3bSeVVVO64KwHMkc
+  PROJECT_ID: prj_muRjAZVGVSTTahcE6Gx0XPiLz5lO
+  REPOSITORY: backend
+  KEEP: 9
+
+jobs:
+  rotate:
+    if: >-
+      github.event_name != 'status' ||
+      (github.event.context == 'Vercel' && github.event.state == 'pending')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Apagar as imagens mais antigas
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::warning title=VERCEL_TOKEN ausente::Configure o secret VERCEL_TOKEN para a limpeza das imagens funcionar."
+            exit 0
+          fi
+
+          api() {
+            curl --silent --show-error --fail-with-body \
+              -H "Authorization: Bearer $VERCEL_TOKEN" "$@"
+          }
+          scope="projectId=$PROJECT_ID&teamId=$TEAM_ID"
+
+          # Tag da imagem em produção: os 12 primeiros caracteres do commit.
+          production=$(api "https://api.vercel.com/v6/deployments?$scope&target=production&state=READY&limit=1" \
+            | jq -r '.deployments[0].meta.githubCommitSha // ""' | cut -c1-12)
+          echo "Produção: ${production:-desconhecida}"
+
+          # Imagens (sem atestados), da mais nova para a mais antiga.
+          api "https://api.vercel.com/v1/vcr/repository/$REPOSITORY/images?$scope&limit=100" \
+            | jq -c '[.images[] | select(.kind != "attestation")] | sort_by(.createdAt) | reverse' > images.json
+          echo "Imagens no registro: $(jq length images.json)"
+
+          # Apaga o que passar das KEEP mais recentes, exceto a de produção.
+          jq -r --argjson keep "$KEEP" --arg production "$production" \
+            '.[$keep:][] | select(($production == "") or ((.tags // []) | index($production) | not)) | "\(.id) \((.tags // []) | join(","))"' \
+            images.json > to-delete.txt
+
+          if [ ! -s to-delete.txt ]; then
+            echo "Nada a apagar."
+            exit 0
+          fi
+
+          while read -r id tags; do
+            echo "Apagando $id ($tags)"
+            api -X DELETE "https://api.vercel.com/v1/vcr/repository/$REPOSITORY/images/$id?$scope" > /dev/null
+          done < to-delete.txt
+          echo "::notice title=Imagens da Vercel::$(wc -l < to-delete.txt) imagem(ns) antiga(s) apagada(s)"

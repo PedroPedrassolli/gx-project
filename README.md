@@ -45,6 +45,10 @@ npm test             # testes unitários
 npm run test:e2e     # navegador + acessibilidade (axe)
 ```
 
+## Documentação
+
+- [Especificação](docs/ESCOPO.md): regras do produto, arquitetura, fases e dados a levantar.
+
 ## Contribuir
 
 O fluxo (card no Jira → branch → PR pequeno → CI → merge automático), os comandos e as
