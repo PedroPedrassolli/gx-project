@@ -19,7 +19,18 @@ module Realtime
       request.basic_auth(@key_name, @secret)
       request.body = JSON.generate(name: event, data:)
       response = Net::HTTP.start(HOST, 443, use_ssl: true, open_timeout: 2, read_timeout: 5) { |http| http.request(request) }
-      raise Error, "o Ably respondeu #{response.code}" unless response.is_a?(Net::HTTPSuccess)
+      raise Error, "o Ably respondeu #{response.code}#{reason(response)}" unless response.is_a?(Net::HTTPSuccess)
+    end
+
+    private
+
+    # O Ably explica a recusa no corpo: {"error": {"code": 40160, "message": "..."}}. O código
+    # de 5 dígitos diz o motivo (ex.: 40160 é permissão que a chave não tem).
+    def reason(response)
+      error = JSON.parse(response.body.to_s)["error"]
+      error ? " (#{error["code"]}: #{error["message"]})" : ""
+    rescue JSON::ParserError
+      ""
     end
   end
 end

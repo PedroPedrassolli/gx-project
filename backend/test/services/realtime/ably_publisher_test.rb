@@ -30,9 +30,28 @@ class Realtime::AblyPublisherTest < ActiveSupport::TestCase
       assert_equal({ "name" => "duel.delta", "data" => { "seq" => 3 } }, JSON.parse(sent.first.body))
     end
 
-    it "avisa quando o Ably recusa" do
-      answer_with(Net::HTTPUnauthorized.new("1.1", "401", "Unauthorized"))
-      assert_raises(Realtime::AblyPublisher::Error) { subject.publish(user_id: 7, event: "duel.delta", data: {}) }
+    it "avisa quando o Ably recusa, com o motivo que ele dá" do
+      refused = Net::HTTPUnauthorized.new("1.1", "401", "Unauthorized")
+      refused.stubs(:body).returns('{"error":{"code":40160,"message":"Action not permitted"}}')
+      answer_with(refused)
+      error = assert_raises(Realtime::AblyPublisher::Error) { subject.publish(user_id: 7, event: "duel.delta", data: {}) }
+      assert_equal "o Ably respondeu 401 (40160: Action not permitted)", error.message
+    end
+
+    it "avisa só com o status quando a resposta não explica" do
+      broken = Net::HTTPBadGateway.new("1.1", "502", "Bad Gateway")
+      broken.stubs(:body).returns("<html>erro</html>")
+      answer_with(broken)
+      error = assert_raises(Realtime::AblyPublisher::Error) { subject.publish(user_id: 7, event: "duel.delta", data: {}) }
+      assert_equal "o Ably respondeu 502", error.message
+    end
+
+    it "avisa só com o status quando o JSON não traz erro" do
+      odd = Net::HTTPForbidden.new("1.1", "403", "Forbidden")
+      odd.stubs(:body).returns("{}")
+      answer_with(odd)
+      error = assert_raises(Realtime::AblyPublisher::Error) { subject.publish(user_id: 7, event: "duel.delta", data: {}) }
+      assert_equal "o Ably respondeu 403", error.message
     end
   end
 end
