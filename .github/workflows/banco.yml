@@ -2,8 +2,9 @@ name: Banco de produção
 
 # Roda as migrações e grava o catálogo no Supabase quando a main muda o que vai para o banco.
 # Usa o pooler em modo sessão (porta 5432): ele aceita IPv4, como o runner do GitHub, e a
-# trava de sessão que as migrações usam (ADR 0004). A URL fica no secret
-# DATABASE_MIGRATION_URL, que o Pedro cola; sem ele, o workflow só avisa.
+# trava de sessão que as migrações usam (ADR 0004). Host e usuário vêm das variáveis do
+# repositório; a senha, do secret DATABASE_PASSWORD, que o Pedro cola. Sem eles, o workflow
+# só avisa.
 
 on:
   push:
@@ -25,13 +26,16 @@ jobs:
     env:
       RAILS_ENV: production
       SECRET_KEY_BASE_DUMMY: "1"
-      DATABASE_URL: ${{ secrets.DATABASE_MIGRATION_URL }}
+      DATABASE_HOST: ${{ vars.DATABASE_HOST }}
+      DATABASE_USER: ${{ vars.DATABASE_USER }}
+      DATABASE_PORT: "5432" # modo sessão do pooler
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
     steps:
       - name: Conferir o secret
         id: secret
         run: |
-          if [ -z "$DATABASE_URL" ]; then
-            echo "::warning::Falta o secret DATABASE_MIGRATION_URL (Supabase, modo sessão): nada foi feito."
+          if [ -z "$DATABASE_PASSWORD" ] || [ -z "$DATABASE_HOST" ] || [ -z "$DATABASE_USER" ]; then
+            echo "::warning::Falta o secret DATABASE_PASSWORD ou as variáveis DATABASE_HOST e DATABASE_USER: nada foi feito."
             echo "pronto=false" >> "$GITHUB_OUTPUT"
           else
             echo "pronto=true" >> "$GITHUB_OUTPUT"

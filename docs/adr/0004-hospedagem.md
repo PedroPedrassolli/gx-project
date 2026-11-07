@@ -126,9 +126,11 @@ gasta perto do dobro.
   Estados Unidos: o `/up` passou a p50 283 ms. Dentro do app, a engine em `gru1` deu ação
   fria p50 34,1 ms e p95 70,5 ms, e quente p50 2,3 ms e p95 5,9 ms (*Medição da engine*, 50
   chamadas, 07/11/2026). O p95 da fria subiu de 42 para 70 ms, ainda longe dos 300 ms.
-- **Para criar o Supabase (F2):** o Pedro cria o projeto em `sa-east-1` e cola a URL do
-  pooler em modo transação em `DATABASE_URL` na Vercel. Para o backup, cola a URL do modo
-  sessão e o token da loja do Blob nos secrets do GitHub.
+- **Conexão com o Supabase (GXP-23):** o projeto está em `sa-east-1`. Host, porta, usuário e
+  banco ficam nas variáveis da Vercel (porta 6543) e do repositório no GitHub (o workflow
+  *Banco de produção* usa a porta 5432). A senha fica só em `DATABASE_PASSWORD`, colada pelo
+  Pedro na Vercel e nos secrets do GitHub: em partes, ninguém precisa montar a URL nem
+  codificar caractere especial da senha.
 
 ## Alternativas descartadas
 
