@@ -5,6 +5,10 @@ name: Banco de produção
 # trava de sessão que as migrações usam (ADR 0004). Host e usuário vêm das variáveis do
 # repositório; a senha, do secret DATABASE_PASSWORD, que o Pedro cola. Sem eles, o workflow
 # só avisa.
+#
+# A senha é colada só aqui no GitHub: o workflow copia para a Vercel (Production, Sensitive)
+# pela API, com o VERCEL_TOKEN. O Rails da Vercel lê a senha nova no deploy seguinte. Trocou
+# a senha no Supabase? Atualize o secret, rode este workflow e faça um redeploy na Vercel.
 
 on:
   push:
@@ -18,6 +22,10 @@ permissions:
 concurrency:
   group: banco
   cancel-in-progress: false
+
+env:
+  TEAM_ID: team_eX4xb41M3bSeVVVO64KwHMkc
+  PROJECT_ID: prj_muRjAZVGVSTTahcE6Gx0XPiLz5lO
 
 jobs:
   migrar:
@@ -40,6 +48,30 @@ jobs:
           else
             echo "pronto=true" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Senha na Vercel
+        if: steps.secret.outputs.pronto == 'true'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::warning::Falta o secret VERCEL_TOKEN: a senha não foi para a Vercel."
+            exit 0
+          fi
+          # O jq monta o JSON com a senha vinda do ambiente: nenhum caractere quebra o texto.
+          # upsert=true cria a variável ou troca o valor dela.
+          resposta="$RUNNER_TEMP/vercel.json"
+          status=$(jq -n --arg value "$DATABASE_PASSWORD" \
+            '{key: "DATABASE_PASSWORD", value: $value, type: "sensitive", target: ["production"],
+              comment: "Copiada do secret do GitHub pelo workflow Banco de produção"}' |
+            curl --silent --show-error --output "$resposta" --write-out "%{http_code}" \
+              -H "Authorization: Bearer $VERCEL_TOKEN" -H "Content-Type: application/json" \
+              --data @- "https://api.vercel.com/v10/projects/$PROJECT_ID/env?upsert=true&teamId=$TEAM_ID")
+          if [ "$status" -ge 300 ]; then
+            echo "::error::A Vercel recusou a senha (HTTP $status): $(jq -r '.error.message // "sem mensagem"' "$resposta")"
+            exit 1
+          fi
+          echo "DATABASE_PASSWORD gravada na Vercel."
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: steps.secret.outputs.pronto == 'true'

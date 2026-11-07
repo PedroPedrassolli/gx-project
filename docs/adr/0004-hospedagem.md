@@ -128,9 +128,11 @@ gasta perto do dobro.
   chamadas, 07/11/2026). O p95 da fria subiu de 42 para 70 ms, ainda longe dos 300 ms.
 - **Conexão com o Supabase (GXP-23):** o projeto está em `sa-east-1`. Host, porta, usuário e
   banco ficam nas variáveis da Vercel (porta 6543) e do repositório no GitHub (o workflow
-  *Banco de produção* usa a porta 5432). A senha fica só em `DATABASE_PASSWORD`, colada pelo
-  Pedro na Vercel e nos secrets do GitHub: em partes, ninguém precisa montar a URL nem
-  codificar caractere especial da senha.
+  *Banco de produção* usa a porta 5432). A senha fica só em `DATABASE_PASSWORD`: em partes,
+  ninguém precisa montar a URL nem codificar caractere especial da senha. O Pedro cola a senha
+  num lugar só, o secret do GitHub; o workflow *Banco de produção* copia para a Vercel
+  (Production, Sensitive) pela API, com o `VERCEL_TOKEN`. Assim dá para fazer tudo pelo
+  celular.
 
 ## Alternativas descartadas
 
