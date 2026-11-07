@@ -1,7 +1,7 @@
 # ADR 0001: engine de duelo
 
 - **Data:** 06/11/2026
-- **Situação:** aceita (GXP-2). Cache e números da Vercel no GXP-3 (07/11/2026).
+- **Situação:** aceita (GXP-2). Cache e números da Vercel no GXP-3, em 07/11/2026.
 
 ## Contexto
 
@@ -95,17 +95,23 @@ Localmente (2 vCPU, modo produção, `bin/rails "duel:benchmark[200]"`):
 A 1ª chamada do processo inclui ler do disco as cartas e os scripts do duelo (o catálogo é
 lido sob demanda; ler tudo de uma vez custava cerca de 310 ms na Vercel).
 
-Na Vercel (iad1), antes do cache, com o workflow *Medição da engine* (50 chamadas
-seguidas, cada uma refazendo o duelo inteiro do zero):
+Na Vercel (iad1), com o workflow *Medição da engine* (50 chamadas seguidas):
 
 | Tempo (ms) | 1ª chamada | p50 | p95 | máximo |
 | --- | --- | --- | --- | --- |
-| Duelo inteiro refeito do zero, no app | 28,2 | 34,1 | 46,1 | 54,1 |
-| Requisição inteira, vista do GitHub | 245,1 | 160,7 | 251,1 | 252,7 |
+| Ação fria (duelo refeito do zero), no app | 26,3 | 31,5 | **42,3** | 54,3 |
+| Ação quente (engine no cache), no app | 1,6 | 2,6 | 3,9 | 4,6 |
+| Requisição inteira ao `/up/engine`, vista do GitHub | 105,1 | 110,6 | 156,9 | 183,6 |
+| Só rede, Vercel e Rails (`/up`), vista do GitHub | 84,8 | 77,9 | 143,0 | 153,2 |
+
+Antes do cache, o `/up/engine` refazia o duelo inteiro (403 respostas) do zero: p50 34,1 ms
+e p95 46,1 ms no app. Na CI, num container recém-criado, a primeira chamada deu 46,9 ms
+(fria) e 0,84 ms (quente).
 
 Mesmo o pior caso (duelo fora do cache) fica bem abaixo da meta de 300 ms no p95: o plano
-B (VM própria) não é necessário. A maior parte da requisição é rede; a região das funções
-(hoje iad1) e a do banco ficam para o ADR de hospedagem (GXP-8).
+B (VM própria) não é necessário. A maior parte da requisição é rede, Vercel e Rails (o
+`/up`, sem engine, já leva p50 78 ms visto do GitHub); a região das funções (hoje iad1) e a
+do banco ficam para o ADR de hospedagem (GXP-8).
 
 ## Consequências
 
