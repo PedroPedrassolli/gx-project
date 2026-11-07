@@ -45,7 +45,11 @@ mudar o projeto sem quebrar nada.
   toda): evite pushes desnecessários e gems que não são usadas.
 - **Jira Free:** sem regras de automação (150 passos/mês). Os cards andam pelo `jira.yml`.
 - Antes de usar um serviço novo, confira o limite do plano gratuito e escreva a conta do
-  custo mensal no PR. Nunca deixe ligada uma cobrança por excedente.
+  custo mensal no PR. Nunca deixe ligada uma cobrança por excedente. Os limites conferidos
+  e o gasto por duelo estão no [ADR 0004](docs/adr/0004-hospedagem.md).
+- **Licença:** contribuição entra como AGPL-3.0. Dependência nova só com licença compatível
+  (MIT, BSD, ISC, Apache-2.0, MPL-2.0, LGPL, GPL-3.0 ou AGPL-3.0), conferida no PR
+  ([ADR 0003](docs/adr/0003-agpl.md)).
 
 ## Armadilhas conhecidas
 
