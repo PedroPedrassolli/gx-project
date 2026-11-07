@@ -185,8 +185,9 @@
 ```
 React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──FFI──▶ ygopro-core + scripts Lua
       ▲                            │            │
-      └──── Ably (canal privado) ◀─┘            └──▶ Postgres (Supabase) · R2 (imagens/backup) · e-mail
+      └──── Ably (canal privado) ◀─┘            └──▶ Postgres (Supabase) · Blob (backup) · Brevo (e-mail)
 ```
+- **Imagens das cartas:** Cloudflare Pages, direto para o navegador (ADR 0004).
 - **Mesmo domínio:** o `vercel.json` repassa `/api/*` para o Rails, então o cookie de sessão é do próprio site.
 - **Sem worker:** o pareamento acontece quando alguém entra na fila; o timeout é cobrado pelo oponente (o front dele chama a API depois do prazo); limpezas rodam numa Action agendada.
 
@@ -242,18 +243,20 @@ React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──
 - Imagens: miniatura na lista, normal no campo, grande no zoom. Lazy load. As cartas do próprio deck são pré-carregadas antes do duelo.
 - Animações 2D com CSS e a Web Animations API, com controle de velocidade.
 
-### 5.9 Planos gratuitos (orçamento; validar e medir na F0)
+### 5.9 Planos gratuitos (conferidos na F0: ADR 0004)
 | Serviço | Uso | Limite que importa |
 | --- | --- | --- |
-| Vercel Hobby | Front + API em container | Invocações e CPU por mês; prévias desligadas |
-| Supabase Free | Postgres | 500 MB de banco, 5 GB de saída; pausa após 7 dias sem uso (o `uptime.yml` chama `/up/db`); **sem backup** |
+| Vercel Hobby | Front + API em container, em São Paulo (`gru1`) | 1 M de invocações e 4 h de CPU por mês; prévias desligadas |
+| Supabase Free | Postgres, em São Paulo (`sa-east-1`) | 500 MB de banco, 5 GB de saída; pausa após 7 dias sem uso (o `uptime.yml` chama `/up/db`); **sem backup** |
 | Ably Free | Realtime | 6 M mensagens/mês, 200 conexões, 200 canais, 500 msg/s, 64 KiB por mensagem |
-| Cloudflare R2 | Imagens + backup | Saída grátis (confirmar se pede cartão) |
-| Resend ou Brevo | E-mail | Cota diária |
-| Sentry | Erros | Eventos por mês |
+| Cloudflare Pages | Imagens das cartas | 20 mil arquivos; banda sem limite |
+| Vercel Blob | Backup | 1 GB; 2 mil uploads por mês |
+| Brevo Free | E-mail | 300 por dia; sem domínio próprio, o remetente sai como `@brevosend.com` |
+| Sentry Developer | Erros | 5 mil erros por mês |
 | GitHub Actions | CI | Sem limite em repo público |
 
-O resumo semanal mostra o uso de cada serviço e avisa quando passa de 80%.
+O resumo semanal mostra o uso de cada serviço e avisa quando passa de 80%. O Cloudflare R2
+saiu na conferência: pede cartão para ativar e cobra o excedente (ADR 0004).
 
 ---
 
@@ -261,7 +264,7 @@ O resumo semanal mostra o uso de cada serviço e avisa quando passa de 80%.
 - **Testes:** backend com Minitest (POROs, requests e transações de DP/loja); **contrato da engine** (duelos roteirizados com semente fixa → estado esperado, com um teste por mecânica: MR1, Fusão, Ritual, Sincro, Tag, Destiny Draw, Match/Side); um teste por bônus do Anexo A e por desafio; front com funções puras (reducer do duelo, filtros, validação) e Playwright + axe com 2 navegadores (1x1) e 4 (Tag).
 - **Segurança:** Brakeman e bundler-audit; Rack::Attack; cookie `SameSite` + token CSRF; sorteios e informação oculta só no servidor; segredos só nos painéis.
 - **Desempenho:** p95 de ação < 300 ms; uma mensagem por jogador por ação; replay de 30 dias.
-- **Backup:** `pg_dump` semanal, criptografado, salvo no R2.
+- **Backup:** `pg_dump` semanal, criptografado, salvo no Vercel Blob (ADR 0004).
 - **Documentação:** README e CONTRIBUTING em português. ADRs em `docs/` sobre engine, realtime, AGPL, hospedagem e economia.
 
 ## 7. Integrações e automações
@@ -276,7 +279,7 @@ O resumo semanal mostra o uso de cada serviço e avisa quando passa de 80%.
 | Fase | Entrega | Pronto quando |
 | --- | --- | --- |
 | F0 Fundação e dados | Esqueleto, CI, deploy. Spikes: engine via FFI (MR1, Tag, Destiny Draw), tempo do replay, Ably. **Levantamento completo dos dados do jogo** (Anexo B) | Duelo headless com semente; dados em YAML; lista do que falta |
-| F1 Catálogo | Importador, imagens no R2, banlists, busca | Pool inteiro com imagem ou só texto |
+| F1 Catálogo | Importador, imagens no Cloudflare Pages, banlists, busca | Pool inteiro com imagem ou só texto |
 | F2 Contas e Deck Edit | Contas, LGPD, deck inicial, coleção, Deck Edit completo | Montar e validar deck com Side e Destiny |
 | F3 Duelo 1x1 em sala | Salas, mesa, todos os prompts, timer, reconexão, replay | 1x1 completo sem travar |
 | F4 Economia e loja | Bônus, nível, desafios, loja, conversor, anti-farm | Resultado mostra os bônus e o DP compra pacote |
@@ -301,7 +304,7 @@ O resumo semanal mostra o uso de cada serviço e avisa quando passa de 80%.
 | Dados do jogo incompletos (regra de nível, chances dos pacotes, condição do Destiny Draw) | Médio | Pesquisa na F0 + conferência (Anexo C) + valores configuráveis |
 | Cartas sem script ou sem imagem | Médio | Lista na F0; escrever o script em Lua ou tirar do pool |
 | Fidelidade da MR1 na engine | Médio | Testes de contrato por mecânica |
-| Limites gratuitos | Médio | Seção 5.9, medição e plano B (VM Oracle Always Free com Action Cable) |
+| Limites gratuitos | Médio | Seção 5.9, medição e plano B (VM Oracle Always Free com Action Cable; ela pede cartão, então é decisão do Pedro) |
 | Farm de DP | Médio | Anti-farm (3.5) |
 | LGPD | Médio | 13+, exclusão e exportação, coleta mínima |
 | Tamanho (a F3 é a maior fase) | Alto | MVP antes do Tag |
