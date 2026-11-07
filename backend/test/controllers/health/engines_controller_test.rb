@@ -5,9 +5,9 @@ class Health::EnginesControllerTest < ActionDispatch::IntegrationTest
 
   # GET /up/engine
   describe "GET #show" do
-    it "responde 200 com a primeira pergunta do duelo" do
+    it "responde 200 depois de refazer o duelo gravado" do
       get engine_health_check_path
-      assert_equal [ 200, "select_chain" ], [ response.status, response.parsed_body["first_prompt"] ]
+      assert_equal [ 200, true, 1 ], [ response.status, *response.parsed_body.values_at("ok", "winner") ]
     end
 
     it "responde 503 quando a engine falha" do

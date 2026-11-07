@@ -1,0 +1,83 @@
+# Medição da engine em produção: chama o /up/engine várias vezes seguidas e resume o
+# tempo (1ª chamada, p50, p95 e máximo) no resumo da execução. Cada chamada refaz do
+# zero, pelo replay, um duelo inteiro gravado: é o pior caso de uma ação num duelo que
+# não está no cache da instância. A meta do GXP-3 é p95 abaixo de 300 ms; os números vão
+# para o docs/adr/0001-engine.md.
+#
+# Roda só quando alguém pede (Actions → Medição da engine → Run workflow).
+# Custo: cerca de 1 minuto de runner (repositório público: sem limite) e algumas dezenas
+# de chamadas na Vercel, bem dentro do plano grátis.
+name: Medição da engine
+
+on:
+  workflow_dispatch:
+    inputs:
+      calls:
+        description: Quantas chamadas (de 1 a 200)
+        required: true
+        default: "50"
+
+permissions: {}
+
+env:
+  SITE: https://gx-project-two.vercel.app
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Chamar o /up/engine
+        env:
+          CALLS: ${{ inputs.calls }}
+        run: |
+          if ! [[ "$CALLS" =~ ^[0-9]+$ ]] || [ "$CALLS" -lt 1 ] || [ "$CALLS" -gt 200 ]; then
+            echo "::error::Número de chamadas inválido: $CALLS (use de 1 a 200)"
+            exit 1
+          fi
+
+          for call in $(seq "$CALLS"); do
+            if ! total=$(curl --silent --fail --max-time 30 --output body.json --write-out "%{time_total}" "$SITE/up/engine"); then
+              echo "::error::A chamada $call falhou: $(cat body.json 2>/dev/null)"
+              exit 1
+            fi
+            if ! jq -e '.ok' body.json > /dev/null; then
+              echo "::error::A chamada $call voltou com erro: $(cat body.json)"
+              exit 1
+            fi
+            # Tempo do replay, medido pelo app, e tempo da requisição inteira visto daqui
+            # (rede + Vercel + Rails + replay).
+            jq -r '.ms' body.json >> engine.txt
+            awk -v seconds="$total" 'BEGIN { printf "%.1f\n", seconds * 1000 }' >> total.txt
+          done
+
+      - name: Resumir
+        run: |
+          # percentile ARQUIVO P: o menor valor que cobre P% das chamadas.
+          percentile() {
+            sort -n "$1" | awk -v p="$2" '
+              { values[NR] = $1 }
+              END { rank = NR * p / 100; index_ = int(rank); if (index_ < rank) index_++; print values[index_ < 1 ? 1 : index_] }'
+          }
+
+          row() {
+            echo "| $1 | $(head -1 "$2") | $(percentile "$2" 50) | $(percentile "$2" 95) | $(sort -n "$2" | tail -1) |"
+          }
+
+          {
+            echo "### /up/engine em produção: $(wc -l < engine.txt) chamadas seguidas"
+            echo
+            echo "| Tempo (ms) | 1ª chamada | p50 | p95 | máximo |"
+            echo "|---|---|---|---|---|"
+            row "Replay do duelo, medido no app" engine.txt
+            row "Requisição inteira, vista do GitHub" total.txt
+            echo
+            echo "A 1ª chamada pode cair numa instância fria (container subindo e catálogo vazio)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          p95=$(percentile engine.txt 95)
+          echo "::notice title=Replay do duelo::p50 $(percentile engine.txt 50) ms, p95 $p95 ms, 1ª chamada $(head -1 engine.txt) ms"
+          echo "::notice title=Requisição inteira::p50 $(percentile total.txt 50) ms, p95 $(percentile total.txt 95) ms, 1ª chamada $(head -1 total.txt) ms"
+          if awk -v value="$p95" 'BEGIN { exit !(value > 300) }'; then
+            echo "::warning::O p95 do replay passou da meta de 300 ms: ver o plano B no docs/adr/0001-engine.md"
+          fi

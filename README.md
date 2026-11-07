@@ -24,7 +24,7 @@ React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──
   jogador só recebe o que pode ver.
 - **Engine de duelo**: a `ygopro-core` do Project Ignis, chamada pelo Ruby via FFI, com os
   scripts de carta do mesmo projeto ([ADR 0001](docs/adr/0001-engine.md)). O `/up/engine`
-  roda um duelo curto para conferir que ela está no ar.
+  refaz um duelo inteiro gravado para conferir que ela está no ar.
 - Tudo roda em planos gratuitos (Vercel Hobby, Supabase Free, GitHub Actions em repositório
   público).
 

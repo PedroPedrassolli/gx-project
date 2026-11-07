@@ -22,6 +22,14 @@ class Duel::CardDatabaseTest < ActiveSupport::TestCase
       card = subject.find(1861629) # Decode Talker
       assert_equal [ 0, 133 ], [ card.defense, card.link_marker ]
     end
+
+    it "devolve nil para código que não existe" do
+      assert_nil subject.find(1)
+    end
+
+    it "guarda a carta depois da primeira busca" do
+      assert_same subject.find(46986414), subject.find(46986414)
+    end
   end
 
   describe "#fill" do
