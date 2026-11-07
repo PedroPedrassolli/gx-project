@@ -37,8 +37,8 @@ mudar o projeto sem quebrar nada.
 - **GitHub Actions:** repositório público, minutos sem limite. Mesmo assim, todo job tem
   `timeout-minutes` e um push novo cancela a execução anterior.
 - **Vercel Hobby:** só uso pessoal e não comercial. Prévias desligadas
-  (`git.deploymentEnabled`) e `scripts/vercel-ignorar-build.sh` só publica quando muda o que
-  vai para o ar. Cada deploy guarda a imagem do container (Function Storage, 10 GB na conta
+  (`git.deploymentEnabled`) e `scripts/vercel-ignorar-build.sh` (no *Ignored Build Step* do
+  projeto, não no `vercel.json`) só publica quando muda o que vai para o ar. Cada deploy guarda a imagem do container (Function Storage, 10 GB na conta
   toda): evite pushes desnecessários e gems que não são usadas.
 - **Jira Free:** sem regras de automação (150 passos/mês). Os cards andam pelo `jira.yml`.
 - Antes de usar um serviço novo, confira o limite do plano gratuito e escreva a conta do

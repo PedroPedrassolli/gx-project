@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# A Vercel roda este script antes de cada build ("ignoreCommand" no vercel.json).
+# A Vercel roda este script antes de cada build: está em Settings → Git → Ignored Build
+# Step do projeto. Não pode ficar no vercel.json, porque com "services" a Vercel não
+# aceita o "ignoreCommand" no topo do arquivo (recusou o primeiro deploy).
 #   saída 0 = pula o build (nenhum deploy novo);
 #   saída 1 = faz o build e publica.
 #
