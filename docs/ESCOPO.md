@@ -100,13 +100,14 @@
 - Pacotes, preço, conteúdo, raridade por carta e regra de disponibilidade **iguais ao jogo de referência** (dados levantados na F0).
 - Regras de disponibilidade suportadas: sempre; dia da semana, com nível que libera todos os dias; nível mínimo; % de outro pacote; % de todas as cartas; código secreto; desafio concluído; qualquer uma de várias regras. Pacote bloqueado aparece com a dica de como liberar. A regra de cada pacote está em `backend/db/seeds/jogo/disponibilidade.yml` (ADR 0006).
 - Compra de 1 ou 10 pacotes. O sorteio é feito no servidor, com semente registrada, e cada abertura fica guardada. Toda a compra roda numa transação, com chave de idempotência.
-- Probabilidade por raridade: as chances do jogo de referência se a pesquisa achar; se não achar, pesos configuráveis no admin, com padrão documentado.
+- Probabilidade por raridade: o jogo de referência não informa (Anexo B). Cada carta do pacote sorteia primeiro a raridade, com os pesos comum 75, rara 18, super rara 5 e ultra rara 2 (padrão, no admin), só entre as raridades que o pacote tem, e depois uma carta dessa raridade (ADR 0005).
 - **Conversor:** de 10 a 99 cartas repetidas (nunca uma carta que está num deck sem cópia sobrando) → 1 carta do grupo da quantidade, igual à tabela do jogo.
 
 ### 3.5 Economia (DP, nível e desafios)
 - **DP no fim de cada duelo:** soma dos bônus do Anexo A, calculada a partir das estatísticas do duelo. A tela de resultado mostra linha por linha.
-- **Nível:** a regra do jogo, se encontrada. Proposta provisória: o nível sobe a cada X DP **ganho** (não gasto), com X configurável.
+- **Nível:** inspirado no jogo de referência, onde o nível acompanha o DP ganho e os pacotes liberam entre os níveis 21 e 50: sobe 1 nível a cada 1.000 DP **ganhos** (não gastos), do 1 ao 99, com o valor no admin (ADR 0005).
 - **Desafios:** os 104, avaliados no fim do duelo pelas estatísticas e pela composição do deck. O progresso fica visível no perfil.
+- **Missões:** liberam o que no jogo saía por minigame, torneio, história ou download: os 8 pacotes que não têm outra regra (quatro torneios) e as 18 cartas que não saem em pacote (carta da semana e visitante do abismo). Lista e números padrão em `backend/db/seeds/missoes.yml`, com os valores no admin.
 - **Razão de DP** (`dp_transactions`): todo crédito e débito tem motivo e saldo. O saldo nunca é editado direto.
 - **Anti-farm** (valores no admin): teto diário de DP vindo de salas (sugestão: 3.000); contra o mesmo oponente no mesmo dia: 100% → 50% → 25% → 0; duelo com menos de 3 turnos ou menos de 2 min só paga a derrota (10 DP); contas com menos de 7 dias têm metade do teto; limite de cadastros por IP.
 
@@ -127,7 +128,7 @@
 - Regras: MR1 pela engine (seção 5.3) e a banlist escolhida.
 - **Servidor autoritativo:** cada jogador recebe só o que pode ver.
 - **No Tag, o parceiro vê a mão do companheiro o tempo todo.**
-- Quem começa: sorteio, no formato que o jogo usa (Anexo C). Quem ganha escolhe ir primeiro ou segundo.
+- Quem começa: pedra, papel e tesoura entre os dois jogadores (no Tag, entre os líderes das duplas). Quem ganha escolhe ir primeiro ou segundo.
 - Pergunta de cadeia: por padrão, o jogador só é consultado se tiver resposta possível. Configurações: "sempre perguntar" e velocidade das animações.
 - Destiny Draw igual ao jogo, quando a sala permitir.
 - Timer por turno e por decisão. Desistência. Reconexão com o estado completo. Desconexão vira derrota depois do prazo.
@@ -367,13 +368,13 @@ Fonte: Yugipedia (página de bônus e desafios do jogo de referência). Fórmula
 Fontes: Yugipedia (CC BY-SA, dar crédito), guias do GameFAQs e Supercheats (só para conferir), YGOPRODeck (dados e imagens), BabelCDB/CardScripts (passcodes e scripts).
 
 ## Anexo C: conferência de memória do jogo
-- [ ] Como se decide quem começa (cara ou coroa, ou pedra-papel-tesoura)?
+- [x] Como se decide quem começa (cara ou coroa, ou pedra-papel-tesoura)? Pedra, papel e tesoura entre os jogadores (no Tag, entre os líderes); quem ganha escolhe ir primeiro ou segundo (3.7).
 - [x] Quando o botão de Destiny Draw aparece? Segue a regra do jogo (pesquisada: em apuros com PV até 4000, até a segunda Fase de Compra).
 - [x] LP da dupla no Tag (8000?) Sim, 8000, configurável.
 - [x] Destiny Draw vem ligado por padrão? Sim.
-- [ ] O layout das telas (seção 1.3) bate com o que você lembra? Algo marcante ficou de fora?
+- [x] O layout das telas (seção 1.3) bate com o que você lembra? Algo marcante ficou de fora? Inspirado no GX, com interface original, bonita e simples.
 - [x] O que cada pacote de UMD/nota de prova deve exigir aqui? Pela fonte: os dois pacotes de UMD também saem no jogo por "todos os desafios", e fica essa regra.
-- [ ] Como liberar os 8 pacotes que no jogo dependem de minigame, torneio ou história (`pendente` no `disponibilidade.yml`)? Sugestão: um nível ou um desafio para cada.
-- [ ] Como conseguir aqui as cartas que no jogo saem só por DLC (13) ou num minigame (5), listadas no `extras.yml`? Sugestão: um pacote novo ou o conversor.
-- [ ] Você lembra quanto DP sobe um nível? Se não, fica a regra provisória (3.5).
-- [ ] Você lembra das chances por raridade dos pacotes? Se não, ficam os pesos do admin.
+- [x] Como liberar os 8 pacotes que no jogo dependem de minigame, torneio ou história? Por missões (3.5): cada pacote ficou com o torneio que o jogo já dava como alternativa.
+- [x] Como conseguir aqui as cartas que no jogo saem só por DLC (13) ou num minigame (5)? Por missões (3.5): a carta da semana, na ordem dos downloads, e o visitante do abismo.
+- [x] Você lembra quanto DP sobe um nível? Regra inspirada no jogo: 1 nível a cada 1.000 DP ganhos (3.5).
+- [x] Você lembra das chances por raridade dos pacotes? Decisão nossa: pesos 75, 18, 5 e 2 (3.4).
