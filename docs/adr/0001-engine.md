@@ -2,7 +2,7 @@
 
 - **Data:** 06/11/2026
 - **Situação:** aceita (GXP-2). Cache e números da Vercel no GXP-3; Tag e Destiny Draw no
-  GXP-4 (07/11/2026).
+  GXP-4; regra do Destiny Draw revista no GXP-20 (07/11/2026).
 
 ## Contexto
 
@@ -60,43 +60,33 @@ partir do Rails.
     `[A, B]` no 1x1 e `[A1, B1, A2, B2]` no Tag (posições pares são do time 0, que começa).
     A engine troca o duelista do lado no começo de cada turno, menos no turno 1; por isso o
     primeiro a jogar pelo time 1 entra como duelista 1 (`Duel::Engine#duelist_index`). Campo,
-    cemitério, banidas e PV são do lado (o PV inicial é o `starting_lp`); mão, deck e Extra
-    Deck são de cada duelista. A mão inicial de quem não está na vez é comprada sem
-    mensagem: o servidor sabe quais são (as 5 do topo do deck dele) e a `MSG_TAG_SWAP`
-    mostra a mão na troca. Isso importa para a visão de cada jogador (decisão 7 do escopo:
-    o parceiro vê a mão do companheiro).
-12. **Destiny Draw (GXP-4):** script de regra nosso, `app/services/duel/destiny_draw.lua`
-    (baseado no `c511004000.lua` do Project Ignis), carregado quando o duelo tem
-    `destiny_draw: true` (liga ou desliga por duelo, nunca no meio). As condições vêm da
-    Yugipedia ("Destiny Draw (rule)"): PV abaixo de 4000, o oponente controla monstro e
-    nenhum monstro do lado tem ATK maior que o do mais forte do oponente; uma carta Destiny
-    do Main Deck, sorteada, vai para o topo; uma vez por duelo para cada lado, inclusive no
-    Tag. A fonte não diz o momento: aqui a pergunta vem no começo da Fase de Compra
-    (`EVENT_PREDRAW`), antes de comprar, e recusar não gasta. As cartas Destiny são os
-    códigos que cada duelista marcou (`destiny:` no deck); no Tag, o duelista da vez sai da
-    contagem de turnos do lado. A pergunta é um `SELECT_YESNO` com a descrição
-    `aux.Stringid(511004000, 0)` (`Duel::Engine::DESTINY_DRAW_QUESTION`); a resposta fica no
-    histórico e o sorteio usa o gerador da engine, então o replay sai igual (conferido em
-    teste). Falta o Pedro confirmar (Anexo C): o momento, se vem ligado por padrão e o PV da
-    dupla no Tag (hoje 8000, configurável).
+    cemitério, banidas e PV são do lado (o PV inicial é o `starting_lp`: 8000, confirmado
+    pelo Pedro); mão, deck e Extra Deck são de cada duelista. A mão inicial de quem não está
+    na vez é comprada sem mensagem: o servidor sabe quais são (as 5 do topo do deck dele) e
+    a `MSG_TAG_SWAP` mostra a mão na troca. Isso importa para a visão de cada jogador
+    (decisão 7 do escopo: o parceiro vê a mão do companheiro).
+12. **Destiny Draw (GXP-4; regra revista no GXP-20):** script de regra nosso,
+    `app/services/duel/destiny_draw.lua` (baseado no `c511004000.lua` do Project Ignis),
+    **ligado por padrão**; `destiny_draw: false` desliga, por duelo, nunca no meio. A regra é
+    a do jogo de referência, que mantém o sistema do jogo anterior da série (Yugipedia:
+    "Destiny Draw (rule)" e as páginas dos dois jogos):
+    - o lado está em apuros com PV até 4000, o oponente controlando monstro e nenhum monstro
+      do lado com ATK maior que o do monstro mais forte do oponente;
+    - se a situação não virou até a segunda Fase de Compra, o duelista da vez pode usar: no
+      lugar da compra normal, compra uma das cartas Destiny que marcou, sorteada. Aqui ela
+      vai para o topo do deck no começo da Fase de Compra (`EVENT_PREDRAW`), antes da compra.
+      Recusar não gasta: a pergunta volta enquanto a situação não virar;
+    - uma vez por duelo para cada lado, inclusive no Tag. No Tag, as Fases de Compra contam
+      por lado (o PV e o campo são da dupla).
 
-## Números do spike (06/11/2026, local, 2 vCPU)
-
-Dois bots simples jogaram 10 duelos completos com sementes diferentes:
-
-| Medida | Resultado |
-| --- | --- |
-| Duelos | 10, todos até o fim, todos determinísticos |
-| Tamanho | 212 a 493 respostas, 6 a 21 turnos |
-| Respostas automáticas (cadeia sem opção) | 2.549 de 3.494 (73,0%) |
-| Reconstruir do zero até um ponto do duelo (646 amostras) | p50 16,7 ms · **p95 20,4 ms** · máx. 30,9 ms |
-| Só começar o duelo (criar, scripts base, 80 cartas) | p50 14,5 ms · p95 15,2 ms |
-| Aplicar uma resposta com o duelo em memória | p95 abaixo de 0,1 ms |
-| Memória por duelo em memória | 1,8 MB |
-| Erros de script | 0 |
-
-Com 3.000 respostas (bem acima de um duelo real), reconstruir do zero levou 89 ms. A meta
-do escopo é p95 < 300 ms: sobra margem mesmo sem cache.
+    As fontes divergem num detalhe: a página da regra fala em PV "abaixo de 4000"; a do jogo
+    anterior, em "4000 ou menos". Ficou "até 4000", que é a descrição específica do sistema.
+    As cartas Destiny são os códigos que cada duelista marcou (`destiny:` no deck); no Tag, o
+    duelista da vez sai da contagem de turnos do lado. A pergunta é um `SELECT_YESNO` com a
+    descrição `aux.Stringid(511004000, 0)` (`Duel::Engine::DESTINY_DRAW_QUESTION`); a resposta
+    fica no histórico e o sorteio usa o gerador da engine, então o replay sai igual
+    (conferido em teste). Confirmado pelo Pedro em 07/11/2026: regra do jogo de referência,
+    ligado por padrão e PV da dupla no Tag de 8000, configurável.
 
 ## Números do GXP-3 (07/11/2026)
 
