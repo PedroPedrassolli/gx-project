@@ -70,8 +70,9 @@ do escopo é p95 < 300 ms: sobra margem mesmo sem cache.
   O GXP-7 reduz os scripts ao pool do jogo de referência.
 - A CI e quem desenvolve precisam de g++, meson e ninja para compilar a engine (cerca de
   40 s; o `bin/setup` já chama o `bin/build-engine`).
-- O `/up/engine` roda um duelo curto em produção: prova que a biblioteca, os scripts e os
-  dados das cartas estão na imagem.
+- O `/up/engine` refaz em produção, pelo replay, um duelo inteiro gravado: prova que a
+  biblioteca, os scripts e os dados das cartas estão na imagem e que o replay continua
+  dando o mesmo resultado.
 
 ## Alternativas descartadas
 

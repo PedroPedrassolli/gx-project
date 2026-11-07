@@ -4,14 +4,11 @@ require "test_helper"
 # fixos, termina sempre do mesmo jeito. Se a engine ou os scripts mudarem de
 # comportamento (ex.: numa atualização), este teste avisa.
 class Duel::BotDuelTest < ActiveSupport::TestCase
-  # Monstros Normais e de efeito, magias e armadilhas clássicas. A ordem é a do deck
-  # (a engine não embaralha no começo); o time 1 usa a mesma lista girada.
-  DECK = [ 70781052, 91152256, 69140098, 14898066, 97590747, 11091375, 15025844, 13039848, 43096270, 69247929,
-           12493482, 5053103, 49881766, 89631139, 46986414, 26202165, 54652250, 71413901, 83011277, 74131780,
-           53129443, 5318639, 72302403, 40619825, 66788016, 97169186, 71044499, 70828912, 14087893, 70368879,
-           26412047, 4206964, 56120475, 62279055, 60082869, 12607053, 14315573, 97077563, 83555666, 44095762 ].freeze
-
-  let(:match) { Duel::BotMatch.new(seed: [ 5, 6, 7, 8 ], decks: [ { main: DECK }, { main: DECK.rotate(17) } ]) }
+  # O duelo gravado do /up/engine (app/services/duel/health_check_duel.json): monstros
+  # Normais e de efeito, magias e armadilhas clássicas, numa ordem fixa (a engine não
+  # embaralha no começo); o time 1 usa a mesma lista girada.
+  let(:recording) { Duel::HealthCheck.recording }
+  let(:match) { Duel::BotMatch.new(seed: recording[:seed], decks: recording[:decks]) }
 
   subject { match.play }
 
@@ -25,5 +22,9 @@ class Duel::BotDuelTest < ActiveSupport::TestCase
 
   it "refazer pelo replay dá exatamente as mesmas mensagens" do
     assert_equal subject.digest, match.replay(subject.responses)
+  end
+
+  it "bate com a gravação do /up/engine (se mudou de propósito, rode bin/rails duel:record_health_check)" do
+    assert_equal recording[:responses], subject.responses.map { |response| response.unpack1("H*") }
   end
 end
