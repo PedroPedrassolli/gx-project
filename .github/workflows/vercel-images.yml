@@ -1,6 +1,6 @@
-# Mantém no máximo 10 imagens do container do Rails no registro da Vercel
-# (repositório "backend"). Cada deploy cria uma imagem nova;
-# o registro tem limite de imagens e, cheio, recusa o deploy (aconteceu no portfólio).
+# Mantém no máximo 10 imagens do container do Rails no registro da Vercel. Cada deploy
+# cria uma imagem nova; o registro tem limite de imagens e, cheio, recusa o deploy
+# (aconteceu no portfólio).
 #
 # Quando um deploy começa (a Vercel marca o commit como "pending"), este workflow
 # apaga as mais antigas e deixa as 9 mais recentes; com a imagem que está sendo
@@ -26,7 +26,6 @@ concurrency:
 env:
   TEAM_ID: team_eX4xb41M3bSeVVVO64KwHMkc
   PROJECT_ID: prj_muRjAZVGVSTTahcE6Gx0XPiLz5lO
-  REPOSITORY: backend
   KEEP: 9
 
 jobs:
@@ -57,8 +56,20 @@ jobs:
             | jq -r '.deployments[0].meta.githubCommitSha // ""' | cut -c1-12)
           echo "Produção: ${production:-desconhecida}"
 
+          # Com os "services" da Vercel, o nome do repositório das imagens não é fixo: usa o
+          # do serviço do Rails (o que tem "backend" no nome) ou, se só houver um, esse.
+          api "https://api.vercel.com/v1/vcr/repository?$scope&limit=100" > repositories.json
+          names=$(jq -r '(.repositories // .items // []) | map(.name // empty) | join(" ")' repositories.json)
+          echo "Repositórios do projeto: ${names:-nenhum}"
+          repository=$(jq -r '(.repositories // .items // []) | map(.name // empty)
+            | (map(select(test("backend"))) + (if length == 1 then . else [] end)) | .[0] // empty' repositories.json)
+          if [ -z "$repository" ]; then
+            echo "::warning title=Imagens da Vercel::Repositório do backend não encontrado (resposta com as chaves $(jq -c 'keys' repositories.json))."
+            exit 0
+          fi
+
           # Imagens (sem atestados), da mais nova para a mais antiga.
-          api "https://api.vercel.com/v1/vcr/repository/$REPOSITORY/images?$scope&limit=100" \
+          api "https://api.vercel.com/v1/vcr/repository/$repository/images?$scope&limit=100" \
             | jq -c '[.images[] | select(.kind != "attestation")] | sort_by(.createdAt) | reverse' > images.json
           echo "Imagens no registro: $(jq length images.json)"
 
@@ -74,6 +85,6 @@ jobs:
 
           while read -r id tags; do
             echo "Apagando $id ($tags)"
-            api -X DELETE "https://api.vercel.com/v1/vcr/repository/$REPOSITORY/images/$id?$scope" > /dev/null
+            api -X DELETE "https://api.vercel.com/v1/vcr/repository/$repository/images/$id?$scope" > /dev/null
           done < to-delete.txt
           echo "::notice title=Imagens da Vercel::$(wc -l < to-delete.txt) imagem(ns) antiga(s) apagada(s)"
