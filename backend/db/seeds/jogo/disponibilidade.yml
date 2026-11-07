@@ -1,0 +1,76 @@
+# Como cada pacote fica disponível na loja. Escrito à mão, a partir das páginas dos pacotes
+# na Yugipedia (a revisão de cada uma está no `fonte` do pacotes.yml).
+#   original: resumo da regra do jogo de referência;
+#   regra: o que vale aqui (escopo, 3.4). Online não existe história, parceiro do jogo,
+#   minigame nem torneio: quando a regra original tem uma alternativa por nível, % ou
+#   desafios, fica a alternativa. Quando não tem, a regra fica "pendente" (Anexo C).
+# Tipos de regra:
+#   sempre                  desde o início
+#   dia                     só no dia da semana; a partir de nivel_libera, todo dia
+#   nivel                   a partir do nível
+#   porcentagem_de_pacote   ter a porcentagem das cartas de outro pacote
+#   porcentagem_do_total    ter a porcentagem de todas as cartas do jogo
+#   codigo                  digitar o código na loja
+#   todos_os_desafios       concluir todos os desafios
+#   qualquer                vale qualquer uma das regras da lista
+# Dados da Yugipedia (CC BY-SA), reorganizados. Veja o README desta pasta.
+
+"Beginner Monsters": { regra: sempre }
+"Beginner Spells": { regra: sempre }
+"Beginner Traps": { regra: sempre }
+
+"Time to Gear Up": { regra: porcentagem_de_pacote, pacote: "Beginner Monsters", porcentagem: 50 }
+"Intermediate Spells": { regra: porcentagem_de_pacote, pacote: "Beginner Spells", porcentagem: 50 }
+"Intermediate Traps": { regra: porcentagem_de_pacote, pacote: "Beginner Traps", porcentagem: 50 }
+"It's Fusion Time!": { regra: porcentagem_de_pacote, pacote: "Time to Gear Up", porcentagem: 50 }
+"Expert Spells": { regra: porcentagem_de_pacote, pacote: "Intermediate Spells", porcentagem: 50 }
+"Expert Traps": { regra: porcentagem_de_pacote, pacote: "Intermediate Traps", porcentagem: 50 }
+
+"Creeping Darkness": { regra: dia, dia: segunda, nivel_libera: 21 }
+"Dueling with Fire": { regra: dia, dia: terca, nivel_libera: 22 }
+"Raging Waters": { regra: dia, dia: quarta, nivel_libera: 23 }
+"A Gust of Wind": { regra: dia, dia: quinta, nivel_libera: 24 }
+"Light from Above": { regra: dia, dia: sexta, nivel_libera: 25 }
+"Earthly Powers": { regra: dia, dia: sabado, nivel_libera: 26 }
+
+"Making the Team 1": { regra: nivel, nivel: 27, original: "terminar uma história com o parceiro com menos de 2 corações, ou nível 27" }
+"Making the Team 2": { regra: nivel, nivel: 28, original: "terminar uma história com o parceiro com 2 corações ou mais, ou nível 28" }
+"A Fresh, New Taste": { regra: nivel, nivel: 29, original: "parceiro Jaden, ou nível 29" }
+"Machiner's Force": { regra: nivel, nivel: 30, original: "parceiro Syrus, ou nível 30" }
+"Ojama Strike": { regra: nivel, nivel: 31, original: "parceiro Chazz, ou nível 31" }
+"Technology Master": { regra: nivel, nivel: 32, original: "parceiro Zane, ou nível 32" }
+"A Maiden's Love": { regra: nivel, nivel: 33, original: "parceira Blair, ou nível 33" }
+"Cyber Girl Rhapsody": { regra: nivel, nivel: 34, original: "parceira Alexis, ou nível 34" }
+"Simple is Best": { regra: nivel, nivel: 35, original: "parceiro Bastion, ou nível 35" }
+"Back for More": { regra: nivel, nivel: 36, original: "parceiros Camula, Abidos ou Kagemaru, ou nível 36" }
+"Control Your Destiny": { regra: nivel, nivel: 37, original: "parceiros Aster ou Sartorius, ou nível 37" }
+"Over the Rainbow": { regra: nivel, nivel: 38, original: "parceiros Jesse, Adrian ou Axel, ou nível 38" }
+"Magic Carpet": { regra: nivel, nivel: 39, original: "parceiras Dark Magician Girl ou Yasmin, ou nível 39" }
+"Rock-Solid Tactics": { regra: nivel, nivel: 40, original: "parceiro Jim, ou nível 40" }
+"A Bug's Duel": { regra: nivel, nivel: 41, original: "parceiro aluno Slifer Red do tier 3, ou nível 41" }
+"A Dragon's Tale": { regra: nivel, nivel: 42, original: "parceiros Nightshroud ou aluno Ra Yellow do tier 3, ou nível 42" }
+"Twilight Ruler": { regra: nivel, nivel: 43, original: "parceiros Yubel ou aluno Obelisk Blue do tier 3, ou nível 43" }
+"Celestial Sign": { regra: nivel, nivel: 44, original: "parceiras Jasmine, Mindy ou aluna Obelisk Blue do tier 3, ou nível 44" }
+"Don't Stop!": { regra: nivel, nivel: 45, original: "parceiro Charisma, ou todas as histórias dos personagens do tier 1, ou nível 45" }
+
+"Checkered Flag 1": { regra: porcentagem_do_total, porcentagem: 60 }
+"Checkered Flag 2":
+  regra: qualquer
+  regras:
+    - { regra: porcentagem_do_total, porcentagem: 90 }
+    - { regra: todos_os_desafios }
+    - { regra: nivel, nivel: 50 }
+
+"Crush On You": { regra: todos_os_desafios, original: "reconhecimento de UMD do primeiro jogo da série, ou todos os desafios" }
+"Champion's Pack": { regra: todos_os_desafios, original: "reconhecimento de UMD do segundo jogo da série, ou todos os desafios" }
+"Ms. Dorothy's Special Pack": { regra: todos_os_desafios, original: "todos os desafios, ou terminar o jogo com a Dorothy; só com ela no balcão" }
+"Midday Constellation": { regra: codigo, codigo: "↑ ↑ ↓ ↓ ← → ← → × ○", original: "código Konami digitado na loja" }
+
+"Test of Luck": { regra: pendente, original: "50.000 pontos no minigame Destiny Number 21, ou vencer o torneio Slifer Red" }
+"Dramatic a la carte": { regra: pendente, original: "100.000 pontos no minigame Survival Dodge Ball, ou vencer o torneio Ra Yellow" }
+"Banner of Courage": { regra: pendente, original: "terminar o minigame Can You Make 400 Friends?, ou vencer o torneio Obelisk Blue" }
+"Reserve Magic": { regra: pendente, original: "50.000 pontos no minigame Stones of Strategy, ou vencer o torneio Ra Yellow" }
+"Spice Up Your Deck": { regra: pendente, original: "vencer o campeonato de domingo, andar 50 no minigame Visitor from the Abyss, ou todas as histórias dos personagens do tier 1" }
+"Power of the Heroes": { regra: pendente, original: "vencer o torneio Slifer Red, 4.500 pontos no minigame Ball or Bread, ou todas as histórias dos personagens do tier 1" }
+"Sadie's Special Pack": { regra: pendente, original: "vencer o torneio Obelisk Blue, ou terminar o jogo com a Sadie; só com ela no balcão" }
+"Double Triple Destiny Draw": { regra: pendente, original: "ganhar o Golden Egg Sandwich, ou vencer o campeonato de domingo" }

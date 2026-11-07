@@ -1,0 +1,109 @@
+# Os desafios, com o texto original em inglês.
+# Gerado por `bin/rails dados:jogo`: não edite à mão.
+# Dados da Yugipedia (CC BY-SA), reorganizados. Veja o README desta pasta.
+fonte: 5467753
+desafios:
+  - { numero: 1, texto: "Caused 10,000 or more points of battle damage during a duel." }
+  - { numero: 2, texto: "Caused 4,000 or more points of deflected battle damage during a duel." }
+  - { numero: 3, texto: "Caused 20,000 or more points direct damage during a duel." }
+  - { numero: 4, texto: "Caused 50,000 or more points of damage during a duel." }
+  - { numero: 5, texto: "Destroyed 20 of your opponent’s monsters in battle during a duel." }
+  - { numero: 6, texto: "Destroyed 30 of your opponent's monsters using effects during a duel." }
+  - { numero: 7, texto: "Removed 10 of your opponent’s monsters from play using effects during a duel." }
+  - { numero: 8, texto: "Normal Summoned 10 monsters during a duel." }
+  - { numero: 9, texto: "Performed 10 Flip Summons during a duel." }
+  - { numero: 10, texto: "Performed 10 Fusion Summons during a duel." }
+  - { numero: 11, texto: "Performed 10 Ritual Summons during a duel." }
+  - { numero: 12, texto: "Performed 20 Special Summons during a duel." }
+  - { numero: 13, texto: "Special Summoned 15 Tokens during a duel." }
+  - { numero: 14, texto: "Equipped 5 Union monsters during a duel." }
+  - { numero: 15, texto: "Caused 8,000 or more points of direct damage with Toon monsters during a duel." }
+  - { numero: 16, texto: "Used Spell Cards 20 times during a duel." }
+  - { numero: 17, texto: "Used Quick-Play Spell Cards 10 times in your opponent's turn in a duel." }
+  - { numero: 18, texto: "Activated 10 Trap cards during a duel." }
+  - { numero: 19, texto: "Countered your opponent's Spells, Traps, effects, Attacks and Summons 10 times during a duel." }
+  - { numero: 20, texto: "Took control of your opponent's monsters 10 times during a duel." }
+  - { numero: 21, texto: "Formed a chain of 5 chain links during a duel." }
+  - { numero: 22, texto: "Used 10 Spell Counters during a duel." }
+  - { numero: 23, texto: "Made your opponent discard 20 cards from his/her hand." }
+  - { numero: 24, texto: "Restored 20,000 or more Life Points during a duel." }
+  - { numero: 25, texto: "Won the Match." }
+  - { numero: 26, texto: "Ended the duel in a draw." }
+  - { numero: 27, texto: "Won the duel without taking any damage." }
+  - { numero: 28, texto: "Caused 8,000 points or more of damage during a turn and won the duel." }
+  - { numero: 29, texto: "Caused 8,000 points or more of damage with a single attack or effect and won the duel." }
+  - { numero: 30, texto: "Made your opponent run out of cards and won the duel." }
+  - { numero: 31, texto: "Won within 7 turns." }
+  - { numero: 32, texto: "Won within 5 turns." }
+  - { numero: 33, texto: "Won within 3 turns." }
+  - { numero: 34, texto: "Won during your opponent’s turn." }
+  - { numero: 35, texto: "Won the duel using the effects of “Exodia the Forbidden One”." }
+  - { numero: 36, texto: "Won the duel using the effects of “Destiny Board”." }
+  - { numero: 37, texto: "Won the duel using the effects of “Final Countdown”." }
+  - { numero: 38, texto: "Won using a card with a match-winning effect." }
+  - { numero: 39, texto: "Won with the “Yata-Garasu” lock." }
+  - { numero: 40, texto: "Summoned every card in the XYZ Series and won the duel." }
+  - { numero: 41, texto: "Successfully Summoned “VWXYZ-Dragon Catapult Cannon” and won the duel." }
+  - { numero: 42, texto: "Successfully Summoned “Uria, Lord of Searing Flames” and won the duel." }
+  - { numero: 43, texto: "Successfully Summoned “Hamon, Lord of Striking Thunder” and won the duel." }
+  - { numero: 44, texto: "Successfully Summoned “Raviel, Lord of Phantasms” and won the duel." }
+  - { numero: 45, texto: "Summoned all the Sacred Beast Cards and won the duel." }
+  - { numero: 46, texto: "Successfully activated and maintained the effect of \"Ojama Delta Hurricane!!\" and won the duel." }
+  - { numero: 47, texto: "Successfully activated and maintained the effect of “Huge Revolution” and won the duel." }
+  - { numero: 48, texto: "Successfully Summoned “Perfectly Ultimate Great Moth” and won the duel." }
+  - { numero: 49, texto: "Successfully Summoned “Gate Guardian” and won the duel." }
+  - { numero: 50, texto: "Successfully Summoned “Valkyrion the Magna Warrior” and won the duel." }
+  - { numero: 51, texto: "Successfully Summoned “Dark Sage” and won the duel." }
+  - { numero: 52, texto: "Successfully activated and maintained the effect of \"Dark Scorpion Combination\" and won the duel." }
+  - { numero: 53, texto: "Used \"Dark Scorpion Retreat\" and won the Duel." }
+  - { numero: 54, texto: "Defeated your opponent with an attack from \"Skull Servant”." }
+  - { numero: 55, texto: "Won with a Deck that didn’t contain any Effect monsters." }
+  - { numero: 56, texto: "Won with a Deck that didn’t contain any monsters Level 4 or lower." }
+  - { numero: 57, texto: "Won with a Deck that didn’t contain any monsters Level 5 or higher." }
+  - { numero: 58, texto: "Won with a Deck that didn’t contain any monsters Level 2 or higher." }
+  - { numero: 59, texto: "Won with a deck that contained monsters of every Level." }
+  - { numero: 60, texto: "Won with a Deck that didn’t contain any monsters with an ATK of 1500 or less." }
+  - { numero: 61, texto: "Won with a Deck that didn’t contain any monsters with an ATK of 1500 or more." }
+  - { numero: 62, texto: "Won with a Deck that didn’t contain any monsters with an ATK of 1 or more." }
+  - { numero: 63, texto: "Won with a Deck that didn’t contain any monsters except LIGHT monsters." }
+  - { numero: 64, texto: "Won with a Deck that didn’t contain any monsters except DARK monsters." }
+  - { numero: 65, texto: "Won with a Deck that didn’t contain any monsters except WATER monsters." }
+  - { numero: 66, texto: "Won with a Deck that didn’t contain any monsters except FIRE monsters." }
+  - { numero: 67, texto: "Won with a Deck that didn’t contain any monsters except EARTH monsters." }
+  - { numero: 68, texto: "Won with a Deck that didn’t contain any monsters except WIND monsters." }
+  - { numero: 69, texto: "Won with a Deck that didn’t contain any monsters except Dragon-Type monsters." }
+  - { numero: 70, texto: "Won with a Deck that didn’t contain any monsters except Zombie-Type monsters." }
+  - { numero: 71, texto: "Won with a Deck that didn’t contain any monsters except Fiend-Type monsters." }
+  - { numero: 72, texto: "Won with a Deck that didn’t contain any monsters except Pyro-Type monsters." }
+  - { numero: 73, texto: "Won with a Deck that didn’t contain any monsters except Sea Serpent-Type monsters." }
+  - { numero: 74, texto: "Won with a Deck that didn’t contain any monsters except Rock-Type monsters." }
+  - { numero: 75, texto: "Won with a Deck that didn’t contain any monsters except Machine-Type monsters." }
+  - { numero: 76, texto: "Won with a Deck that didn’t contain any monsters except Fish-Type monsters." }
+  - { numero: 77, texto: "Won with a Deck that didn’t contain any monsters except Dinosaur-Type monsters." }
+  - { numero: 78, texto: "Won with a Deck that didn’t contain any monsters except Insect-Type monsters." }
+  - { numero: 79, texto: "Won with a Deck that didn’t contain any monsters except Beast-Type monsters." }
+  - { numero: 80, texto: "Won with a Deck that didn’t contain any monsters except Beast-Warrior-Type monsters." }
+  - { numero: 81, texto: "Won with a Deck that didn’t contain any monsters except Plant-Type monsters." }
+  - { numero: 82, texto: "Won with a Deck that didn’t contain any monsters except Aqua-Type monsters." }
+  - { numero: 83, texto: "Won with a Deck that didn’t contain any monsters except Warrior-Type monsters." }
+  - { numero: 84, texto: "Won with a Deck that didn’t contain any monsters except Winged Beast-Type monsters." }
+  - { numero: 85, texto: "Won with a Deck that didn’t contain any monsters except Fairy-Type monsters." }
+  - { numero: 86, texto: "Won with a Deck that didn’t contain any monsters except Spellcaster-Type monsters." }
+  - { numero: 87, texto: "Won with a Deck that didn’t contain any monsters except Thunder-Type monsters." }
+  - { numero: 88, texto: "Won with a Deck that didn’t contain any monsters except Reptile-Type monsters." }
+  - { numero: 89, texto: "Won with a Deck that didn’t contain any monsters except ones whose names contain “LV”." }
+  - { numero: 90, texto: "Won with a Deck that didn’t contain any monsters except ones whose names begin with “Elemental Hero”." }
+  - { numero: 91, texto: "Won with a Deck that didn’t contain any monsters except Spirit monsters." }
+  - { numero: 92, texto: "Won with a Deck that didn’t contain any monsters except Toon monsters." }
+  - { numero: 93, texto: "Won with a Deck that didn’t contain any monsters (not including Fusion Deck)." }
+  - { numero: 94, texto: "Won with a Deck that didn’t contain any monsters (including Fusion Deck)." }
+  - { numero: 95, texto: "Won with a Deck that didn’t contain any Trap Cards." }
+  - { numero: 96, texto: "Won with a Deck that didn’t contain any Spell Cards." }
+  - { numero: 97, texto: "Won with a Deck that didn’t contain any Spell or Trap Cards." }
+  - { numero: 98, texto: "Won with a Deck that had 80 cards in it." }
+  - { numero: 99, texto: "Won with a Deck that didn’t contain any Forbidden, Limited, or Semi-Limited Cards." }
+  - { numero: 100, texto: "Won with a Deck that only contained one copy of each card." }
+  - { numero: 101, texto: "Won without Tributing any monsters." }
+  - { numero: 102, texto: "Won without performing a Special Summon." }
+  - { numero: 103, texto: "Won without performing a Normal Summon." }
+  - { numero: 104, texto: "Won 10 coin tosses in a row." }

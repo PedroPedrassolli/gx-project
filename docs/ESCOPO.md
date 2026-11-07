@@ -98,7 +98,7 @@
 
 ### 3.4 Loja, pacotes e conversor
 - Pacotes, preço, conteúdo, raridade por carta e regra de disponibilidade **iguais ao jogo de referência** (dados levantados na F0).
-- Regras de disponibilidade suportadas: sempre; dia da semana, com nível que libera todos os dias; nível mínimo; % de outro pacote; código secreto; desafio concluído. Pacote bloqueado aparece com a dica de como liberar.
+- Regras de disponibilidade suportadas: sempre; dia da semana, com nível que libera todos os dias; nível mínimo; % de outro pacote; % de todas as cartas; código secreto; desafio concluído; qualquer uma de várias regras. Pacote bloqueado aparece com a dica de como liberar. A regra de cada pacote está em `backend/db/seeds/jogo/disponibilidade.yml` (ADR 0006).
 - Compra de 1 ou 10 pacotes. O sorteio é feito no servidor, com semente registrada, e cada abertura fica guardada. Toda a compra roda numa transação, com chave de idempotência.
 - Probabilidade por raridade: as chances do jogo de referência se a pesquisa achar; se não achar, pesos configuráveis no admin, com padrão documentado.
 - **Conversor:** de 10 a 99 cartas repetidas (nunca uma carta que está num deck sem cópia sobrando) → 1 carta do grupo da quantidade, igual à tabela do jogo.
@@ -353,14 +353,14 @@ Fonte: Yugipedia (página de bônus e desafios do jogo de referência). Fórmula
 | 83 | New Bonus | 30 | Condição a descobrir; sem ela, fica desligado |
 
 ## Anexo B: dados a levantar na F0 (com fonte por item)
-1. Lista das 3.501 cartas, com os passcodes, incluindo as do anime e de DLC.
-2. Todos os pacotes: nome, preço, cartas e raridade por carta, regra de disponibilidade (dia, nível, %, código, UMD/nota). Páginas de cada pacote do jogo no Yugipedia.
-3. Chances por raridade dentro do pacote, se existir fonte.
-4. Deck inicial.
-5. Tabela do conversor de cartas (grupo por quantidade).
-6. Os 104 desafios com as condições.
-7. Regra de subida de nível.
-8. Banlist padrão.
+1. Lista das 3.501 cartas, com os passcodes, incluindo as do anime e de DLC. Feito: `cartas.yml` e `extras.yml`, com 3.499 cartas (faltam 2, ver o README da pasta).
+2. Todos os pacotes: nome, preço, cartas e raridade por carta, regra de disponibilidade (dia, nível, %, código, UMD/nota). Páginas de cada pacote do jogo no Yugipedia. Feito: `pacotes.yml` (48 pacotes) e `disponibilidade.yml` (8 pendentes no Anexo C).
+3. Chances por raridade dentro do pacote, se existir fonte. Não achado: valem os pesos do admin (3.4); pergunta no Anexo C.
+4. Deck inicial. Feito: `deck_inicial.yml` (principal, side e 3 Destiny).
+5. Tabela do conversor de cartas (grupo por quantidade). Feito: `conversor.yml`.
+6. Os 104 desafios com as condições. Feito: `desafios.yml` (texto original em inglês).
+7. Regra de subida de nível. Não achado: vale a regra provisória (3.5); pergunta no Anexo C.
+8. Banlist padrão. Feito: `banlist.yml`.
 9. Condição exata do Destiny Draw e se ele vem ligado por padrão. Feito: regra pela Yugipedia (ADR 0001); ligado por padrão, confirmado pelo Pedro.
 10. LP do Tag Duel. Feito: 8000, configurável, confirmado pelo Pedro.
 
@@ -372,4 +372,8 @@ Fontes: Yugipedia (CC BY-SA, dar crédito), guias do GameFAQs e Supercheats (só
 - [x] LP da dupla no Tag (8000?) Sim, 8000, configurável.
 - [x] Destiny Draw vem ligado por padrão? Sim.
 - [ ] O layout das telas (seção 1.3) bate com o que você lembra? Algo marcante ficou de fora?
-- [ ] O que cada pacote de UMD/nota de prova deve exigir aqui?
+- [x] O que cada pacote de UMD/nota de prova deve exigir aqui? Pela fonte: os dois pacotes de UMD também saem no jogo por "todos os desafios", e fica essa regra.
+- [ ] Como liberar os 8 pacotes que no jogo dependem de minigame, torneio ou história (`pendente` no `disponibilidade.yml`)? Sugestão: um nível ou um desafio para cada.
+- [ ] Como conseguir aqui as cartas que no jogo saem só por DLC (13) ou num minigame (5), listadas no `extras.yml`? Sugestão: um pacote novo ou o conversor.
+- [ ] Você lembra quanto DP sobe um nível? Se não, fica a regra provisória (3.5).
+- [ ] Você lembra das chances por raridade dos pacotes? Se não, ficam os pesos do admin.
