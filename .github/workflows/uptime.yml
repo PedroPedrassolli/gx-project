@@ -75,6 +75,8 @@ jobs:
           expect /favicon.svg 200
           # Rails no container: responde 200 quando sobe sem erro.
           expect /up 200
+          # Engine de duelo: um duelo curto roda até a primeira pergunta.
+          expect /up/engine 200 '"ok":true'
           # Quando o banco (Supabase) estiver ligado, entra aqui o /up/db, que também
           # evita a pausa do plano grátis por falta de uso.
 

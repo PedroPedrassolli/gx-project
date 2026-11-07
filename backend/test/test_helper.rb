@@ -16,16 +16,18 @@ require "rails/test_help"
 require "minitest/spec"
 require "mocha/minitest"
 
+# Apoio dos testes (ex.: os bots que jogam duelos inteiros na engine).
+Rails.root.glob("test/support/**/*.rb").each { |file| require file }
+
 module ActiveSupport
   class TestCase
     # describe/it/let/subject do Minitest::Spec dentro das classes de teste do Rails.
     extend Minitest::Spec::DSL
 
-    parallelize(workers: :number_of_processors)
-
-    # Cada processo grava a própria cobertura; o SimpleCov junta tudo no fim.
-    parallelize_setup { |worker| SimpleCov.command_name "#{SimpleCov.command_name}-#{worker}" }
-    parallelize_teardown { |_worker| SimpleCov.result }
+    # Um processo só: a suíte leva cerca de 1 s, e com processos paralelos (fork) o Rails
+    # precisa de um banco por processo e a cobertura precisa ser juntada no fim. Com mais
+    # de 50 testes, o paralelo travou antes de começar (07/11/2026).
+    parallelize(workers: 1)
 
     fixtures :all
   end
