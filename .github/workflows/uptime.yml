@@ -77,8 +77,9 @@ jobs:
           expect /up 200
           # Engine de duelo: refaz pelo replay um duelo inteiro gravado.
           expect /up/engine 200 '"ok":true'
-          # Quando o banco (Supabase) estiver ligado, entra aqui o /up/db, que também
-          # evita a pausa do plano grátis por falta de uso.
+          # Banco (Supabase): um SELECT 1 a cada 4 horas também evita a pausa do plano
+          # grátis, que para o projeto depois de uma semana sem uso.
+          expect /up/db 200 "ok"
 
           # Cabeçalhos de segurança da página (definidos no vercel.json; o HSTS vem da Vercel).
           headers=$(curl --silent --max-time 30 --head "$SITE/" || true)
