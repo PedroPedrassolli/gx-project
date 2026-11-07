@@ -56,6 +56,11 @@ updates:
         update-types: [patch]
       minor:
         update-types: [minor]
+    # Os tipos do Node acompanham a versão que roda o projeto (Node 24, .nvmrc): versão
+    # maior nova só quando o projeto trocar de Node.
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "deps(frontend)"
 
