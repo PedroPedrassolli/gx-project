@@ -6,7 +6,7 @@ mão. As decisões estão no [ADR 0006](../../../../docs/adr/0006-dados-do-jogo.
 
 | Arquivo | O que tem | Anexo B |
 | --- | --- | --- |
-| `cartas.yml` | 3.499 cartas: nome atual, nome no jogo (quando mudou depois), passcode ou o número interno do jogo (versões do anime) e a fonte | 1 |
+| `cartas.yml` | 3.499 cartas: nome atual, nome no jogo (quando mudou depois), passcode ou o número interno do jogo (versões do anime), o passcode da impressão posterior das cartas do anime e a fonte | 1 |
 | `pacotes.yml` | 48 pacotes na ordem da loja: preço em DP, cartas por pacote, tamanho e cada carta com a raridade | 2 |
 | `disponibilidade.yml` | como cada pacote fica disponível (escrito à mão) | 2 |
 | `deck_inicial.yml` | deck principal, side e as 3 cartas marcadas como Destiny | 4 |
@@ -14,6 +14,7 @@ mão. As decisões estão no [ADR 0006](../../../../docs/adr/0006-dados-do-jogo.
 | `desafios.yml` | os 104 desafios, com o texto original em inglês | 6 |
 | `banlist.yml` | banlist padrão do jogo | 8 |
 | `extras.yml` | cartas que saem por DLC e num minigame | 1 |
+| `cobertura.yml` | o pool cruzado com a engine e as imagens: as exceções à regra geral, com a decisão de cada carta (gerado por `bin/rails dados:cobertura`) | GXP-7 |
 
 Os itens 9 (Destiny Draw) e 10 (PV do Tag) estão no ADR 0001.
 
@@ -39,6 +40,18 @@ Os itens 9 (Destiny Draw) e 10 (PV do Tag) estão no ADR 0001.
 - 212 cartas mudaram de nome depois do jogo (`nome_no_jogo`).
 - O conversor cita "That Which Feeds On Life", que a Yugipedia não acha com esse nome: no
   `conversor.yml` sai só o nome.
+
+## Cobertura na engine e nas imagens (`cobertura.yml`)
+
+Regra geral: a carta entra na engine pelo próprio passcode, com o script oficial (carta Normal
+não tem script) e a imagem do YGOPRODeck. Em 07/11/2026:
+
+- 3.415 cartas oficiais: todas têm dados no BabelCDB e imagem; 617 são Normais; 52 usam o
+  script antigo (pré-errata), porque o jogo é de 2008.
+- 84 cartas do anime: 61 usam o script não oficial da versão de video game (ou do anime);
+  8 não têm script e usam a carta que o OCG imprimiu depois (`passcode_oficial` no
+  `cartas.yml`); **15 ficam fora do pool** até alguém escrever o script.
+- As cartas do anime não têm imagem no YGOPRODeck: mostram só o texto (escopo, 3.2).
 
 ## O que falta (vai para o Anexo C do escopo)
 
