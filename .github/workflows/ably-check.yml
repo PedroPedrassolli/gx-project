@@ -1,0 +1,98 @@
+# Teste ao vivo do realtime (GXP-5). Roda só quando alguém pede (Actions → Teste do Ably →
+# Run workflow), depois de colar a chave do Ably no secret ABLY_API_KEY. Confere que:
+# 1. o Ably aceita o pedido de token assinado pelo Rails (Realtime::TokenRequest) e o token
+#    só tem permissão de assinar o canal do jogador;
+# 2. com esse token, o canal do jogador recebe o evento publicado pelo Rails
+#    (Realtime::AblyPublisher) e o canal de outro jogador é recusado.
+#
+# Custo: menos de 1 minuto de runner (repositório público: sem limite) e 3 mensagens do
+# plano grátis do Ably (2 publicadas e 1 entregue).
+name: Teste do Ably
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      ABLY_API_KEY: ${{ secrets.ABLY_API_KEY }}
+      ABLY_HOST: https://main.realtime.ably.net
+      # Só o Rails, sem banco nem engine: basta o ambiente de desenvolvimento.
+      RAILS_ENV: development
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
+        with:
+          working-directory: backend
+          bundler-cache: true
+
+      - name: Conferir o token e os canais
+        run: |
+          if [ -z "$ABLY_API_KEY" ]; then
+            echo "::error::Falta o secret ABLY_API_KEY (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+          me="gxp-teste-$RANDOM"
+          other="gxp-teste-$RANDOM"
+
+          # 1. Pedido de token assinado pelo Rails, trocado por um token no Ably (como o
+          #    navegador vai fazer).
+          USER_ID="$me" bin/rails runner \
+            'puts JSON.generate(Realtime::TokenRequest.new(ENV.fetch("ABLY_API_KEY")).for_user(ENV.fetch("USER_ID")))' \
+            > token-request.json
+          curl --silent --show-error --max-time 15 -X POST -H "Content-Type: application/json" \
+            --data @token-request.json "$ABLY_HOST/keys/$(jq -r .keyName token-request.json)/requestToken" > token.json
+          token=$(jq -r '.token // empty' token.json)
+          if [ -z "$token" ]; then
+            echo "::error title=Pedido de token recusado::$(jq -c '.error // .' token.json)"
+            exit 1
+          fi
+          capability=$(jq -r .capability token.json)
+          echo "::notice title=Permissões do token::$capability"
+          if [ "$capability" != "{\"private:user:$me\":[\"subscribe\"]}" ]; then
+            echo "::error::O token tem permissões a mais ou a menos."
+            exit 1
+          fi
+
+          # 2. Assina o canal do jogador por SSE em segundo plano. O mesmo token no canal de
+          #    outro jogador tem que ser recusado.
+          channel() { echo "private%3Auser%3A$1"; }
+          curl --silent --no-buffer --max-time 15 \
+            "$ABLY_HOST/sse?v=1.2&channels=$(channel "$me")&accessToken=$token" > mine.txt &
+          listener=$!
+          other_code=$(curl --silent --output other.txt --write-out "%{http_code}" --max-time 5 \
+            "$ABLY_HOST/sse?v=1.2&channels=$(channel "$other")&accessToken=$token" || true)
+          sleep 3
+          ME="$me" OTHER="$other" bin/rails runner '
+            publisher = Realtime::AblyPublisher.new(ENV.fetch("ABLY_API_KEY"))
+            publisher.publish(user_id: ENV.fetch("ME"), event: "teste", data: "para-o-jogador")
+            publisher.publish(user_id: ENV.fetch("OTHER"), event: "teste", data: "para-outro")'
+          wait "$listener" || true
+
+          if ! grep -q "para-o-jogador" mine.txt; then
+            echo "::error title=Canal do jogador::o evento não chegou. Resposta: $(head -c 300 mine.txt)"
+            exit 1
+          fi
+          if grep -q "para-outro" mine.txt; then
+            echo "::error title=Canal do jogador::recebeu o evento de outro jogador."
+            exit 1
+          fi
+          case "$other_code" in
+            401 | 403) echo "::notice title=Canal de outro jogador::recusado (HTTP $other_code): $(head -c 200 other.txt)" ;;
+            *)
+              echo "::error title=Canal de outro jogador::esperado 401 ou 403, recebido $other_code: $(head -c 200 other.txt)"
+              exit 1
+              ;;
+          esac
+          echo "::notice title=Ably::o evento chegou só no canal certo (3 mensagens do plano)."
