@@ -19,6 +19,10 @@ gem "tzinfo-data", platforms: %i[ windows jruby ]
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
+# Engine de duelo: a biblioteca em C++ é chamada via FFI e os dados das cartas vêm
+# de arquivos SQLite (app/services/duel).
+gem "ffi", "~> 1.17"
+gem "sqlite3", "~> 2.10"
 
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 # gem "rack-cors"

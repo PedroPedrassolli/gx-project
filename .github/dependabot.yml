@@ -59,6 +59,16 @@ updates:
     commit-message:
       prefix: "deps(frontend)"
 
+  # Engine, scripts e dados das cartas (submódulos fixados num commit). Atualizar a engine
+  # é sempre um PR à parte, que precisa passar nos testes de contrato: não entra sozinho.
+  - package-ecosystem: gitsubmodule
+    directory: /
+    schedule:
+      interval: monthly
+      timezone: America/Sao_Paulo
+    commit-message:
+      prefix: "deps(engine)"
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
