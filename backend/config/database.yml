@@ -16,8 +16,13 @@ test:
 
 production:
   <<: *default
-  database: gx_production
-  # Supabase pelo pooler em modo transação (porta 6543), que é o indicado para funções
-  # serverless: ele não aceita prepared statements (ADR 0004). A URL vem da DATABASE_URL.
+  # Supabase pelo pooler compartilhado (ADR 0004). Host, porta, usuário e banco ficam nas
+  # variáveis de ambiente da Vercel; a senha, em DATABASE_PASSWORD, só nos painéis. Em modo
+  # transação (porta 6543) o pooler não aceita prepared statements.
+  host: <%= ENV["DATABASE_HOST"] %>
+  port: <%= ENV.fetch("DATABASE_PORT", 6543) %>
+  username: <%= ENV["DATABASE_USER"] %>
+  password: <%= ENV["DATABASE_PASSWORD"] %>
+  database: <%= ENV.fetch("DATABASE_NAME", "postgres") %>
   prepared_statements: false
   sslmode: require
