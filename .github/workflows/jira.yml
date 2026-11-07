@@ -6,7 +6,7 @@
 # A chave vem só do nome da branch ou do começo do título do PR: citar outros
 # cards na descrição ou nos commits não move nada.
 # Faz o papel das regras de automação do Jira, que no plano Free têm só 150 passos/mês.
-# Precisa dos secrets JIRA_EMAIL e JIRA_API_TOKEN; sem eles, só avisa.
+# Precisa dos secrets JIRA_EMAIL e JIRA_API_TOKEN (ou JIRA_API_KEY); sem eles, só avisa.
 name: Jira
 
 on:
@@ -68,7 +68,8 @@ jobs:
         if: steps.card.outputs.key != '' && steps.card.outputs.target != ''
         env:
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          # O token pode estar salvo com qualquer um dos dois nomes.
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN || secrets.JIRA_API_KEY }}
         run: >-
           .github/scripts/jira-transition.sh
           "${{ steps.card.outputs.key }}"
