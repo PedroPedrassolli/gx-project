@@ -1,7 +1,7 @@
 # ADR 0001: engine de duelo
 
 - **Data:** 06/11/2026
-- **Situação:** aceita (GXP-2). Os números da Vercel entram no GXP-3.
+- **Situação:** aceita (GXP-2). Cache e números da Vercel no GXP-3 (07/11/2026).
 
 ## Contexto
 
@@ -45,6 +45,16 @@ partir do Rails.
 8. **Pergunta de cadeia sem opção:** num duelo, a maior parte das respostas é "não encadear"
    numa janela sem carta para ativar. O servidor responde essas sozinho (e registra a
    resposta), em vez de perguntar ao jogador.
+9. **Cache das engines (GXP-3):** cada ação monta uma `Duel::Session` com os dados do banco.
+   A engine viva do duelo fica num cache LRU da instância (`Duel::EngineCache`, 32 duelos,
+   uns 2 MB cada). A chave é o id do duelo mais um hash (SHA-256) das respostas: qualquer
+   diferença com o banco (outra instância avançou o duelo, transação desfeita) faz o duelo
+   ser refeito pelo replay, com o mesmo resultado. A engine sai do cache enquanto está em
+   uso, então duas requisições nunca mexem nela ao mesmo tempo. Duelo que acabou não volta
+   para o cache.
+10. **Resposta recusada:** quando a engine recusa uma resposta (`MSG_RETRY`), o duelo fica
+    na mesma pergunta, igualzinho (conferido em teste: o resto do duelo não muda). A
+    resposta não entra no histórico e a `Duel::Session` avisa com `InvalidResponse`.
 
 ## Números do spike (06/11/2026, local, 2 vCPU)
 
@@ -63,6 +73,39 @@ Dois bots simples jogaram 10 duelos completos com sementes diferentes:
 
 Com 3.000 respostas (bem acima de um duelo real), reconstruir do zero levou 89 ms. A meta
 do escopo é p95 < 300 ms: sobra margem mesmo sem cache.
+
+## Números do GXP-3 (07/11/2026)
+
+O `/up/engine` refaz pela `Duel::Session` o duelo gravado dos bots (403 respostas, 20
+turnos) em dois passos, que são as duas situações de uma ação no servidor:
+
+- **ação fria:** o duelo não está no cache; refaz as 401 primeiras respostas do zero e
+  aplica a 402ª;
+- **ação quente:** a engine ficou no cache; aplica a última resposta, que termina o duelo
+  (inclui liberar a engine, cerca de 1,3 ms). No meio do duelo, uma ação quente leva uns
+  0,3 ms, quase tudo para calcular o hash das respostas.
+
+Localmente (2 vCPU, modo produção, `bin/rails "duel:benchmark[200]"`):
+
+| Tempo (ms) | 1ª chamada | p50 | p95 | máximo |
+| --- | --- | --- | --- | --- |
+| Ação fria | 81,4 | 22,6 | 32,7 | 81,4 |
+| Ação quente | 2,3 | 1,5 | 2,4 | 3,1 |
+
+A 1ª chamada do processo inclui ler do disco as cartas e os scripts do duelo (o catálogo é
+lido sob demanda; ler tudo de uma vez custava cerca de 310 ms na Vercel).
+
+Na Vercel (iad1), antes do cache, com o workflow *Medição da engine* (50 chamadas
+seguidas, cada uma refazendo o duelo inteiro do zero):
+
+| Tempo (ms) | 1ª chamada | p50 | p95 | máximo |
+| --- | --- | --- | --- | --- |
+| Duelo inteiro refeito do zero, no app | 28,2 | 34,1 | 46,1 | 54,1 |
+| Requisição inteira, vista do GitHub | 245,1 | 160,7 | 251,1 | 252,7 |
+
+Mesmo o pior caso (duelo fora do cache) fica bem abaixo da meta de 300 ms no p95: o plano
+B (VM própria) não é necessário. A maior parte da requisição é rede; a região das funções
+(hoje iad1) e a do banco ficam para o ADR de hospedagem (GXP-8).
 
 ## Consequências
 
