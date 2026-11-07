@@ -62,7 +62,7 @@ describe GameData::Export do
       { "nome" => "New Name", "nome_no_jogo" => "Old Name", "passcode" => 12_345_678, "fonte" => 1100 },
       { "nome" => "Game Card", "numero_interno" => 3778, "fonte" => 1200 },
       { "nome" => "Extra Card", "passcode" => 87_654_321, "fonte" => 1300 },
-      { "nome" => "Anime Card", "numero_interno" => 3800, "fonte" => 1500 },
+      { "nome" => "Anime Card", "numero_interno" => 3800, "passcode_oficial" => 99_999_999, "fonte" => 1500 },
       { "nome" => "No Code", "fonte" => 1700 }
     ]
     _(export.files["cartas.yml"]).must_include "CC BY-SA"

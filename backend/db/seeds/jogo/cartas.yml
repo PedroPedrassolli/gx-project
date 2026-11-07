@@ -1,5 +1,6 @@
 # Cartas do jogo de referência, uma por página da Yugipedia.
 # nome_no_jogo: o nome que o jogo usa, quando mudou depois.
+# passcode_oficial: carta do anime que o OCG imprimiu depois; o passcode da impressão.
 # fonte: revisão da página da carta (yugipedia.com/index.php?oldid=N).
 # Gerado por `bin/rails dados:jogo`: não edite à mão.
 # Dados da Yugipedia (CC BY-SA), reorganizados. Veja o README desta pasta.
@@ -304,8 +305,8 @@
 - { nome: "Spell Absorption", passcode: 51481927, fonte: 6017736 }
 - { nome: "Stumbling", passcode: 34646691, fonte: 6017770 }
 - { nome: "Chain Energy", passcode: 79323590, fonte: 6016997 }
-- { nome: "Clear Wall", numero_interno: 3780, fonte: 5411324 }
-- { nome: "Clear World", numero_interno: 3779, fonte: 5417285 }
+- { nome: "Clear Wall", numero_interno: 3780, passcode_oficial: 6089145, fonte: 5411324 }
+- { nome: "Clear World", numero_interno: 3779, passcode_oficial: 33900648, fonte: 5417285 }
 - { nome: "Convulsion of Nature", passcode: 62966332, fonte: 6017018 }
 - { nome: "Different Dimension Gate", passcode: 56460688, fonte: 5444467 }
 - { nome: "Dweller in the Depths", passcode: 46508640, fonte: 5445086 }
@@ -592,7 +593,7 @@
 - { nome: "Zero Sprite", numero_interno: 3766, fonte: 5411297 }
 - { nome: "Bamboo Scrap", passcode: 28062325, fonte: 5441768 }
 - { nome: "Battle Mania", passcode: 31245780, fonte: 5631562 }
-- { nome: "Black Magic Revival Casket", numero_interno: 4822, fonte: 5417246 }
+- { nome: "Black Magic Revival Casket", numero_interno: 4822, passcode_oficial: 9287078, fonte: 5417246 }
 - { nome: "Blasting Fuse", passcode: 99788587, fonte: 5442218 }
 - { nome: "Brutal Potion", passcode: 30155789, fonte: 5766099 }
 - { nome: "Confusion Chaff", passcode: 67630339, fonte: 5443184 }
@@ -1270,10 +1271,10 @@
 - { nome: "United Resistance", passcode: 85936485, fonte: 5456291 }
 - { nome: "X-Saber Anu Piranha", nome_no_jogo: "X-Saber Anapelera", passcode: 23115241, fonte: 5836345 }
 - { nome: "Yamatano Dragon Scroll", passcode: 76704943, fonte: 5973553 }
-- { nome: "Battle Fusion", numero_interno: 3755, fonte: 5408256 }
+- { nome: "Battle Fusion", numero_interno: 3755, passcode_oficial: 43225434, fonte: 5408256 }
 - { nome: "Dandylion", passcode: 15341821, fonte: 5801403 }
 - { nome: "Elemental HERO Neos Alius", nome_no_jogo: "Elemental Hero Neos Alius", passcode: 69884162, fonte: 5934720 }
-- { nome: "Final Fusion", numero_interno: 3756, fonte: 5417236 }
+- { nome: "Final Fusion", numero_interno: 3756, passcode_oficial: 89719143, fonte: 5417236 }
 - { nome: "Honest", passcode: 37742478, fonte: 6013768 }
 - { nome: "Neo-Spacian Grand Mole", passcode: 80344569, fonte: 5941384 }
 - { nome: "Reverse of Neos", passcode: 18302224, fonte: 5452672 }
@@ -1330,7 +1331,7 @@
 - { nome: "Steamroid", passcode: 44729197, fonte: 5725111 }
 - { nome: "Submarineroid", passcode: 99861526, fonte: 5632451 }
 - { nome: "Super Vehicroid Jumbo Drill", passcode: 36256625, fonte: 5454641 }
-- { nome: "Clear Cube", numero_interno: 3774, fonte: 5408246 }
+- { nome: "Clear Cube", numero_interno: 3774, passcode_oficial: 33506331, fonte: 5408246 }
 - { nome: "Gyroid", passcode: 18325492, fonte: 5632972 }
 - { nome: "Supercharge", passcode: 97705809, fonte: 5454649 }
 - { nome: "UFOroid Fighter", passcode: 32752319, fonte: 5456168 }
@@ -1452,7 +1453,7 @@
 - { nome: "Cyberdark Horn", passcode: 41230939, fonte: 5825158 }
 - { nome: "Cyberdark Impact!", passcode: 80033124, fonte: 5825223 }
 - { nome: "Cyberdark Keel", passcode: 3019642, fonte: 5987422 }
-- { nome: "Declaration of Rebirth", numero_interno: 3764, fonte: 5408258 }
+- { nome: "Declaration of Rebirth", numero_interno: 3764, passcode_oficial: 45064756, fonte: 5408258 }
 - { nome: "Exploder Dragon", passcode: 20586572, fonte: 5987936 }
 - { nome: "Jinzo - Lord", passcode: 35803249, fonte: 5448381 }
 - { nome: "Jinzo - Returner", passcode: 9418534, fonte: 5448382 }
@@ -2149,7 +2150,7 @@
 - { nome: "Tri-Blaze Accelerator", passcode: 21420702, fonte: 5455897 }
 - { nome: "Vennominon the King of Poisonous Snakes", passcode: 72677437, fonte: 5456489 }
 - { nome: "Volcanic Rocket", passcode: 76459806, fonte: 5987432 }
-- { nome: "Advanced Dark", numero_interno: 3757, fonte: 5417251 }
+- { nome: "Advanced Dark", numero_interno: 3757, passcode_oficial: 12644061, fonte: 5417251 }
 - { nome: "Blaze Accelerator", passcode: 69537999, fonte: 5987493 }
 - { nome: "Cloudian - Eye of the Typhoon", passcode: 57610714, fonte: 5443073 }
 - { nome: "Cloudian - Sheep Cloud", passcode: 56597272, fonte: 5443077 }
@@ -2295,7 +2296,7 @@
 - { nome: "Alpha The Magnet Warrior", nome_no_jogo: "Alpha the Magnet Warrior", passcode: 99785935, fonte: 6021527 }
 - { nome: "Ancient Jar", passcode: 81492226, fonte: 5441220 }
 - { nome: "Beta The Magnet Warrior", nome_no_jogo: "Beta the Magnet Warrior", passcode: 39256679, fonte: 6021528 }
-- { nome: "Clear Rage Golem", numero_interno: 3776, fonte: 5408251 }
+- { nome: "Clear Rage Golem", numero_interno: 3776, passcode_oficial: 7102732, fonte: 5408251 }
 - { nome: "Gamma The Magnet Warrior", nome_no_jogo: "Gamma the Magnet Warrior", passcode: 11549357, fonte: 6021530 }
 - { nome: "Goggle Golem", passcode: 21155323, fonte: 5827563 }
 - { nome: "Medusa Worm", passcode: 2694423, fonte: 5885251 }
@@ -2401,7 +2402,7 @@
 - { nome: "White-Horned Dragon", passcode: 73891874, fonte: 5779970 }
 - { nome: "A Wingbeat of Giant Dragon", passcode: 28596933, fonte: 6017889 }
 - { nome: "Blue-Eyes Ultimate Dragon", passcode: 23995346, fonte: 6025946 }
-- { nome: "Clear Vice Dragon", numero_interno: 3778, fonte: 5417232 }
+- { nome: "Clear Vice Dragon", numero_interno: 3778, passcode_oficial: 97811903, fonte: 5417232 }
 - { nome: "Divine Dragon Ragnarok", passcode: 62113340, fonte: 5857349 }
 - { nome: "Dragon's Rage", passcode: 54178050, fonte: 6017128 }
 - { nome: "Felgrand Dragon", passcode: 3954901, fonte: 5445853 }
@@ -2472,13 +2473,13 @@
 - { nome: "Bark of Dark Ruler", passcode: 41925941, fonte: 6016914 }
 - { nome: "Brron, Mad King of Dark World", passcode: 6214884, fonte: 5442505 }
 - { nome: "Card of Safe Return", passcode: 57953380, fonte: 6016982 }
-- { nome: "Clear Phantom", numero_interno: 3775, fonte: 5408250 }
-- { nome: "Cyril, Monk of Dark World", numero_interno: 3785, fonte: 5417233 }
+- { nome: "Clear Phantom", numero_interno: 3775, passcode_oficial: 70717628, fonte: 5408250 }
+- { nome: "Cyril, Monk of Dark World", numero_interno: 3785, passcode_oficial: 7623640, fonte: 5417233 }
 - { nome: "Dark Necrofear", passcode: 31829185, fonte: 6017066 }
 - { nome: "Dark World Dealings", passcode: 74117290, fonte: 5935900 }
 - { nome: "Fake Trap", passcode: 3027001, fonte: 6022203 }
 - { nome: "Goblin Elite Attack Force", passcode: 85306040, fonte: 5447085 }
-- { nome: "Lord of Dark Summons", numero_interno: 3765, fonte: 5417239 }
+- { nome: "Lord of Dark Summons", numero_interno: 3765, passcode_oficial: 87917187, fonte: 5417239 }
 - { nome: "Mist Archfiend", passcode: 28601770, fonte: 5890721 }
 - { nome: "Renge, Gatekeeper of Dark World", passcode: 60606759, fonte: 6006288 }
 - { nome: "The Forces of Darkness", passcode: 29826127, fonte: 5455194 }
@@ -2789,7 +2790,7 @@
 - { nome: "The Immortal Bushi", passcode: 52035300, fonte: 5631669 }
 - { nome: "The Six Samurai - Irou", passcode: 27782503, fonte: 5669183 }
 - { nome: "The Six Samurai - Yaichi", passcode: 64398890, fonte: 5669187 }
-- { nome: "Clear Vicious Knight", numero_interno: 3777, fonte: 5408249 }
+- { nome: "Clear Vicious Knight", numero_interno: 3777, passcode_oficial: 70095046, fonte: 5408249 }
 - { nome: "Dark Scorpion - Cliff the Trap Remover", nome_no_jogo: "Cliff the Trap Remover", passcode: 6967870, fonte: 6017073 }
 - { nome: "D.D. Warrior", passcode: 37043180, fonte: 6017047 }
 - { nome: "Exiled Force", passcode: 74131780, fonte: 6017168 }
@@ -3490,11 +3491,11 @@
 - { nome: "Pot of Greed", passcode: 55144522, fonte: 6021834 }
 - { nome: "Raigeki", passcode: 12580477, fonte: 5867687 }
 - { nome: "Monster Reborn", passcode: 83764718, fonte: 6027750 }
-- { nome: "Toon Kingdom", numero_interno: 3789, fonte: 5417244 }
+- { nome: "Toon Kingdom", numero_interno: 3789, passcode_oficial: 43175858, fonte: 5417244 }
 - { nome: "Gemini Summoner", passcode: 19041767, fonte: 5446734 }
 - { nome: "Ocean's Keeper", passcode: 45045866, fonte: 5827420 }
 - { nome: "Thousand-Eyes Jellyfish", passcode: 81434470, fonte: 5881502 }
-- { nome: "Miracle Contact", numero_interno: 3752, fonte: 5417243 }
+- { nome: "Miracle Contact", numero_interno: 3752, passcode_oficial: 35255456, fonte: 5417243 }
 - { nome: "Abyssal Kingshark", passcode: 44223284, fonte: 5659775 }
 - { nome: "Mormolith", passcode: 71717923, fonte: 5629521 }
 - { nome: "Fossil Tusker", passcode: 17706537, fonte: 5446303 }

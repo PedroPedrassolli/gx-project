@@ -130,9 +130,9 @@ module GameData
     def card_pages
       @card_pages ||= begin
         in_game = @client.pages_by_title(titles, section: 0)
-        official = @client.pages_by_title(titles.map { |title| Wikitext.base_title(title) }, section: 0)
+        @official = @client.pages_by_title(titles.map { |title| Wikitext.base_title(title) }, section: 0)
         titles.each_with_object({}) do |title, chosen|
-          card = choose(title, in_game[title], official[Wikitext.base_title(title)])
+          card = choose(title, in_game[title], @official[Wikitext.base_title(title)])
           chosen[title] = card if card
         end
       end
@@ -159,13 +159,21 @@ module GameData
     def cards
       @cards ||= titles.filter_map { |title| [ card_pages[title], title ] if card_pages[title] }
                        .uniq { |card, _title| identity_key(card) }
-                       .map { |card, title| card_entry(card, Wikitext.card_name(title)) }
+                       .map { |card, title| card_entry(card, title) }
     end
 
-    def card_entry(card, name_in_game)
+    def card_entry(card, title)
       name = Wikitext.card_name(card.title)
+      name_in_game = Wikitext.card_name(title)
       { nome: name, nome_no_jogo: (name_in_game unless name_in_game == name), **identity(card),
-        fonte: card.revision }
+        passcode_oficial: printed_version(card, title), fonte: card.revision }
+    end
+
+    # Carta do anime que o OCG imprimiu depois (com outro efeito ou outro nome): o passcode
+    # da impressão, que a cobertura usa quando não há script da versão do jogo.
+    def printed_version(card, title)
+      official = @official[Wikitext.base_title(title)]
+      passcode(official) if official && official.id != card.id && passcode(card).nil?
     end
 
     # Carta oficial tem passcode; versão que só existe no jogo tem o número interno dele.
@@ -199,6 +207,7 @@ module GameData
     def cards_file
       document([ "Cartas do jogo de referência, uma por página da Yugipedia.",
                  "nome_no_jogo: o nome que o jogo usa, quando mudou depois.",
+                 "passcode_oficial: carta do anime que o OCG imprimiu depois; o passcode da impressão.",
                  "fonte: revisão da página da carta (yugipedia.com/index.php?oldid=N)." ],
                cards.map { |card| "- #{flow(card)}" })
     end

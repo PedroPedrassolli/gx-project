@@ -1,7 +1,7 @@
 # ADR 0006: dados do jogo de referência
 
 - **Data:** 07/11/2026
-- **Situação:** aceita (GXP-6).
+- **Situação:** aceita (GXP-6 e GXP-7).
 
 ## Contexto
 
@@ -44,11 +44,23 @@ pela API do MediaWiki.
 7. **Licença dos dados:** os YAML seguem a CC BY-SA da Yugipedia, com crédito no README da
    pasta. O código continua AGPL.
 
+8. **Cobertura na engine (GXP-7).** `bin/rails dados:cobertura` cruza o pool com os scripts
+   e o BabelCDB da engine e com a lista de imagens do YGOPRODeck, e grava só as exceções em
+   `cobertura.yml`, cada uma com o código que a engine usa:
+   - carta oficial com script pré-errata usa a versão antiga (o jogo é de 2008, e o escopo
+     fixa "MR1 + pré-errata");
+   - carta do anime usa o script não oficial, nesta ordem: versão de video game (`(VG)`),
+     mesmo nome, versão do anime (`(Anime)`);
+   - carta do anime sem script usa a carta que o OCG imprimiu depois, se houver (o efeito
+     pode diferir, mas a carta fica jogável);
+   - sem nada disso, a carta sai do pool até alguém escrever o script. Tudo isso é
+     reversível: é só dado.
+
 ## Consequências
 
-- O pool tem 3.499 cartas; a página do jogo diz 3.501. As 2 que faltam e as 7 cartas do
-  anime sem passcode nem número interno ficam para o GXP-7, que cruza o pool com os scripts
-  e as imagens.
+- O pool tem 3.499 cartas; a página do jogo diz 3.501. Das 84 cartas do anime, 61 têm
+  script, 8 usam a impressão posterior e 15 saem do pool (lista no `cobertura.yml`, para o
+  Pedro revisar quando quiser).
 - Regra de nível e chances por raridade não estão na Yugipedia: valem a regra provisória e
   os pesos do admin que o escopo já prevê, e as duas perguntas vão para o Anexo C.
 - O texto dos desafios fica em inglês, como na fonte. A versão em português e a regra que o
