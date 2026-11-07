@@ -67,6 +67,12 @@
       }
     },
     {
+      "source": "/up/engine",
+      "destination": {
+        "service": "backend"
+      }
+    },
+    {
       "source": "/(.*)",
       "destination": {
         "service": "frontend"

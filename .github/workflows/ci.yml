@@ -138,13 +138,16 @@ jobs:
           curl -fsS http://localhost:8080/up > /dev/null
           # Sem banco aqui, o /up/db tem que responder 503 (e não quebrar).
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/up/db)" = 503
+          # A engine de duelo roda dentro do container (biblioteca nativa via FFI).
+          curl -fsS http://localhost:8080/up/engine | tee engine.json | grep -q '"ok":true'
+          echo "::notice title=Engine no container::$(cat engine.json)"
 
       # Em caso de erro, mostra o código de cada rota e o fim do log como anotações,
       # que aparecem no resumo da execução sem precisar abrir o log inteiro.
       - name: Diagnóstico (se falhar)
         if: failure()
         run: |
-          for path in /up /up/db; do
+          for path in /up /up/db /up/engine; do
             echo "::error title=Rota $path::HTTP $(curl -s -o /dev/null -w '%{http_code}' "http://localhost:8080$path")"
           done
           docker logs backend 2>&1 | tail -n 15 | while IFS= read -r line; do
