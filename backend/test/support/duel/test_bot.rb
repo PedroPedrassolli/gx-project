@@ -5,7 +5,9 @@ module Duel
   class TestBot
     LIMIT_PER_TURN = 3
 
-    def initialize
+    # destiny: a resposta à pergunta do Destiny Draw.
+    def initialize(destiny: true)
+      @destiny = destiny
       reset_turn
     end
 
@@ -72,7 +74,12 @@ module Duel
     end
 
     def select_effectyn(_prompt) = int(1)
-    def select_yesno(_prompt) = int(1)
+    def select_yesno(prompt)
+      return int(@destiny ? 1 : 0) if prompt[:description] == Engine::DESTINY_DRAW_QUESTION
+
+      int(1)
+    end
+
     def select_option(_prompt) = int(0)
     def rock_paper_scissors(_prompt) = int(1)
     def announce_number(_prompt) = int(0)

@@ -54,6 +54,8 @@ mudar o projeto sem quebrar nada.
   BabelCDB é sempre um PR à parte, com os testes de contrato passando (ADR 0001).
 - **A engine não embaralha o deck no começo**: a partida embaralha e guarda a ordem. Sem
   isso, o replay não sai igual.
+- **`aux.Stringid(código, n)` é `código << 20 | n`** (utility.lua): é o número que chega na
+  descrição das perguntas, como a do Destiny Draw.
 - **Marcador de pular a CI** (colchetes + `skip ci`) em **qualquer** mensagem de commit pula a
   CI de push e de pull request. Nunca cite o marcador em commits nem no corpo do PR.
 - **Merge pelo `GITHUB_TOKEN` não dispara workflows**: por isso o `auto-merge.yml` move o

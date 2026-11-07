@@ -10,6 +10,7 @@ module Duel
     RETRY = 1
     WIN = 5
     NEW_TURN = 40
+    DRAW = 90
 
     # As perguntas que a engine faz aos jogadores (lista fechada pelo header fixado).
     PROMPTS = {
@@ -50,6 +51,19 @@ module Duel
     def win(message)
       reader = ByteReader.new(message.payload)
       { player: reader.u8, reason: reader.u8 }
+    end
+
+    # Compra: o lado e os códigos das cartas. A engine manda os códigos sempre; esconder a
+    # mão do oponente é trabalho do servidor.
+    def draw(message)
+      reader = ByteReader.new(message.payload)
+      player = reader.u8
+      cards = Array.new(reader.u32) do
+        code = reader.u32
+        reader.u32 # posição
+        code
+      end
+      { player:, cards: }
     end
 
     # Campos de cada pergunta, na ordem em que a engine escreve (depois do jogador).

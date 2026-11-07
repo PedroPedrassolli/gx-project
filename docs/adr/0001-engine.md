@@ -1,7 +1,8 @@
 # ADR 0001: engine de duelo
 
 - **Data:** 06/11/2026
-- **Situação:** aceita (GXP-2). Cache e números da Vercel no GXP-3, em 07/11/2026.
+- **Situação:** aceita (GXP-2). Cache e números da Vercel no GXP-3; Tag e Destiny Draw no
+  GXP-4 (07/11/2026).
 
 ## Contexto
 
@@ -55,6 +56,29 @@ partir do Rails.
 10. **Resposta recusada:** quando a engine recusa uma resposta (`MSG_RETRY`), o duelo fica
     na mesma pergunta, igualzinho (conferido em teste: o resto do duelo não muda). A
     resposta não entra no histórico e a `Duel::Session` avisa com `InvalidResponse`.
+11. **Tag (GXP-4):** a engine tem times nativos. Os decks vão na **ordem dos turnos**:
+    `[A, B]` no 1x1 e `[A1, B1, A2, B2]` no Tag (posições pares são do time 0, que começa).
+    A engine troca o duelista do lado no começo de cada turno, menos no turno 1; por isso o
+    primeiro a jogar pelo time 1 entra como duelista 1 (`Duel::Engine#duelist_index`). Campo,
+    cemitério, banidas e PV são do lado (o PV inicial é o `starting_lp`); mão, deck e Extra
+    Deck são de cada duelista. A mão inicial de quem não está na vez é comprada sem
+    mensagem: o servidor sabe quais são (as 5 do topo do deck dele) e a `MSG_TAG_SWAP`
+    mostra a mão na troca. Isso importa para a visão de cada jogador (decisão 7 do escopo:
+    o parceiro vê a mão do companheiro).
+12. **Destiny Draw (GXP-4):** script de regra nosso, `app/services/duel/destiny_draw.lua`
+    (baseado no `c511004000.lua` do Project Ignis), carregado quando o duelo tem
+    `destiny_draw: true` (liga ou desliga por duelo, nunca no meio). As condições vêm da
+    Yugipedia ("Destiny Draw (rule)"): PV abaixo de 4000, o oponente controla monstro e
+    nenhum monstro do lado tem ATK maior que o do mais forte do oponente; uma carta Destiny
+    do Main Deck, sorteada, vai para o topo; uma vez por duelo para cada lado, inclusive no
+    Tag. A fonte não diz o momento: aqui a pergunta vem no começo da Fase de Compra
+    (`EVENT_PREDRAW`), antes de comprar, e recusar não gasta. As cartas Destiny são os
+    códigos que cada duelista marcou (`destiny:` no deck); no Tag, o duelista da vez sai da
+    contagem de turnos do lado. A pergunta é um `SELECT_YESNO` com a descrição
+    `aux.Stringid(511004000, 0)` (`Duel::Engine::DESTINY_DRAW_QUESTION`); a resposta fica no
+    histórico e o sorteio usa o gerador da engine, então o replay sai igual (conferido em
+    teste). Falta o Pedro confirmar (Anexo C): o momento, se vem ligado por padrão e o PV da
+    dupla no Tag (hoje 8000, configurável).
 
 ## Números do spike (06/11/2026, local, 2 vCPU)
 
