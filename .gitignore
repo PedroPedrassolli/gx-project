@@ -1,0 +1,20 @@
+# Segredos e configurações locais: nunca no repositório.
+.env*
+backend/config/master.key
+backend/config/credentials/*.key
+
+# Gerados pelo backend
+backend/log/*
+!backend/log/.keep
+backend/tmp/*
+!backend/tmp/.keep
+backend/coverage/
+backend/vendor/bundle/
+
+# Gerados pelo frontend
+frontend/node_modules/
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
+
+.DS_Store

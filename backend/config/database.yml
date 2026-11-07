@@ -1,0 +1,19 @@
+# Banco: Postgres. Quando existe a variável DATABASE_URL (produção na Vercel,
+# apontando para o Supabase, e a CI), o Rails usa ela no lugar destes valores.
+# No seu computador, sem DATABASE_URL, vale o socket local do Postgres.
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: gx_development
+
+test:
+  <<: *default
+  database: gx_test
+
+production:
+  <<: *default
+  database: gx_production

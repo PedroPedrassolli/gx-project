@@ -1,0 +1,40 @@
+# Imagem do backend (Rails em modo API) usada pela Vercel.
+# A Vercel detecta este arquivo (vercel.json, serviço "backend") e roda o container
+# como uma Vercel Function.
+#
+# Duas etapas: a primeira compila as gems (precisa de compilador);
+# a segunda copia só o resultado, deixando a imagem final menor.
+
+# Mantenha igual ao backend/.ruby-version (a CI confere).
+ARG RUBY_VERSION=3.3
+FROM ruby:${RUBY_VERSION}-slim AS build
+ENV BUNDLE_WITHOUT="development:test"
+RUN apt-get update -qq \
+  && apt-get install -y --no-install-recommends build-essential libyaml-dev \
+  && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY Gemfile Gemfile.lock ./
+# Depois de instalar, apaga o que só serviu para compilar (cache de downloads e
+# arquivos .o). Cada deploy guarda uma cópia da imagem na Vercel (Function
+# Storage), então cada MB a menos conta. Não apague as pastas "ext" das gems:
+# algumas (como a json) carregam arquivos de lá.
+RUN bundle install --jobs 4 \
+  && rm -rf /usr/local/bundle/cache \
+  && find /usr/local/bundle -name "*.o" -delete
+COPY . .
+# Cache do Bootsnap pronto na imagem: o Rails sobe mais rápido no início frio.
+RUN bundle exec bootsnap precompile --gemfile app/ lib/
+
+FROM ruby:${RUBY_VERSION}-slim
+ENV RAILS_ENV=production \
+    BUNDLE_WITHOUT="development:test" \
+    RAILS_LOG_LEVEL=info \
+    BOOTSNAP_READONLY=true \
+    PORT=80
+WORKDIR /app
+COPY --from=build /usr/local/bundle /usr/local/bundle
+COPY --from=build /app /app
+
+# A Vercel encaminha as requisições para a porta 80 por padrão.
+EXPOSE 80
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]

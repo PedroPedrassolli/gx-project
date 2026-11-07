@@ -1,0 +1,184 @@
+# Integração contínua: testes, lint e verificações de segurança a cada push na main
+# e a cada pull request. Se algum passo falhar, o commit fica com um X vermelho e o
+# auto-merge.yml não mescla o PR.
+#
+# Repositório público: os minutos do GitHub Actions não têm limite. Mesmo assim, todo
+# job tem timeout e um push novo cancela a execução anterior da mesma branch.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Por padrão os jobs só leem o código.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Confere os próprios workflows (sintaxe, expressões ${{ }}, e os scripts
+  # bash com o shellcheck). Pega erros que só apareceriam quando o workflow rodasse.
+  workflows:
+    name: Workflows (actionlint)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: actionlint
+        env:
+          VERSION: 1.7.7
+        run: |
+          curl -sSfL "https://github.com/rhysd/actionlint/releases/download/v$VERSION/actionlint_${VERSION}_linux_amd64.tar.gz" |
+            tar xz actionlint
+          # Cada problema vira uma anotação no PR, apontando o arquivo e a linha.
+          # (As aspas simples são de propósito: o $err é do template do actionlint.)
+          # shellcheck disable=SC2016
+          format='{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{$err.Message}}
+          {{end}}'
+          if ! ./actionlint -format "$format" 2> actionlint.log; then
+            [ -s actionlint.log ] && echo "::error title=actionlint::$(tr '\n' ' ' < actionlint.log)"
+            exit 1
+          fi
+
+  backend:
+    name: Backend (Rails)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/gx_test
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
+        with:
+          working-directory: backend
+          bundler-cache: true
+
+      - name: Versão do Ruby igual no Docker e no .ruby-version
+        run: grep -q "ARG RUBY_VERSION=$(cat .ruby-version)$" Dockerfile.vercel
+
+      - name: Banco de teste
+        run: bin/rails db:prepare
+
+      - name: RuboCop
+        run: bin/rubocop --format github
+
+      - name: Brakeman
+        run: bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error
+
+      - name: bundler-audit
+        run: bin/bundler-audit
+
+      - name: Testes (cobertura mínima de 100%)
+        run: bin/rails test
+
+  # Constrói a imagem que vai para a Vercel e sobe o container, para pegar antes do
+  # deploy o que só quebraria lá (gem nativa, arquivo fora da imagem, boot do Rails).
+  container:
+    name: Container (Docker)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Construir a imagem
+        run: docker build -f Dockerfile.vercel -t gx-backend .
+
+      - name: Subir o container e testar as rotas
+        run: |
+          # Na Vercel o SECRET_KEY_BASE vem das variáveis do projeto. Aqui basta uma
+          # chave descartável, gerada a cada execução.
+          docker run -d --name backend -p 8080:80 \
+            -e SECRET_KEY_BASE="$(openssl rand -hex 64)" gx-backend
+          # Espera até 30 s o Puma subir.
+          for _ in $(seq 1 30); do
+            curl -fs http://localhost:8080/up > /dev/null && break
+            sleep 1
+          done
+          curl -fsS http://localhost:8080/up > /dev/null
+          # Sem banco aqui, o /up/db tem que responder 503 (e não quebrar).
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/up/db)" = 503
+
+      # Em caso de erro, mostra o código de cada rota e o fim do log como anotações,
+      # que aparecem no resumo da execução sem precisar abrir o log inteiro.
+      - name: Diagnóstico (se falhar)
+        if: failure()
+        run: |
+          for path in /up /up/db; do
+            echo "::error title=Rota $path::HTTP $(curl -s -o /dev/null -w '%{http_code}' "http://localhost:8080$path")"
+          done
+          docker logs backend 2>&1 | tail -n 15 | while IFS= read -r line; do
+            echo "::error title=Log do container::$line"
+          done
+
+      # Tamanho da imagem como anotação: cada deploy guarda uma cópia na Vercel.
+      - name: Tamanho da imagem
+        run: |
+          size=$(docker image inspect gx-backend --format '{{.Size}}')
+          echo "::notice title=Imagem do backend::$((size / 1024 / 1024)) MB"
+
+  frontend:
+    name: Frontend (React)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Prettier
+        run: npm run format:check
+
+      - name: Tipos (TypeScript)
+        run: npm run typecheck
+
+      - name: Testes unitários
+        run: npm test
+
+      - name: npm audit
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Playwright + axe
+        run: |
+          npx playwright install chromium
+          npm run test:e2e
+
+      - name: Relatório do Playwright (se falhar)
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+          retention-days: 7

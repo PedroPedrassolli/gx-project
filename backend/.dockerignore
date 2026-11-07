@@ -1,0 +1,6 @@
+# Fora da imagem do container: só serve para desenvolver e testar.
+coverage
+log/*
+tmp/*
+test
+.rubocop.yml

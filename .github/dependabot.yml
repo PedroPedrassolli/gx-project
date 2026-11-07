@@ -1,0 +1,75 @@
+# O Dependabot abre PRs semanais (segundas, 6h) atualizando as gems do backend, os
+# pacotes do front e as Actions dos workflows.
+#
+# As Actions estão fixadas pelo commit (SHA) com a versão no comentário
+# ("@3d3c42e... # v7.0.1"); o Dependabot atualiza os dois juntos.
+#
+# cooldown: espera alguns dias antes de sugerir uma versão recém-lançada.
+# Só o grupo "actions" entra sozinho (auto-merge.yml); o resto precisa de revisão.
+version: 2
+
+updates:
+  - package-ecosystem: bundler
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 5
+    cooldown:
+      semver-major-days: 14
+      semver-minor-days: 5
+      semver-patch-days: 3
+    groups:
+      rails:
+        patterns: ["railties", "action*", "active*"]
+      patch:
+        update-types: [patch]
+      minor:
+        update-types: [minor]
+    commit-message:
+      prefix: "deps(backend)"
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 5
+    cooldown:
+      semver-major-days: 14
+      semver-minor-days: 5
+      semver-patch-days: 3
+    groups:
+      vite:
+        patterns: ["vite", "@vitejs/*"]
+      eslint:
+        patterns: ["eslint", "@eslint/*", "eslint-plugin-*", "typescript-eslint", "globals"]
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
+      playwright:
+        patterns: ["@playwright/*", "@axe-core/*"]
+      patch:
+        update-types: [patch]
+      minor:
+        update-types: [minor]
+    commit-message:
+      prefix: "deps(frontend)"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    cooldown:
+      default-days: 3
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "deps(ci)"
