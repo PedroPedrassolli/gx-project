@@ -122,9 +122,10 @@ gasta perto do dobro.
 - **Na Vercel, passar do limite derruba a API por até 30 dias.** O aviso dos 80% no resumo
   semanal é o que dá tempo de reagir: otimizar, desligar o que for opcional (imagens,
   polling) ou pedir ao Pedro uma decisão sobre plano.
-- **Vistas do GitHub, as medições ficam mais lentas** depois da mudança para `gru1` (o
-  runner está nos Estados Unidos). Os tempos da engine não mudam, porque são medidos dentro
-  do app.
+- **Vistas do GitHub, as medições ficam mais lentas** em `gru1`, porque o runner está nos
+  Estados Unidos: o `/up` passou a p50 283 ms. Dentro do app, a engine em `gru1` deu ação
+  fria p50 34,1 ms e p95 70,5 ms, e quente p50 2,3 ms e p95 5,9 ms (*Medição da engine*, 50
+  chamadas, 07/11/2026). O p95 da fria subiu de 42 para 70 ms, ainda longe dos 300 ms.
 - **Para criar o Supabase (F2):** o Pedro cria o projeto em `sa-east-1` e cola a URL do
   pooler em modo transação em `DATABASE_URL` na Vercel. Para o backup, cola a URL do modo
   sessão e o token da loja do Blob nos secrets do GitHub.
