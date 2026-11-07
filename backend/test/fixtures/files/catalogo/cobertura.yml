@@ -1,0 +1,6 @@
+resumo: {}
+excecoes:
+  - { nome: "Night Assailant", passcode: 100, codigo: 110, motivo: "pre_errata", imagem: true }
+  - { nome: "Clear Wall", numero_interno: 3, codigo: 900, motivo: "anime", imagem: false }
+  - { nome: "Labyrinth", numero_interno: 4, motivo: "tirar_do_pool", imagem: false }
+  - { nome: "Ancient Gear", codigo: 500, motivo: "usar_oficial", imagem: true }
