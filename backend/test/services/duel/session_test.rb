@@ -15,6 +15,15 @@ class Duel::SessionTest < ActiveSupport::TestCase
     session(responses.first(step), id: "referência", cache: Duel::EngineCache.new(1)).respond(responses[step])
   end
 
+  describe ".new" do
+    it "repassa as regras do duelo (PV inicial, Destiny Draw) para a engine" do
+      rules = { starting_lp: 3000, destiny_draw: true }
+      engine = Duel::Engine.new(seed: recording[:seed], decks: recording[:decks], **rules)
+      Duel::Engine.expects(:new).with(seed: recording[:seed], decks: recording[:decks], **rules).returns(engine)
+      Duel::Session.new(id: "duelo-1", seed: recording[:seed], decks: recording[:decks], cache:, **rules).start
+    end
+  end
+
   describe "#start" do
     it "devolve as mensagens até a primeira pergunta e guarda a engine" do
       messages = session([]).start

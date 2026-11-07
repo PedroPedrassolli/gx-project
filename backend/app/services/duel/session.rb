@@ -13,12 +13,15 @@ module Duel
 
     attr_reader :responses
 
-    def initialize(id:, seed:, decks:, responses: [], cache: CACHE)
+    # rules: as regras do duelo que vão para a engine (starting_lp:, destiny_draw:). Como a
+    # semente e os decks, não mudam durante o duelo.
+    def initialize(id:, seed:, decks:, responses: [], cache: CACHE, **rules)
       @id = id
       @seed = seed
       @decks = decks
       @responses = responses.dup
       @cache = cache
+      @rules = rules
       @finished = false
     end
 
@@ -26,7 +29,7 @@ module Duel
     def start
       raise ArgumentError, "o duelo já começou" if @responses.any?
 
-      engine = Engine.new(seed: @seed, decks: @decks).start
+      engine = Engine.new(seed: @seed, decks: @decks, **@rules).start
       keep(engine, engine.advance)
     end
 
@@ -59,7 +62,7 @@ module Duel
     end
 
     def rebuild
-      engine = Engine.new(seed: @seed, decks: @decks).start
+      engine = Engine.new(seed: @seed, decks: @decks, **@rules).start
       @responses.each do |response|
         engine.advance
         engine.respond(response)

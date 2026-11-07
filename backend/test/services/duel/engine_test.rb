@@ -47,6 +47,12 @@ class Duel::EngineTest < ActiveSupport::TestCase
     end
   end
 
+  describe ".new" do
+    it "aceita 2 decks (1x1) ou 4 (Tag), na ordem dos turnos" do
+      assert_raises(ArgumentError) { Duel::Engine.new(seed:, decks: decks + [ { main: DECK } ]) }
+    end
+  end
+
   describe "quando algo falha ao começar" do
     it "avisa se a engine recusa o duelo" do
       Duel::Native.stubs(:create_duel).returns(3)

@@ -2,9 +2,13 @@ module Duel
   # Um duelo vivo dentro da engine. Quem usa monta com semente e decks, chama #start e
   # depois alterna #advance (roda até a próxima pergunta) e #respond. No fim, #close.
   #
-  # A engine não embaralha os decks no começo: a ordem das listas é a ordem do deck. Quem
-  # cria a partida embaralha e guarda essa ordem, junto com a semente e as respostas
-  # (é isso que permite refazer o duelo igualzinho no replay).
+  # Os decks vêm na ordem dos turnos: [A, B] no 1x1 e [A1, B1, A2, B2] no Tag (as posições
+  # pares são do time 0, que começa). Cada deck é { main:, extra:, destiny: }, e destiny
+  # lista os códigos que o duelista marcou como Destiny.
+  #
+  # A engine não embaralha os decks no começo: a ordem das listas é a ordem do deck (a
+  # última carta é a do topo). Quem cria a partida embaralha e guarda essa ordem, junto
+  # com a semente e as respostas (é isso que permite refazer o duelo igualzinho no replay).
   class Engine
     class Error < StandardError; end
 
@@ -16,6 +20,12 @@ module Duel
     POS_FACEDOWN_DEFENSE = 0x8
     LOG_ERROR = 0 # OCG_LOG_TYPE_ERROR
     MAX_ERRORS = 20
+
+    # Regra do Destiny Draw (destiny_draw.lua). O limite de PV vem da Yugipedia,
+    # "Destiny Draw (rule)"; a pergunta é a descrição do SELECT_YESNO (aux.Stringid).
+    DESTINY_DRAW_SCRIPT = File.binread(File.join(__dir__, "destiny_draw.lua")).freeze
+    DESTINY_DRAW_LP = 4000
+    DESTINY_DRAW_QUESTION = 511_004_000 << 20
 
     class << self
       # Carregados uma vez por processo, no primeiro duelo.
@@ -50,11 +60,15 @@ module Duel
 
     attr_reader :status, :errors
 
-    def initialize(seed:, decks:, flags: MODE_MR1, starting_lp: 8000)
+    # starting_lp é o PV de cada lado; no Tag, o PV é da dupla.
+    def initialize(seed:, decks:, flags: MODE_MR1, starting_lp: 8000, destiny_draw: false)
+      raise ArgumentError, "são 2 decks (1x1) ou 4 (Tag), não #{decks.size}" unless [ 2, 4 ].include?(decks.size)
+
       @seed = seed
       @decks = decks
       @flags = flags
       @starting_lp = starting_lp
+      @destiny_draw = destiny_draw
       @errors = []
     end
 
@@ -69,6 +83,7 @@ module Duel
         # A engine só carrega sozinha o script de cada carta; estes dois são a base de todos.
         %w[constant.lua utility.lua].each { |name| load_base_script(name) }
         add_cards
+        load_destiny_draw if @destiny_draw
         Native.start_duel(@handle)
       end
       self
@@ -134,22 +149,49 @@ module Duel
     end
 
     def load_base_script(name)
-      content = Engine.scripts.read(name) or raise Error, "script #{name} não encontrado"
+      load_script(Engine.scripts.read(name) || raise(Error, "script #{name} não encontrado"), name)
+    end
+
+    def load_script(content, name)
       loaded = Native.load_script(@handle, content, content.bytesize, name)
       raise Error, "a engine não carregou #{name}" unless loaded == 1
     end
 
+    # A regra e, depois, a chamada com os dados do duelo: o limite de PV e as cartas Destiny
+    # de cada duelista, por lado, na ordem dos turnos. Integer() garante que só entram
+    # números no código Lua.
+    def load_destiny_draw
+      load_script(DESTINY_DRAW_SCRIPT, "destiny_draw.lua")
+      sides = [ 0, 1 ].map do |team|
+        lists = team_decks(team).map { |deck| "{#{deck.fetch(:destiny, []).map { |code| Integer(code) }.join(",")}}" }
+        "[#{team}]={#{lists.join(",")}}"
+      end
+      load_script("GXDestinyDraw.setup(#{DESTINY_DRAW_LP}, {#{sides.join(",")}})", "destiny_draw_setup.lua")
+    end
+
+    def team_decks(team) = @decks.select.with_index { |_deck, index| index % 2 == team }
+
     def add_cards
-      @decks.each_with_index do |deck, team|
-        deck.fetch(:main).each { |code| new_card(team, code, LOCATION_DECK) }
-        deck.fetch(:extra, []).each { |code| new_card(team, code, LOCATION_EXTRA) }
+      @decks.each_with_index do |deck, index|
+        team = index % 2
+        duelist = duelist_index(team, index / 2)
+        deck.fetch(:main).each { |code| new_card(team, duelist, code, LOCATION_DECK) }
+        deck.fetch(:extra, []).each { |code| new_card(team, duelist, code, LOCATION_EXTRA) }
       end
     end
 
-    def new_card(team, code, location)
+    # No Tag, a engine troca o duelista do lado no começo de cada turno, menos no turno 1.
+    # O time 0 começa, então quem joga primeiro por ele é o duelista 0. O time 1 troca antes
+    # do primeiro turno dele, então o primeiro a jogar precisa ser o duelista 1. Assim a
+    # ordem fica A1 → B1 → A2 → B2. No 1x1 é sempre o duelista 0.
+    def duelist_index(team, position)
+      team.zero? ? position : (position + 1) % (@decks.size / 2)
+    end
+
+    def new_card(team, duelist, code, location)
       info = Native::NewCardInfo.new
       info[:team] = team
-      info[:duelist] = 0
+      info[:duelist] = duelist
       info[:code] = code
       info[:con] = team
       info[:loc] = location
