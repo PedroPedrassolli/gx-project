@@ -1,0 +1,64 @@
+# Missões do GX Project. Online não existe minigame, torneio, história nem download: as
+# missões liberam o que no jogo de referência saía assim (respostas do Pedro ao Anexo C,
+# 07/11/2026). Cada pacote ficou com o torneio que o próprio jogo dava como alternativa.
+# Os números são o padrão; o admin pode mudar (escopo, 3.5).
+#   objetivo.vitorias: vitórias somadas desde o cadastro (fila ou sala);
+#   objetivo.vitorias_no_mesmo_domingo / vitorias_na_semana: no fuso de São Paulo;
+#   objetivo.vitorias_seguidas: sem perder no meio.
+# Escrito à mão; os nomes de pacote e de carta são os de backend/db/seeds/jogo.
+
+- id: torneio_slifer_red
+  nome: "Torneio Slifer Red"
+  objetivo: { vitorias: 10 }
+  libera_pacotes: ["Test of Luck", "Power of the Heroes"]
+
+- id: torneio_ra_yellow
+  nome: "Torneio Ra Yellow"
+  objetivo: { vitorias: 30 }
+  libera_pacotes: ["Dramatic a la carte", "Reserve Magic"]
+
+- id: torneio_obelisk_blue
+  nome: "Torneio Obelisk Blue"
+  objetivo: { vitorias: 60 }
+  libera_pacotes: ["Banner of Courage", "Sadie's Special Pack"]
+
+- id: campeonato_de_domingo
+  nome: "Campeonato de domingo"
+  objetivo: { vitorias_no_mesmo_domingo: 5 }
+  libera_pacotes: ["Spice Up Your Deck", "Double Triple Destiny Draw"]
+
+# No jogo, uma carta nova saía para download a cada semana. Aqui, quem vence 5 duelos na
+# semana ganha a carta da vez, na ordem em que o jogo lançou.
+- id: carta_da_semana
+  nome: "Carta da semana"
+  objetivo: { vitorias_na_semana: 5 }
+  repete: semanal
+  premio:
+    carta_da_vez:
+      - "Toon Kingdom"
+      - "Gemini Summoner"
+      - "Ocean's Keeper"
+      - "Thousand-Eyes Jellyfish"
+      - "Miracle Contact"
+      - "Abyssal Kingshark"
+      - "Mormolith"
+      - "Fossil Tusker"
+      - "Phantom Dragonray Bronto"
+      - "Il Blud"
+      - "Blazewing Butterfly"
+      - "Elemental HERO Air Neos"
+      - "Cranium Fish"
+
+# No jogo, cada vez que o jogador chegava ao andar 100 do minigame, ganhava uma destas
+# cartas, sorteada. Aqui, cada sequência de 10 vitórias vale um sorteio.
+- id: visitante_do_abismo
+  nome: "Visitante do abismo"
+  objetivo: { vitorias_seguidas: 10 }
+  repete: sempre
+  premio:
+    carta_sorteada_entre:
+      - "Illusion Gate"
+      - "Sabatiel - The Philosopher's Stone"
+      - "Raigeki"
+      - "Pot of Greed"
+      - "Monster Reborn"

@@ -1,7 +1,7 @@
 # ADR 0005: economia (DP, nível, pacotes e anti-farm)
 
 - **Data:** 07/11/2026
-- **Situação:** aceita (GXP-8). O código entra na F4; os valores do jogo vêm do GXP-6.
+- **Situação:** aceita (GXP-8; nível, chances e missões no GXP-22). O código entra na F4; os valores do jogo vêm do GXP-6.
 
 ## Contexto
 
@@ -42,19 +42,27 @@ farm de DP entre contas combinadas.
      dias.
    O "dia" é o de São Paulo (`America/Sao_Paulo`). O resultado traz o motivo de cada corte,
    e a tela mostra.
-6. **Nível:** `LevelService` usa a regra do jogo de referência, se o GXP-6 achar. Se não
-   achar, vale a provisória do escopo: sobe a cada X DP ganhos, com X no admin.
-   `dp_ganho_total` soma só os créditos e é atualizado na mesma transação do lançamento.
+6. **Nível:** a fonte não traz a regra do jogo, e o Pedro pediu uma inspirada nele (Anexo
+   C, 07/11/2026). `LevelService` sobe 1 nível a cada 1.000 DP ganhos, do 1 ao 99, com o
+   valor no admin. Assim os pacotes que o jogo libera entre os níveis 21 e 50 chegam aos
+   poucos. `dp_ganho_total` soma só os créditos e é atualizado na mesma transação do
+   lançamento; cada subida paga o bônus de nível do Anexo A.
 7. **Sorteio só no servidor, com semente gravada.** `Shop::PackOpener` gera a semente com
    `SecureRandom`, sorteia com `Random.new(semente)` e grava a semente e as cartas em
-   `pack_openings`. A mesma semente dá as mesmas cartas, o que permite testar e auditar. As
-   chances por raridade são as do jogo, se a pesquisa achar; senão, pesos do admin com
-   padrão documentado (escopo, 3.4). Comprar 1 ou 10 pacotes é uma transação só, com uma
-   chave.
+   `pack_openings`. A mesma semente dá as mesmas cartas, o que permite testar e auditar. A
+   fonte não traz as chances do jogo, então cada carta do pacote sorteia primeiro a
+   raridade, com os pesos comum 75, rara 18, super rara 5 e ultra rara 2 (padrão, no
+   admin), só entre as raridades que o pacote tem, e depois uma carta dessa raridade.
+   Comprar 1 ou 10 pacotes é uma transação só, com uma chave.
 8. **Conversor** (`Shop::Converter`): uma transação, com o sorteio do mesmo jeito (semente
    gravada). Nunca consome a cópia que um deck usa sem cópia sobrando (escopo, 3.4).
-9. **Nenhum valor inventado.** Preços, bônus, chances e grupos do conversor vêm dos dados
-   do GXP-6, com fonte; o que não tiver fonte vai para o Anexo C.
+9. **Missões** (`backend/db/seeds/missoes.yml`, Anexo C): liberam os 8 pacotes que no
+   jogo dependiam de minigame, torneio ou história e as 18 cartas que só saíam por
+   download ou minigame. Cada missão é avaliada no fim do duelo, como os desafios, e os
+   números ficam no admin.
+10. **Nenhum valor inventado.** Preços, bônus e grupos do conversor vêm dos dados do GXP-6,
+    com fonte. O que é decisão do projeto (chances, regra de nível, missões) está marcado
+    como tal e fica no admin.
 
 ## Consequências
 

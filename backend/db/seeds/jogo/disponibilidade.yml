@@ -3,7 +3,8 @@
 #   original: resumo da regra do jogo de referência;
 #   regra: o que vale aqui (escopo, 3.4). Online não existe história, parceiro do jogo,
 #   minigame nem torneio: quando a regra original tem uma alternativa por nível, % ou
-#   desafios, fica a alternativa. Quando não tem, a regra fica "pendente" (Anexo C).
+#   desafios, fica a alternativa. Quando não tem, o pacote sai por uma missão do GX
+#   Project (backend/db/seeds/missoes.yml), como o Pedro decidiu no Anexo C.
 # Tipos de regra:
 #   sempre                  desde o início
 #   dia                     só no dia da semana; a partir de nivel_libera, todo dia
@@ -13,6 +14,7 @@
 #   codigo                  digitar o código na loja
 #   todos_os_desafios       concluir todos os desafios
 #   qualquer                vale qualquer uma das regras da lista
+#   missao                  concluir a missão indicada
 # Dados da Yugipedia (CC BY-SA), reorganizados. Veja o README desta pasta.
 
 "Beginner Monsters": { regra: sempre }
@@ -66,11 +68,11 @@
 "Ms. Dorothy's Special Pack": { regra: todos_os_desafios, original: "todos os desafios, ou terminar o jogo com a Dorothy; só com ela no balcão" }
 "Midday Constellation": { regra: codigo, codigo: "↑ ↑ ↓ ↓ ← → ← → × ○", original: "código Konami digitado na loja" }
 
-"Test of Luck": { regra: pendente, original: "50.000 pontos no minigame Destiny Number 21, ou vencer o torneio Slifer Red" }
-"Dramatic a la carte": { regra: pendente, original: "100.000 pontos no minigame Survival Dodge Ball, ou vencer o torneio Ra Yellow" }
-"Banner of Courage": { regra: pendente, original: "terminar o minigame Can You Make 400 Friends?, ou vencer o torneio Obelisk Blue" }
-"Reserve Magic": { regra: pendente, original: "50.000 pontos no minigame Stones of Strategy, ou vencer o torneio Ra Yellow" }
-"Spice Up Your Deck": { regra: pendente, original: "vencer o campeonato de domingo, andar 50 no minigame Visitor from the Abyss, ou todas as histórias dos personagens do tier 1" }
-"Power of the Heroes": { regra: pendente, original: "vencer o torneio Slifer Red, 4.500 pontos no minigame Ball or Bread, ou todas as histórias dos personagens do tier 1" }
-"Sadie's Special Pack": { regra: pendente, original: "vencer o torneio Obelisk Blue, ou terminar o jogo com a Sadie; só com ela no balcão" }
-"Double Triple Destiny Draw": { regra: pendente, original: "ganhar o Golden Egg Sandwich, ou vencer o campeonato de domingo" }
+"Test of Luck": { regra: missao, missao: torneio_slifer_red, original: "50.000 pontos no minigame Destiny Number 21, ou vencer o torneio Slifer Red" }
+"Dramatic a la carte": { regra: missao, missao: torneio_ra_yellow, original: "100.000 pontos no minigame Survival Dodge Ball, ou vencer o torneio Ra Yellow" }
+"Banner of Courage": { regra: missao, missao: torneio_obelisk_blue, original: "terminar o minigame Can You Make 400 Friends?, ou vencer o torneio Obelisk Blue" }
+"Reserve Magic": { regra: missao, missao: torneio_ra_yellow, original: "50.000 pontos no minigame Stones of Strategy, ou vencer o torneio Ra Yellow" }
+"Spice Up Your Deck": { regra: missao, missao: campeonato_de_domingo, original: "vencer o campeonato de domingo, andar 50 no minigame Visitor from the Abyss, ou todas as histórias dos personagens do tier 1" }
+"Power of the Heroes": { regra: missao, missao: torneio_slifer_red, original: "vencer o torneio Slifer Red, 4.500 pontos no minigame Ball or Bread, ou todas as histórias dos personagens do tier 1" }
+"Sadie's Special Pack": { regra: missao, missao: torneio_obelisk_blue, original: "vencer o torneio Obelisk Blue, ou terminar o jogo com a Sadie; só com ela no balcão" }
+"Double Triple Destiny Draw": { regra: missao, missao: campeonato_de_domingo, original: "ganhar o Golden Egg Sandwich, ou vencer o campeonato de domingo" }

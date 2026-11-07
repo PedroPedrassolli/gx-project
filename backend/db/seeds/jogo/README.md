@@ -53,12 +53,12 @@ não tem script) e a imagem do YGOPRODeck. Em 07/11/2026:
   `cartas.yml`); **15 ficam fora do pool** até alguém escrever o script.
 - As cartas do anime não têm imagem no YGOPRODeck: mostram só o texto (escopo, 3.2).
 
-## O que falta (vai para o Anexo C do escopo)
+## O que não veio da fonte (respostas do Pedro ao Anexo C, 07/11/2026)
 
-- **Regra de subida de nível** (item 7): a Yugipedia não traz. Vale a regra provisória do
-  escopo (3.5).
-- **Chances por raridade** (item 3): a Yugipedia não traz. Valem os pesos configuráveis no
-  admin (escopo, 3.4).
-- **8 pacotes "pendentes"** no `disponibilidade.yml`: no jogo, dependem de minigame, torneio
-  ou história, sem alternativa por nível.
-- **Cartas fora dos pacotes:** 13 só por DLC e 5 só num minigame (`extras.yml`).
+- **Regra de subida de nível** (item 7): a Yugipedia não traz. Ficou uma regra inspirada
+  no jogo: 1 nível a cada 1.000 DP ganhos (escopo, 3.5).
+- **Chances por raridade** (item 3): a Yugipedia não traz. Ficaram os pesos 75, 18, 5 e 2
+  (escopo, 3.4).
+- **8 pacotes** que no jogo dependem de minigame, torneio ou história e as **18 cartas**
+  que não saem em pacote (`extras.yml`): saem por missões
+  (`backend/db/seeds/missoes.yml`).
