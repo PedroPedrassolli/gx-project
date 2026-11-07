@@ -1,0 +1,62 @@
+# Deck com que o jogador começa.
+# fonte: revisão das páginas do deck e do jogo (marcação de Destiny).
+# Gerado por `bin/rails dados:jogo`: não edite à mão.
+# Dados da Yugipedia (CC BY-SA), reorganizados. Veja o README desta pasta.
+fonte: [5227768, 5895775]
+principal:
+  - { nome: "Chamberlain of the Six Samurai", passcode: 44430454, quantidade: 1 }
+  - { nome: "X-Saber Anu Piranha", passcode: 23115241, quantidade: 1 }
+  - { nome: "Armed Ninja", passcode: 9076207, quantidade: 1 }
+  - { nome: "Command Knight", passcode: 10375182, quantidade: 1 }
+  - { nome: "Crimson Ninja", passcode: 14618326, quantidade: 1 }
+  - { nome: "D.D. Assailant", passcode: 70074904, quantidade: 1 }
+  - { nome: "D.D. Warrior", passcode: 37043180, quantidade: 1 }
+  - { nome: "Dream Clown", passcode: 13215230, quantidade: 1 }
+  - { nome: "Exiled Force", passcode: 74131780, quantidade: 1 }
+  - { nome: "Freed the Matchless General", passcode: 49681811, quantidade: 1 }
+  - { nome: "Hayabusa Knight", passcode: 21015833, quantidade: 1 }
+  - { nome: "Marauding Captain", passcode: 2460565, quantidade: 1 }
+  - { nome: "Mystic Swordsman LV2", passcode: 47507260, quantidade: 1 }
+  - { nome: "Sword Hunter", passcode: 51345461, quantidade: 1 }
+  - { nome: "Tactical Espionage Expert", passcode: 89698120, quantidade: 1 }
+  - { nome: "Warrior Lady of the Wasteland", passcode: 5438492, quantidade: 2 }
+  - { nome: "White Ninja", passcode: 1571945, quantidade: 1 }
+  - { nome: "Future Samurai", passcode: 90642597, quantidade: 1 }
+  - { nome: "X-Saber Pashuul", passcode: 23093604, quantidade: 1 }
+  - { nome: "Back to Square One", passcode: 47453433, quantidade: 1 }
+  - { nome: "Banner of Courage", passcode: 10012614, quantidade: 1 }
+  - { nome: "Creature Swap", passcode: 31036355, quantidade: 1 }
+  - { nome: "Divine Sword - Phoenix Blade", passcode: 31423101, quantidade: 1 }
+  - { nome: "Enemy Controller", passcode: 98045062, quantidade: 1 }
+  - { nome: "Fusion Sword Murasame Blade", passcode: 37684215, quantidade: 1 }
+  - { nome: "Gaia Power", passcode: 56594520, quantidade: 1 }
+  - { nome: "Lightning Vortex", passcode: 69162969, quantidade: 1 }
+  - { nome: "Reinforcement of the Army", passcode: 32807846, quantidade: 1 }
+  - { nome: "Share the Pain", passcode: 56830749, quantidade: 1 }
+  - { nome: "Shield Crush", passcode: 30683373, quantidade: 1 }
+  - { nome: "Sogen", passcode: 86318356, quantidade: 1 }
+  - { nome: "The A. Forces", passcode: 403847, quantidade: 1 }
+  - { nome: "The Warrior Returning Alive", passcode: 95281259, quantidade: 1 }
+  - { nome: "Twister", passcode: 45939841, quantidade: 1 }
+  - { nome: "Bottomless Trap Hole", passcode: 29401950, quantidade: 1 }
+  - { nome: "Dust Tornado", passcode: 60082869, quantidade: 1 }
+  - { nome: "Ready for Intercepting", passcode: 31785398, quantidade: 1 }
+  - { nome: "Trap Hole", passcode: 4206964, quantidade: 1 }
+  - { nome: "Widespread Ruin", passcode: 77754944, quantidade: 1 }
+side:
+  - { nome: "Millennium Shield", passcode: 32012841, quantidade: 1 }
+  - { nome: "Big Shield Gardna", passcode: 65240384, quantidade: 1 }
+  - { nome: "Mid Shield Gardna", passcode: 75487237, quantidade: 1 }
+  - { nome: "Obnoxious Celtic Guard", passcode: 52077741, quantidade: 1 }
+  - { nome: "Swift Gaia the Fierce Knight", passcode: 16589042, quantidade: 1 }
+  - { nome: "Comrade Swordsman of Landstar", passcode: 83602069, quantidade: 1 }
+  - { nome: "Axe of Despair", passcode: 40619825, quantidade: 1 }
+  - { nome: "Black Pendant", passcode: 65169794, quantidade: 1 }
+  - { nome: "Symbols of Duty", passcode: 78794994, quantidade: 1 }
+  - { nome: "Terraforming", passcode: 73628505, quantidade: 1 }
+  - { nome: "Weapon Change", passcode: 10035717, quantidade: 1 }
+  - { nome: "Acid Trap Hole", passcode: 41356845, quantidade: 1 }
+  - { nome: "Adhesion Trap Hole", passcode: 62325062, quantidade: 1 }
+  - { nome: "D.D. Trap Hole", passcode: 5606466, quantidade: 1 }
+  - { nome: "Giant Trap Hole", passcode: 80723580, quantidade: 1 }
+destiny: ["D.D. Assailant","Lightning Vortex","Widespread Ruin"]

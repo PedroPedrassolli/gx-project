@@ -1,0 +1,119 @@
+# Banlist padrão do jogo de referência.
+# Gerado por `bin/rails dados:jogo`: não edite à mão.
+# Dados da Yugipedia (CC BY-SA), reorganizados. Veja o README desta pasta.
+fonte: 5630058
+cartas:
+  - { nome: "Breaker the Magical Warrior", passcode: 71413901, status: "proibida" }
+  - { nome: "Black Luster Soldier - Envoy of the Beginning", passcode: 72989439, status: "proibida" }
+  - { nome: "Chaos Emperor Dragon - Envoy of the End", passcode: 82301904, status: "proibida" }
+  - { nome: "Chaos Sorcerer", passcode: 9596126, status: "proibida" }
+  - { nome: "Cyber Jar", passcode: 34124316, status: "proibida" }
+  - { nome: "Cyber-Stein", passcode: 69015963, status: "proibida" }
+  - { nome: "Fiber Jar", passcode: 78706415, status: "proibida" }
+  - { nome: "Magical Scientist", passcode: 34206604, status: "proibida" }
+  - { nome: "Magician of Faith", passcode: 31560081, status: "proibida" }
+  - { nome: "Makyura the Destructor", passcode: 21593977, status: "proibida" }
+  - { nome: "Sinister Serpent", passcode: 8131171, status: "proibida" }
+  - { nome: "Tribe-Infecting Virus", passcode: 33184167, status: "proibida" }
+  - { nome: "Tsukuyomi", passcode: 34853266, status: "proibida" }
+  - { nome: "Victory Dragon", passcode: 44910027, status: "proibida" }
+  - { nome: "Witch of the Black Forest", passcode: 78010363, status: "proibida" }
+  - { nome: "Yata-Garasu", passcode: 3078576, status: "proibida" }
+  - { nome: "Thousand-Eyes Restrict", passcode: 63519819, status: "proibida" }
+  - { nome: "Berserker Soul", passcode: 15381252, status: "proibida" }
+  - { nome: "Butterfly Dagger - Elma", passcode: 69243953, status: "proibida" }
+  - { nome: "Change of Heart", passcode: 4031928, status: "proibida" }
+  - { nome: "Confiscation", passcode: 17375316, status: "proibida" }
+  - { nome: "Dark Hole", passcode: 53129443, status: "proibida" }
+  - { nome: "Delinquent Duo", passcode: 44763025, status: "proibida" }
+  - { nome: "Graceful Charity", passcode: 79571449, status: "proibida" }
+  - { nome: "Harpie's Feather Duster", passcode: 18144506, status: "proibida" }
+  - { nome: "Illusion Gate", passcode: 33017964, status: "proibida" }
+  - { nome: "Last Will", passcode: 85602018, status: "proibida" }
+  - { nome: "Metamorphosis", passcode: 46411259, status: "proibida" }
+  - { nome: "Mirage of Nightmare", passcode: 41482598, status: "proibida" }
+  - { nome: "Painful Choice", passcode: 74191942, status: "proibida" }
+  - { nome: "Sabatiel - The Philosopher's Stone", passcode: 80831721, status: "proibida" }
+  - { nome: "Pot of Greed", passcode: 55144522, status: "proibida" }
+  - { nome: "Raigeki", passcode: 12580477, status: "proibida" }
+  - { nome: "Snatch Steal", passcode: 45986603, status: "proibida" }
+  - { nome: "Temple of the Kings", passcode: 29762407, status: "proibida" }
+  - { nome: "The Forceful Sentry", passcode: 42829885, status: "proibida" }
+  - { nome: "Call of the Haunted", passcode: 97077563, status: "proibida" }
+  - { nome: "Exchange of the Spirit", passcode: 17484499, status: "proibida" }
+  - { nome: "Imperial Order", passcode: 61740673, status: "proibida" }
+  - { nome: "Last Turn", passcode: 28566710, status: "proibida" }
+  - { nome: "Ring of Destruction", passcode: 83555666, status: "proibida" }
+  - { nome: "Sixth Sense", passcode: 3280747, status: "proibida" }
+  - { nome: "Time Seal", passcode: 35316708, status: "proibida" }
+  - { nome: "Card Trooper", passcode: 85087012, status: "limitada" }
+  - { nome: "D.D. Warrior Lady", passcode: 7572887, status: "limitada" }
+  - { nome: "Dark Magician of Chaos", passcode: 40737112, status: "limitada" }
+  - { nome: "Dandylion", passcode: 15341821, status: "limitada" }
+  - { nome: "Destiny HERO - Disk Commander", passcode: 56570271, status: "limitada" }
+  - { nome: "Elemental HERO Stratos", passcode: 40044918, status: "limitada" }
+  - { nome: "Exodia the Forbidden One", passcode: 33396948, status: "limitada" }
+  - { nome: "Gorz the Emissary of Darkness", passcode: 44330098, status: "limitada" }
+  - { nome: "Green Baboon, Defender of the Forest", passcode: 46668237, status: "limitada" }
+  - { nome: "Left Arm of the Forbidden One", passcode: 7902349, status: "limitada" }
+  - { nome: "Left Leg of the Forbidden One", passcode: 44519536, status: "limitada" }
+  - { nome: "Marshmallon", passcode: 31305911, status: "limitada" }
+  - { nome: "Morphing Jar", passcode: 33508719, status: "limitada" }
+  - { nome: "Neo-Spacian Grand Mole", passcode: 80344569, status: "limitada" }
+  - { nome: "Night Assailant", passcode: 16226786, status: "limitada" }
+  - { nome: "Raiza the Storm Monarch", passcode: 73125233, status: "limitada" }
+  - { nome: "Right Arm of the Forbidden One", passcode: 70903634, status: "limitada" }
+  - { nome: "Right Leg of the Forbidden One", passcode: 8124921, status: "limitada" }
+  - { nome: "Sangan", passcode: 26202165, status: "limitada" }
+  - { nome: "Snipe Hunter", passcode: 84290642, status: "limitada" }
+  - { nome: "Spirit Reaper", passcode: 23205979, status: "limitada" }
+  - { nome: "Treeborn Frog", passcode: 12538374, status: "limitada" }
+  - { nome: "Twin-Headed Behemoth", passcode: 43586926, status: "limitada" }
+  - { nome: "Advanced Ritual Art", passcode: 46052429, status: "limitada" }
+  - { nome: "Brain Control", passcode: 87910978, status: "limitada" }
+  - { nome: "Card Destruction", passcode: 72892473, status: "limitada" }
+  - { nome: "Chain Strike", passcode: 91623717, status: "limitada" }
+  - { nome: "Dimension Fusion", passcode: 23557835, status: "limitada" }
+  - { nome: "Fissure", passcode: 66788016, status: "limitada" }
+  - { nome: "Future Fusion", passcode: 77565204, status: "limitada" }
+  - { nome: "Giant Trunade", passcode: 42703248, status: "limitada" }
+  - { nome: "Gold Sarcophagus", passcode: 75500286, status: "limitada" }
+  - { nome: "Happy Marriage", numero_interno: 5180, status: "limitada" }
+  - { nome: "Heavy Storm", passcode: 19613556, status: "limitada" }
+  - { nome: "Level Limit - Area B", passcode: 3136426, status: "limitada" }
+  - { nome: "Limiter Removal", passcode: 23171610, status: "limitada" }
+  - { nome: "Megamorph", passcode: 22046459, status: "limitada" }
+  - { nome: "Monster Reborn", passcode: 83764718, status: "limitada" }
+  - { nome: "Mystical Space Typhoon", passcode: 5318639, status: "limitada" }
+  - { nome: "Nobleman of Crossout", passcode: 71044499, status: "limitada" }
+  - { nome: "Overload Fusion", passcode: 3659803, status: "limitada" }
+  - { nome: "Premature Burial", passcode: 70828912, status: "limitada" }
+  - { nome: "Scapegoat", passcode: 73915051, status: "limitada" }
+  - { nome: "Smashing Ground", passcode: 97169186, status: "limitada" }
+  - { nome: "Swords of Revealing Light", passcode: 72302403, status: "limitada" }
+  - { nome: "United We Stand", passcode: 56747793, status: "limitada" }
+  - { nome: "Ceasefire", passcode: 36468556, status: "limitada" }
+  - { nome: "Crush Card Virus", passcode: 57728570, status: "limitada" }
+  - { nome: "Gravity Bind", passcode: 85742772, status: "limitada" }
+  - { nome: "Jurassic Impact", passcode: 65430834, status: "limitada" }
+  - { nome: "Magic Cylinder", passcode: 62279055, status: "limitada" }
+  - { nome: "Mind Crush", passcode: 15800838, status: "limitada" }
+  - { nome: "Mirror Force", passcode: 44095762, status: "limitada" }
+  - { nome: "Ojama Trio", passcode: 29843091, status: "limitada" }
+  - { nome: "The Transmigration Prophecy", passcode: 46652477, status: "limitada" }
+  - { nome: "Torrential Tribute", passcode: 53582587, status: "limitada" }
+  - { nome: "Trap Dustshoot", passcode: 64697231, status: "limitada" }
+  - { nome: "Ultimate Offering", passcode: 80604091, status: "limitada" }
+  - { nome: "Wall of Revealing Light", passcode: 17078030, status: "limitada" }
+  - { nome: "Cyber Dragon", passcode: 70095154, status: "semi_limitada" }
+  - { nome: "Destiny HERO - Malicious", passcode: 9411399, status: "semi_limitada" }
+  - { nome: "Light and Darkness Dragon", passcode: 47297616, status: "semi_limitada" }
+  - { nome: "Manticore of Darkness", passcode: 77121851, status: "semi_limitada" }
+  - { nome: "Mask of Darkness", passcode: 28933734, status: "semi_limitada" }
+  - { nome: "Necroface", passcode: 28297833, status: "semi_limitada" }
+  - { nome: "Book of Moon", passcode: 14087893, status: "semi_limitada" }
+  - { nome: "Foolish Burial", passcode: 81439173, status: "semi_limitada" }
+  - { nome: "Mage Power", passcode: 83746708, status: "semi_limitada" }
+  - { nome: "Magical Stone Excavation", passcode: 98494543, status: "semi_limitada" }
+  - { nome: "Reinforcement of the Army", passcode: 32807846, status: "semi_limitada" }
+  - { nome: "Royal Decree", passcode: 51452091, status: "semi_limitada" }

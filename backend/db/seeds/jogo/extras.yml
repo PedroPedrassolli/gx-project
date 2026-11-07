@@ -1,0 +1,9 @@
+# Cartas que no jogo saem fora dos pacotes: por download (DLC) e num minigame.
+# Gerado por `bin/rails dados:jogo`: não edite à mão.
+# Dados da Yugipedia (CC BY-SA), reorganizados. Veja o README desta pasta.
+dlc:
+  fonte: 5408932
+  cartas: ["Toon Kingdom","Gladiator Beast Octavius","Gladiator Beast Torax","Gemini Summoner","Test Tiger","Defensive Tactics","Ocean's Keeper","Dragon Ice","Tongue Twister","Thousand-Eyes Jellyfish","Skreech","Royal Firestorm Guards","Miracle Contact","Veil of Darkness","Security Orb","Abyssal Kingshark","Dark Grepher","Darklord Zerato","Mormolith","Darknight Parshath","Deepsea Macrotrema","Fossil Tusker","Metabo Globster","Golden Flying Fish","Phantom Dragonray Bronto","Prime Material Dragon","Lonefire Blossom","Il Blud","Aztekipede, the Worm Warrior","Allure of Darkness","Blazewing Butterfly","Elemental HERO Air Neos","Cranium Fish"]
+minigame:
+  fonte: 4407420
+  cartas: ["Illusion Gate","Sabatiel - The Philosopher's Stone","Raigeki","Pot of Greed","Monster Reborn"]
