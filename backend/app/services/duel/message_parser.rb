@@ -1,6 +1,8 @@
 module Duel
   # Transforma os bytes que a engine devolve em mensagens.
   # Cada mensagem vem como [tamanho u32][tipo u8][conteúdo]; o tamanho conta o tipo.
+  # As perguntas (prompts) viram Hashes com os campos que a tela e o bot precisam.
+  # O formato de cada uma está no playerop.cpp da engine fixada.
   module MessageParser
     Message = Data.define(:type, :payload)
 
@@ -35,10 +37,112 @@ module Duel
     # Nome da pergunta (ex.: :select_idlecmd) ou nil se a mensagem não for pergunta.
     def prompt_name(message) = PROMPTS[message.type]
 
+    # A pergunta inteira: { type:, player:, ...campos }. Nil se não for pergunta.
+    def prompt(message)
+      name = prompt_name(message)
+      return unless name
+
+      reader = ByteReader.new(message.payload)
+      { type: name, player: reader.u8 }.merge(PromptFields.public_send(name, reader))
+    end
+
     # Quem venceu (2 = empate) e o motivo, como a engine informa.
     def win(message)
       reader = ByteReader.new(message.payload)
       { player: reader.u8, reason: reader.u8 }
+    end
+
+    # Campos de cada pergunta, na ordem em que a engine escreve (depois do jogador).
+    module PromptFields
+      module_function
+
+      # Carta com local e sequência de 4 bytes (a maioria das listas).
+      def card_at(reader)
+        { code: reader.u32, controller: reader.u8, location: reader.u8, sequence: reader.u32 }
+      end
+
+      # Mesma coisa, mas com a sequência num byte só (atacantes e reposicionáveis).
+      def short_card_at(reader)
+        { code: reader.u32, controller: reader.u8, location: reader.u8, sequence: reader.u8 }
+      end
+
+      def card_with_location(reader) = { code: reader.u32, **reader.location }
+
+      def effect_at(reader) = { **card_at(reader), description: reader.u64, client_mode: reader.u8 }
+
+      def select_idlecmd(reader)
+        {
+          summonable: reader.list { card_at(reader) },
+          spsummonable: reader.list { card_at(reader) },
+          repositionable: reader.list { short_card_at(reader) },
+          msetable: reader.list { card_at(reader) },
+          ssetable: reader.list { card_at(reader) },
+          activatable: reader.list { effect_at(reader) },
+          to_bp: reader.u8 == 1, to_ep: reader.u8 == 1, can_shuffle: reader.u8 == 1
+        }
+      end
+
+      def select_battlecmd(reader)
+        {
+          activatable: reader.list { effect_at(reader) },
+          attackable: reader.list { { **short_card_at(reader), direct: reader.u8 == 1 } },
+          to_m2: reader.u8 == 1, to_ep: reader.u8 == 1
+        }
+      end
+
+      def select_effectyn(reader) = { **card_with_location(reader), description: reader.u64 }
+      def select_yesno(reader) = { description: reader.u64 }
+      def select_option(reader) = { options: Array.new(reader.u8) { reader.u64 } }
+
+      def select_card(reader)
+        { cancelable: reader.u8 == 1, min: reader.u32, max: reader.u32,
+          cards: reader.list { card_with_location(reader) } }
+      end
+
+      def select_unselect_card(reader)
+        { finishable: reader.u8 == 1, cancelable: reader.u8 == 1, min: reader.u32, max: reader.u32,
+          selectable: reader.list { card_with_location(reader) },
+          unselectable: reader.list { card_with_location(reader) } }
+      end
+
+      def select_chain(reader)
+        { spe_count: reader.u8, forced: reader.u8 == 1, hint_timing: reader.u32,
+          hint_timing_other: reader.u32,
+          chains: reader.list { { **card_with_location(reader), description: reader.u64, client_mode: reader.u8 } } }
+      end
+
+      # No "flag", bit ligado = zona que NÃO pode ser escolhida.
+      def select_place(reader) = { count: reader.u8, flag: reader.u32 }
+      def select_disfield(reader) = select_place(reader)
+
+      def select_position(reader) = { code: reader.u32, positions: reader.u8 }
+
+      def select_tribute(reader)
+        { cancelable: reader.u8 == 1, min: reader.u32, max: reader.u32,
+          cards: reader.list { { **card_at(reader), release_param: reader.u8 } } }
+      end
+
+      def select_counter(reader)
+        { counter_type: reader.u16, count: reader.u16,
+          cards: reader.list { { **short_card_at(reader), counters: reader.u16 } } }
+      end
+
+      def select_sum(reader)
+        { select_max: reader.u8.zero?, acc: reader.u32, min: reader.u32, max: reader.u32,
+          must: reader.list { { **card_with_location(reader), sum: reader.u32 } },
+          cards: reader.list { { **card_with_location(reader), sum: reader.u32 } } }
+      end
+
+      def sort_card(reader)
+        { cards: reader.list { { code: reader.u32, controller: reader.u8, location: reader.u32, sequence: reader.u32 } } }
+      end
+
+      def sort_chain(reader) = sort_card(reader)
+      def rock_paper_scissors(_reader) = {}
+      def announce_race(reader) = { count: reader.u8, available: reader.u64 }
+      def announce_attrib(reader) = { count: reader.u8, available: reader.u32 }
+      def announce_card(reader) = { opcodes: Array.new(reader.u8) { reader.u64 } }
+      def announce_number(reader) = { options: Array.new(reader.u8) { reader.u64 } }
     end
   end
 end
