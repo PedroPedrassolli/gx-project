@@ -1,12 +1,13 @@
 # Medição da engine em produção: chama o /up/engine várias vezes seguidas e resume o
-# tempo (1ª chamada, p50, p95 e máximo) no resumo da execução. Cada chamada refaz do
-# zero, pelo replay, um duelo inteiro gravado: é o pior caso de uma ação num duelo que
-# não está no cache da instância. A meta do GXP-3 é p95 abaixo de 300 ms; os números vão
-# para o docs/adr/0001-engine.md.
+# tempo (1ª chamada, p50, p95 e máximo) no resumo da execução. Cada chamada mede as duas
+# situações de uma ação (Duel::HealthCheck): fria, com o duelo gravado refeito do zero
+# pelo replay (o pior caso, duelo fora do cache da instância), e quente, com a engine no
+# cache. A meta do GXP-3 é p95 abaixo de 300 ms; os números vão para o
+# docs/adr/0001-engine.md.
 #
 # Roda só quando alguém pede (Actions → Medição da engine → Run workflow).
-# Custo: cerca de 1 minuto de runner (repositório público: sem limite) e algumas dezenas
-# de chamadas na Vercel, bem dentro do plano grátis.
+# Custo: cerca de 1 minuto de runner (repositório público: sem limite) e duas chamadas na
+# Vercel por rodada (/up/engine e /up), bem dentro do plano grátis.
 name: Medição da engine
 
 on:
@@ -36,6 +37,9 @@ jobs:
             exit 1
           fi
 
+          # O curl informa em segundos; os arquivos guardam milissegundos.
+          to_ms() { awk -v seconds="$1" 'BEGIN { printf "%.1f\n", seconds * 1000 }'; }
+
           for call in $(seq "$CALLS"); do
             if ! total=$(curl --silent --fail --max-time 30 --output body.json --write-out "%{time_total}" "$SITE/up/engine"); then
               echo "::error::A chamada $call falhou: $(cat body.json 2>/dev/null)"
@@ -45,10 +49,17 @@ jobs:
               echo "::error::A chamada $call voltou com erro: $(cat body.json)"
               exit 1
             fi
-            # Tempo do replay, medido pelo app, e tempo da requisição inteira visto daqui
-            # (rede + Vercel + Rails + replay).
-            jq -r '.ms' body.json >> engine.txt
-            awk -v seconds="$total" 'BEGIN { printf "%.1f\n", seconds * 1000 }' >> total.txt
+            # Tempos medidos pelo app e tempo da requisição inteira visto daqui (rede +
+            # Vercel + Rails + as duas ações).
+            jq -r '.cold_ms' body.json >> cold.txt
+            jq -r '.warm_ms' body.json >> warm.txt
+            to_ms "$total" >> total.txt
+            # Base de comparação: o /up passa pela mesma rede e pelo Rails, sem a engine.
+            if ! base=$(curl --silent --fail --max-time 30 --output /dev/null --write-out "%{time_total}" "$SITE/up"); then
+              echo "::error::A chamada $call ao /up falhou"
+              exit 1
+            fi
+            to_ms "$base" >> base.txt
           done
 
       - name: Resumir
@@ -65,19 +76,23 @@ jobs:
           }
 
           {
-            echo "### /up/engine em produção: $(wc -l < engine.txt) chamadas seguidas"
+            echo "### /up/engine em produção: $(wc -l < cold.txt) chamadas seguidas"
             echo
             echo "| Tempo (ms) | 1ª chamada | p50 | p95 | máximo |"
             echo "|---|---|---|---|---|"
-            row "Replay do duelo, medido no app" engine.txt
-            row "Requisição inteira, vista do GitHub" total.txt
+            row "Ação fria: duelo refeito do zero, no app" cold.txt
+            row "Ação quente: engine no cache, no app" warm.txt
+            row "Requisição inteira ao /up/engine, vista do GitHub" total.txt
+            row "Só rede, Vercel e Rails (/up), vista do GitHub" base.txt
             echo
             echo "A 1ª chamada pode cair numa instância fria (container subindo e catálogo vazio)."
           } >> "$GITHUB_STEP_SUMMARY"
 
-          p95=$(percentile engine.txt 95)
-          echo "::notice title=Replay do duelo::p50 $(percentile engine.txt 50) ms, p95 $p95 ms, 1ª chamada $(head -1 engine.txt) ms"
+          p95=$(percentile cold.txt 95)
+          echo "::notice title=Ação fria::p50 $(percentile cold.txt 50) ms, p95 $p95 ms, 1ª chamada $(head -1 cold.txt) ms"
+          echo "::notice title=Ação quente::p50 $(percentile warm.txt 50) ms, p95 $(percentile warm.txt 95) ms"
           echo "::notice title=Requisição inteira::p50 $(percentile total.txt 50) ms, p95 $(percentile total.txt 95) ms, 1ª chamada $(head -1 total.txt) ms"
+          echo "::notice title=Só rede e Rails (/up)::p50 $(percentile base.txt 50) ms, p95 $(percentile base.txt 95) ms"
           if awk -v value="$p95" 'BEGIN { exit !(value > 300) }'; then
-            echo "::warning::O p95 do replay passou da meta de 300 ms: ver o plano B no docs/adr/0001-engine.md"
+            echo "::warning::O p95 da ação fria passou da meta de 300 ms: ver o plano B no docs/adr/0001-engine.md"
           fi
