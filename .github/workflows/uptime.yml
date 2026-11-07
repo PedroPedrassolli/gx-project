@@ -22,7 +22,7 @@ permissions:
   issues: write
 
 env:
-  SITE: https://gx-project.vercel.app
+  SITE: https://gx-project-pedrassolli.vercel.app
 
 jobs:
   check:
