@@ -58,7 +58,12 @@ jobs:
 
           # Com os "services" da Vercel, o nome do repositório das imagens não é fixo: usa o
           # do serviço do Rails (o que tem "backend" no nome) ou, se só houver um, esse.
-          api "https://api.vercel.com/v1/vcr/repository?$scope&limit=100" > repositories.json
+          # Sem acesso ao registro (o token não tem a permissão, ou o projeto não usa o
+          # registro), só avisa: o deploy não depende desta limpeza.
+          if ! api "https://api.vercel.com/v1/vcr/repository?$scope&limit=100" > repositories.json; then
+            echo "::warning title=Imagens da Vercel::Sem acesso ao registro de imagens: $(head -c 300 repositories.json). Nada foi apagado."
+            exit 0
+          fi
           names=$(jq -r '(.repositories // .items // []) | map(.name // empty) | join(" ")' repositories.json)
           echo "Repositórios do projeto: ${names:-nenhum}"
           repository=$(jq -r '(.repositories // .items // []) | map(.name // empty)
