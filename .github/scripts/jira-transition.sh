@@ -13,7 +13,8 @@
 # do ar, transição que não existe), o script só avisa e termina com sucesso, para
 # não deixar a CI ou o merge automático vermelhos por causa do Jira.
 #
-# Precisa de JIRA_EMAIL e JIRA_API_TOKEN (secrets do GitHub) e JIRA_SITE.
+# Precisa de JIRA_EMAIL e JIRA_API_TOKEN (o workflow lê o secret JIRA_API_TOKEN ou
+# JIRA_API_KEY) e JIRA_SITE.
 set -euo pipefail
 
 key="$1"

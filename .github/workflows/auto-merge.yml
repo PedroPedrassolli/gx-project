@@ -53,7 +53,8 @@ jobs:
           REPO: ${{ github.repository }}
           SHA: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha }}
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          # O token pode estar salvo com qualquer um dos dois nomes.
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN || secrets.JIRA_API_KEY }}
         # Merge feito com o GITHUB_TOKEN não dispara outros workflows (regra do GitHub
         # contra loops). Por isso este passo mesmo move o card do Jira para "Concluído",
         # que é o que o jira.yml faria.
