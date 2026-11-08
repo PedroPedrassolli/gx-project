@@ -36,8 +36,10 @@ RUN bundle install --jobs 4 \
   && find /usr/local/bundle -name "*.o" -delete
 COPY . .
 # Os fontes da engine já viraram a biblioteca na primeira etapa: não vão para a imagem.
+# Dos scripts das cartas, ficam só os do pool e os que eles usam (bin/prune-scripts).
 # O cache do Bootsnap fica pronto na imagem: o Rails sobe mais rápido no início frio.
 RUN rm -rf vendor/engine/ygopro-core \
+  && bin/prune-scripts \
   && bundle exec bootsnap precompile --gemfile app/ lib/
 
 FROM ruby:${RUBY_VERSION}-slim
