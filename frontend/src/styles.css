@@ -151,6 +151,10 @@ a:focus-visible {
 
 input[type="search"],
 input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="text"],
+input[type="date"],
 select,
 button {
   width: 100%;
@@ -383,4 +387,44 @@ img[hidden] {
   background: none;
   color: var(--color-accent);
   text-decoration: underline;
+}
+
+/* Formulários de conta. */
+.page.narrow {
+  max-width: 28rem;
+}
+
+.form {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.form-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.form-field label {
+  font-weight: 600;
+}
+
+.hint {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.field-error,
+.form-error {
+  margin: 0;
+  color: #ff9d9d;
+}
+
+.form-field input[aria-invalid="true"] {
+  border-color: #ff9d9d;
+}
+
+.form .cta {
+  justify-self: start;
 }

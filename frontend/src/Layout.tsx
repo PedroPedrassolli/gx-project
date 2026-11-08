@@ -3,8 +3,9 @@ import { useLogOut, useSession } from "./account/session.ts";
 
 // Barra do topo, igual em todas as páginas: o nome do site, as cartas e a conta.
 export function Layout() {
-  const user = useSession().data?.user;
+  const session = useSession();
   const logOut = useLogOut();
+  const user = session.data?.user;
 
   return (
     <>
@@ -22,6 +23,7 @@ export function Layout() {
               </button>
             </>
           )}
+          {session.isSuccess && !user && <Link to="/entrar">Entrar</Link>}
         </span>
       </nav>
       <Outlet />
