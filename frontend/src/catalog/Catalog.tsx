@@ -5,10 +5,12 @@ import { CatalogFilters } from "./Filters.tsx";
 import { RARITIES, label } from "./labels.ts";
 import { useCardLanguage } from "./language.ts";
 import { CardTile, Detail } from "./parts.tsx";
+import { usePageTitle } from "../pageTitle.ts";
 
 const PAGE = 60; // cartas por vez na lista; "Mostrar mais" traz as próximas
 
 export function Catalog() {
+  usePageTitle("Cartas");
   const catalog = useCatalog();
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [pack, setPack] = useState("");

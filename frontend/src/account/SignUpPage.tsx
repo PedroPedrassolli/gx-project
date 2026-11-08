@@ -3,11 +3,13 @@ import { Link } from "react-router";
 import { ApiError } from "../api.ts";
 import { useSignUp } from "./session.ts";
 import { sentence, TextField } from "./TextField.tsx";
+import { usePageTitle } from "../pageTitle.ts";
 
 const EMPTY = { email: "", password: "", nickname: "", birth_date: "" };
 
 // Cadastro (escopo 3.1): a data de nascimento só serve para a faixa de idade.
 export function SignUpPage() {
+  usePageTitle("Criar conta");
   const signUp = useSignUp();
   const [form, setForm] = useState(EMPTY);
   const [accepted, setAccepted] = useState(false);

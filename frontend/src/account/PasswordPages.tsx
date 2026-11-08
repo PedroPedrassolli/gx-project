@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router";
 import { ApiError, request } from "../api.ts";
 import { TextField } from "./TextField.tsx";
+import { usePageTitle } from "../pageTitle.ts";
 
 function errorMessage(error: Error) {
   return error instanceof ApiError ? error.message : "Sem conexão. Tente de novo.";
@@ -10,6 +11,7 @@ function errorMessage(error: Error) {
 
 // Esqueci a senha: a resposta é a mesma com ou sem conta, como a da API.
 export function ForgotPasswordPage() {
+  usePageTitle("Esqueci a senha");
   const [email, setEmail] = useState("");
   const ask = useMutation({ mutationFn: () => request("POST", "/api/password", { email }) });
 
@@ -51,6 +53,7 @@ export function ForgotPasswordPage() {
 
 // Senha nova, pelo link do e-mail (/nova-senha?token=...).
 export function NewPasswordPage() {
+  usePageTitle("Senha nova");
   const [params] = useSearchParams();
   const [password, setPassword] = useState("");
   const reset = useMutation({

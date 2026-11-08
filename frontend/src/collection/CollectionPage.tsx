@@ -7,6 +7,7 @@ import { CatalogFilters } from "../catalog/Filters.tsx";
 import { useCardLanguage } from "../catalog/language.ts";
 import { CardTile, Detail } from "../catalog/parts.tsx";
 import { useCollection, type Progress } from "./api.ts";
+import { usePageTitle } from "../pageTitle.ts";
 
 const PAGE = 60;
 const percent = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
@@ -18,6 +19,7 @@ function progressText({ owned, cards, percent: value }: Progress) {
 // Coleção do jogador (escopo 3.2 e 4): o que ele tem, quantas cópias e quanto falta do
 // pool e de cada pacote (essa porcentagem libera pacotes na loja, na F4).
 export function CollectionPage() {
+  usePageTitle("Coleção");
   const session = useSession();
   const user = session.data?.user;
   const catalog = useCatalog();

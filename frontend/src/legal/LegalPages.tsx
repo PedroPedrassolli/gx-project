@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { usePageTitle } from "../pageTitle.ts";
 
 // Termos de uso e política de privacidade (GXP-40), aprovados pelo Pedro em 08/11/2026.
 // Mudou o texto? Troque a data da versão e avise no site, como os próprios textos prometem.
@@ -32,6 +33,7 @@ function Version() {
 }
 
 export function TermsPage() {
+  usePageTitle("Termos de uso");
   return (
     <main className="page legal">
       <h1>Termos de uso</h1>
@@ -80,6 +82,7 @@ export function TermsPage() {
 }
 
 export function PrivacyPage() {
+  usePageTitle("Política de privacidade");
   return (
     <main className="page legal">
       <h1>Política de privacidade</h1>

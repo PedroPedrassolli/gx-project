@@ -3,7 +3,13 @@ import assert from "node:assert/strict";
 import { ApiError, forgetCsrfToken, getSession, request } from "./api.ts";
 
 // fetch falso: cada chamada leva a próxima resposta da fila e fica gravada.
-type Call = { url: string; method: string; headers: Record<string, string>; body?: string };
+type Call = {
+  url: string;
+  method: string;
+  headers: Record<string, string>;
+  body?: string;
+  signal?: AbortSignal | null;
+};
 let calls: Call[] = [];
 let replies: Response[] = [];
 
@@ -31,6 +37,7 @@ beforeEach(() => {
       method: init.method ?? "GET",
       headers: (init.headers ?? {}) as Record<string, string>,
       body: init.body as string | undefined,
+      signal: init.signal,
     });
     const reply = replies.shift();
     if (!reply) throw new Error("resposta não esperada");
@@ -39,6 +46,14 @@ beforeEach(() => {
 });
 
 const session = { user: null, csrf_token: "token-1" };
+
+test("todo pedido tem tempo limite, para a tela não esperar para sempre", async () => {
+  replies.push(json(200, { data: [] }));
+
+  await request("GET", "/api/packs");
+
+  assert.ok(call(0).signal instanceof AbortSignal);
+});
 
 test("GET não pede o token CSRF", async () => {
   replies.push(json(200, { data: [1, 2] }));

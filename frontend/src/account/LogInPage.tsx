@@ -3,8 +3,10 @@ import { Link, useNavigate } from "react-router";
 import { ApiError } from "../api.ts";
 import { useLogIn } from "./session.ts";
 import { TextField } from "./TextField.tsx";
+import { usePageTitle } from "../pageTitle.ts";
 
 export function LogInPage() {
+  usePageTitle("Entrar");
   const logIn = useLogIn();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");

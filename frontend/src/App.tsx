@@ -1,6 +1,8 @@
 import { currentPhase, PHASES } from "./roadmap.ts";
+import { usePageTitle } from "./pageTitle.ts";
 
 export function App() {
+  usePageTitle();
   const phase = currentPhase(PHASES);
 
   return (

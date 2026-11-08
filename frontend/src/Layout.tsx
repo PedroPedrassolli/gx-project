@@ -1,8 +1,10 @@
+import { Suspense, useState, type MouseEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Link, Outlet } from "react-router";
+import { Link, Outlet, useLocation } from "react-router";
 import { request, type User } from "./api.ts";
 import { useLogOut, useSession } from "./account/session.ts";
 import { SOURCE_URL } from "./legal/LegalPages.tsx";
+import { markNavigation, usePageTitle } from "./pageTitle.ts";
 
 // Moldura de todas as páginas: a barra do topo (o nome do site, as cartas e a conta) e o
 // rodapé.
@@ -10,9 +12,16 @@ export function Layout() {
   const session = useSession();
   const logOut = useLogOut();
   const user = session.data?.user;
+  const { pathname } = useLocation();
+  const [firstPath] = useState(pathname);
+  // Avisa antes de a página nova montar: é ela que leva o foco para o próprio título.
+  if (pathname !== firstPath) markNavigation();
 
   return (
     <>
+      <a className="skip-link" href="#conteudo" onClick={skipToContent}>
+        Pular para o conteúdo
+      </a>
       <nav className="topbar" aria-label="Principal">
         <Link to="/" className="brand">
           GX Project
@@ -26,7 +35,12 @@ export function Layout() {
               <span>
                 Olá, <Link to="/conta">{user.nickname}</Link>
               </span>
-              <button type="button" className="link-button" onClick={() => logOut.mutate()}>
+              <button
+                type="button"
+                className="link-button"
+                disabled={logOut.isPending}
+                onClick={() => logOut.mutate()}
+              >
                 Sair
               </button>
             </>
@@ -40,10 +54,31 @@ export function Layout() {
         </span>
       </nav>
       {user && !user.email_verified && <ConfirmEmailNotice user={user} />}
-      <Outlet />
+      <Suspense fallback={<Loading />}>
+        <Outlet />
+      </Suspense>
       <SiteFooter />
     </>
   );
+}
+
+// Cada página é um arquivo JS baixado na primeira visita (main.tsx): enquanto chega, isto.
+function Loading() {
+  return (
+    <main className="page">
+      <p role="status">Carregando…</p>
+    </main>
+  );
+}
+
+// Teclado: pula a barra do topo e vai direto ao conteúdo da página.
+function skipToContent(event: MouseEvent<HTMLAnchorElement>) {
+  event.preventDefault();
+  const main = document.querySelector<HTMLElement>("main");
+  if (main) {
+    main.tabIndex = -1;
+    main.focus();
+  }
 }
 
 // Aviso de fã, créditos, textos legais e o código-fonte (escopo, telas: "Legais").
@@ -97,6 +132,7 @@ function ConfirmEmailNotice({ user }: { user: User }) {
 }
 
 export function NotFound() {
+  usePageTitle("Página não encontrada");
   return (
     <main className="page narrow">
       <h1>Página não encontrada</h1>

@@ -27,6 +27,10 @@ export class ApiError extends Error {
 
 const GENERIC_ERROR = "Algo deu errado. Tente de novo em instantes.";
 
+// Pedido que passa disso desiste, e a tela mostra o erro em vez de esperar para sempre. O
+// Rails na Vercel leva uns 5 s para acordar, e mandar um e-mail, mais alguns.
+export const TIMEOUT_MS = 30_000;
+
 let csrfToken: string | null = null;
 
 export function forgetCsrfToken() {
@@ -57,6 +61,7 @@ export async function request<T>(
     method,
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
+    signal: AbortSignal.timeout(TIMEOUT_MS),
   });
 
   if (response.status === 403 && method !== "GET" && retry) {
