@@ -60,7 +60,17 @@ pela API do MediaWiki.
    wiki. O texto fica em inglês e, quando a carta saiu em português, também em português; a
    tela escolhe pela configuração do jogador. O BabelCDB não entra aqui: ele não tem licença
    (ADR 0001). Os valores ficam como a página escreve (`Monster`, `DARK`, `Fiend`) e a tela
-   traduz.
+   traduz. **O que a tela mostra segue o script que a engine roda:**
+   - carta pré-errata mostra o texto da época: a versão da página `Card Errata:` que valia
+     quando o jogo saiu (28/11/2008, a primeira data em inglês da página do jogo). Cada versão
+     vale desde o primeiro pacote em inglês que a imprimiu; sem nenhuma antes do jogo, vale a
+     impressão original. Esse texto fica só em inglês, porque o português da página é o atual;
+   - carta do anime que usa a carta impressa depois mostra os dados da impressão
+     (`impressao` no `cartas.yml`), com o nome que o jogo usava.
+
+   O texto pré-errata que o BabelCDB traz não serve: não tem licença e é reescrito no
+   formato de hoje. Comparar com ele para escolher a versão errou em casos como *Darkness
+   Approaches*, por isso a escolha é pela data.
 
 ## Consequências
 

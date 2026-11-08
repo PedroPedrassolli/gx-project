@@ -45,11 +45,20 @@ module Catalog
     def card_row(card)
       code = engine_code(card)
       code && { engine_code: code, passcode: card["passcode"], internal_number: card["numero_interno"],
-                name: card["nome"], name_in_game: card["nome_no_jogo"], name_pt: card["nome_pt"],
-                card_type: card["tipo"], property: card["propriedade"], card_attribute: card["atributo"],
-                race: card["raca"], monster_types: card["tipos"] || [], level: card["nivel"],
-                attack: card["atk"], defense: card["def"], text: card["texto"], text_pt: card["texto_pt"],
-                source_revision: card["fonte"] }
+                name: card["nome"], name_in_game: card["nome_no_jogo"], **shown(card) }
+    end
+
+    # O que o jogador vê segue a carta que a engine roda: a carta impressa, quando a do anime
+    # usa a oficial; o texto da época, quando a carta usa a regra antiga. O texto em
+    # português é o atual: se o texto da época é outro, fica só o inglês.
+    def shown(card)
+      exception = exceptions[card.values_at("nome", "passcode", "numero_interno")]
+      data = exception&.dig("motivo") == "usar_oficial" && card["impressao"] || card
+      text = exception&.dig("texto") || data["texto"]
+      { name_pt: data["nome_pt"], card_type: data["tipo"], property: data["propriedade"],
+        card_attribute: data["atributo"], race: data["raca"], monster_types: data["tipos"] || [],
+        level: data["nivel"], attack: data["atk"], defense: data["def"], text:,
+        text_pt: (data["texto_pt"] if text == data["texto"]), source_revision: data["fonte"] }
     end
 
     # O código da engine sai da cobertura; carta "tirar_do_pool" fica sem código e não entra.

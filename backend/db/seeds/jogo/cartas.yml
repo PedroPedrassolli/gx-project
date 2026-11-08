@@ -1,6 +1,7 @@
 # Cartas do jogo de referência, uma por página da Yugipedia.
 # nome_no_jogo: o nome que o jogo usa, quando mudou depois.
 # passcode_oficial: carta do anime que o OCG imprimiu depois; o passcode da impressão.
+# impressao: os mesmos dados (tipo a texto_pt e fonte), da carta impressa.
 # tipo a def: como a página da carta mostra (ATK ou DEF "?" fica sem valor).
 # texto: em inglês; nome_pt e texto_pt: em português, quando a carta saiu em português.
 # fonte: revisão da página da carta (yugipedia.com/index.php?oldid=N).
@@ -2696,6 +2697,7 @@
   tipo: "Spell"
   propriedade: "Continuous"
   texto: "This card is destroyed if there are no \"Clear World\" on the field. Any \"Clear\" monsters you control cannot be destroyed by battle. Any Battle Damage of 1000 or less you would receive becomes 0. When you take damage, this card is destroyed."
+  impressao: {"tipo":"Spell","propriedade":"Continuous","texto":"If \"Clear World\" is on the field: You can add 1 monster that mentions \"Clear World\" from your Deck to your hand. You can only use this effect of \"Clear Wall\" once per turn. Monsters that mention \"Clear World\" cannot be destroyed by battle, also you take no battle damage from that battle. While you control a Level 7 or higher monster that mentions \"Clear World\", your opponent receives all effects of \"Clear World\", regardless of the monster Attributes they control.","nome_pt":"Parede Translúcida","texto_pt":"Se \"Mundo Translúcido\" estiver no campo: você pode adicionar 1 monstro que mencione \"Mundo Translúcido\" do seu Deck à sua mão. Você só pode usar este efeito de \"Parede Translúcida\" uma vez por turno. Monstros que mencionem \"Mundo Translúcido\" não podem ser destruídos em batalha e, além disso, você não sofre dano de batalha dessa batalha. Enquanto você controlar um monstro de Nível 7 ou mais que mencione \"Mundo Translúcido\", seu oponente recebe todos os efeitos de \"Mundo Translúcido\", independentemente dos Atributos dos monstros que ele controla.","fonte":5638582}
   fonte: 5411324
 - nome: "Clear World"
   numero_interno: 3779
@@ -2703,6 +2705,7 @@
   tipo: "Spell"
   propriedade: "Field"
   texto: "The Attributes of the monsters determine the effect on the monster's controller.\n● LIGHT: You must play with your hand revealed.\n● DARK: You cannot declare an attack.\n● EARTH: Destroy 1 monster you control during your End Phase.\n● WATER: Discard 1 card from your hand during your End Phase.\n● FIRE: Receive 1000 damage during your End Phase.\n● WIND: You cannot activate Spell Cards."
+  impressao: {"tipo":"Spell","propriedade":"Field","texto":"Once per turn, during your End Phase, pay 500 LP or destroy this card. Each player receives effects, depending on the monster Attributes they control.\n● LIGHT: Play with your hand revealed at all times.\n● DARK: If you control 2 or more monsters, you cannot declare an attack.\n● EARTH: During your Standby Phase, destroy 1 face-up Defense Position monster you control.\n● WATER: During your End Phase, discard 1 card.\n● FIRE: During your End Phase, take 1000 damage.\n● WIND: You must pay 500 LP to activate a Spell Card.","nome_pt":"Mundo Translúcido","texto_pt":"Uma vez por turno, durante sua Fase Final, pague 500 PV ou destrua este card. Cada duelista recebe efeitos, dependendo dos Atributos de monstro que eles controlam.\n● LUZ: Duele com sua mão revelada o tempo todo.\n● TREVAS: Se você controlar 2 ou mais monstros, você não pode declarar um ataque.\n● TERRA: Durante sua Fase de Apoio, destrua 1 monstro com a face para cima em Posição de Defesa que você controla.\n● ÁGUA: Durante sua Fase Final, descarte 1 card.\n● FOGO: Durante sua Fase Final, sofra 1000 de dano.\n● VENTO: Você deve pagar 500 PV para ativar um Card de Magia.","fonte":5900728}
   fonte: 5417285
 - nome: "Convulsion of Nature"
   passcode: 62966332
@@ -5084,6 +5087,7 @@
   tipo: "Trap"
   propriedade: "Normal"
   texto: "Activate only when your opponent Summons a monster. Send that monster and 1 monster you control to the Graveyard, then Special Summon 1 Spellcaster-Type monster from your Graveyard."
+  impressao: {"tipo":"Trap","propriedade":"Normal","texto":"When your opponent Normal or Special Summons a monster(s): Target 1 of those monsters and 1 Spellcaster monster you control; send both monsters to the GY, then you can Special Summon 1 DARK Spellcaster monster from your Deck or GY.","nome_pt":"Renovação Negra","texto_pt":"Quando seu oponente Invocar um ou mais monstros por Invocação-Normal ou Especial: escolha 1 desses monstros e 1 monstro Mago que você controla; envie os dois monstros para o Cemitério e, depois, você pode Invocar por Invocação-Especial 1 monstro Mago de TREVAS do seu Deck ou Cemitério.","fonte":5802264}
   fonte: 5417246
 - nome: "Blasting Fuse"
   passcode: 99788587
@@ -12798,6 +12802,7 @@
   tipo: "Spell"
   propriedade: "Quick-Play"
   texto: "Activate during the Damage Step after a Fusion Monster you control battles. Your monster's ATK is increased by the enemy monster's ATK until the end of the Damage Step."
+  impressao: {"tipo":"Spell","propriedade":"Quick-Play","texto":"When an attack is declared involving a Fusion Monster you control and an opponent's monster: That monster you control gains ATK equal to the ATK of the opponent's monster, until the end of the Damage Step. You can only activate 1 \"Battle Fusion\" per turn.","nome_pt":"Fusão de Batalha","texto_pt":"Quando um ataque que envolve um Monstro de Fusão que você controla e um monstro do oponente for declarado: até o final da Etapa de Dano, esse monstro que você controla ganha ATK igual ao ATK do monstro do oponente. Você só pode ativar 1 \"Fusão de Batalha\" por turno.","fonte":5689099}
   fonte: 5408256
 - nome: "Dandylion"
   passcode: 15341821
@@ -12832,6 +12837,7 @@
   tipo: "Trap"
   propriedade: "Normal"
   texto: "Activate when a Fusion Monster you control declares an attack while battling an opponent's Fusion Monster. Both players take Battle Damage equal to the total ATK of the battling monsters."
+  impressao: {"tipo":"Trap","propriedade":"Normal","texto":"During either player's Battle Step, when a Fusion Monster you control battles an opponent's Fusion Monster: Target both those Fusion Monsters; negate the attack, and if you do, each player takes damage equal to the combined ATK of both those Fusion Monsters.","nome_pt":"Fusão Final","texto_pt":"Durante a Etapa de Batalha de cada duelista, quando um Monstro de Fusão que você controla batalhar um Monstro de Fusão do oponente: escolha os dois Monstros de Fusão; negue o ataque e, se isso acontecer, cada duelista sofre dano igual ao ATK combinado dos dois Monstros de Fusão.","fonte":5445951}
   fonte: 5417236
 - nome: "Honest"
   passcode: 37742478
@@ -13401,6 +13407,7 @@
   atk: 0
   def: 0
   texto: "When this card is face-up on the field, do not treat its Attribute as DARK. When this card is removed from the field, you can Special Summon 1 \"Clear Cube\" from your Deck."
+  impressao: {"tipo":"Monster","atributo":"DARK","raca":"Machine","tipos":["Effect"],"nivel":1,"atk":0,"def":0,"texto":"You are unaffected by the effects of \"Clear World\". During your Main Phase, you can Normal Summon 1 monster that mentions \"Clear World\", in addition to your Normal Summon/Set. (You can only gain this effect once per turn.) If this face-up card in its owner's control leaves the field by an opponent's card: You can Special Summon 1 monster that mentions \"Clear World\" from your Deck.","nome_pt":"Cubo Translúcido","texto_pt":"Você não é afetado pelos efeitos de \"Mundo Translúcido\". Durante sua Fase Principal, você pode Invocar por Invocação-Normal 1 monstro que mencione \"Mundo Translúcido\", em adição à sua Invocação-Normal/Baixar (padrão). (Você só pode se aproveitar deste efeito uma vez por turno.) Se este card com a face para cima sob o controle do seu dono deixar o campo devido a um card do oponente: você pode Invocar por Invocação-Especial 1 monstro que mencione \"Mundo Translúcido\" do seu Deck.","fonte":5638580}
   fonte: 5408246
 - nome: "Gyroid"
   passcode: 18325492
@@ -14786,6 +14793,7 @@
   tipo: "Trap"
   propriedade: "Continuous"
   texto: "Declare a monster Type. As long as this card is on the field, all monsters in both Graveyards are treated as that Type."
+  impressao: {"tipo":"Trap","propriedade":"Continuous","texto":"Once per turn: You can declare 1 Monster Type; monsters in the GYs become that Type for the rest of this turn (even if this card leaves the field).","nome_pt":"Julgamento do Renascimento","texto_pt":"Uma vez por turno: você pode declarar 1 Tipo de Monstro; monstros nos Cemitérios se tornam desse Tipo pelo resto deste turno (mesmo que este card deixe o campo).","fonte":5987513}
   fonte: 5408258
 - nome: "Exploder Dragon"
   passcode: 20586572
@@ -22850,6 +22858,7 @@
   tipo: "Spell"
   propriedade: "Field"
   texto: "The Attribute of any \"Crystal Beast\" monster on the field or Graveyard is treated as DARK. When calculating Battle Damage caused by a \"Crystal Beast\" monster, you can send 1 \"Crystal Beast\" monster from your Deck to the Graveyard, to reduce any Battle Damage you take to 0. If a \"Rainbow Dragon\" monster attacks, the effect of the monster it attacks is negated during the Battle Phase. When this card is removed from the field, all face-up \"Crystal Beast\" monsters on the field are destroyed."
+  impressao: {"tipo":"Spell","propriedade":"Field","texto":"All \"Crystal Beast\" monsters on the field and in the GY become DARK. If an \"Ultimate Crystal\" monster attacks, negate the effects of the attack target during that Battle Phase. During damage calculation, if a \"Crystal Beast\" monster you control battles and you would take damage: You can send 1 \"Crystal Beast\" monster from your Deck to the GY; you take no battle damage from that battle.","nome_pt":"Trevas Avançadas","texto_pt":"Todos os monstros \"Fera Cristalina\" no campo e no Cemitério se tornam de TREVAS. Se um monstro \"Cristalino(a) Definitivo(a)\" atacar, negue os efeitos do alvo do ataque durante essa Fase de Batalha. Durante o cálculo de dano, se um monstro \"Fera Cristalina\" que você controla batalhar e você sofreria dano: você pode enviar 1 monstro \"Fera Cristalina\" do seu Deck para o Cemitério; você não sofre dano de batalha dessa batalha.","fonte":5440871}
   fonte: 5417251
 - nome: "Blaze Accelerator"
   passcode: 69537999
@@ -24410,6 +24419,7 @@
   atk: 1600
   def: 1800
   texto: "When this card is face-up on the field, do not treat its Attribute as DARK. When this card makes a direct attack and inflicts Battle Damage to your opponent, inflict 300 damage for each card in your opponent's hand."
+  impressao: {"tipo":"Monster","atributo":"DARK","raca":"Rock","tipos":["Effect"],"nivel":4,"atk":1600,"def":1800,"texto":"You are unaffected by the effects of \"Clear World\". If this card is Normal or Special Summoned: You can activate this effect; this turn, your monsters that mention \"Clear World\" can attack directly. You can only use this effect of \"Clear Rage Golem\" once per turn. When this card inflicts battle damage to your opponent: You can inflict 300 damage to your opponent for each card in their hand.","nome_pt":"Golem da Fúria Translúcido","texto_pt":"Você não é afetado pelos efeitos de \"Mundo Translúcido\". Se este card for Invocado por Invocação-Normal ou Especial: você pode ativar este efeito; neste turno, seus monstros que mencionem \"Mundo Translúcido\" podem atacar diretamente. Você só pode usar este efeito de \"Golem da Fúria Translúcido\" uma vez por turno. Quando este card causar dano de batalha ao seu oponente: você pode causar 300 de dano ao seu oponente para cada card na mão dele.","fonte":5638579}
   fonte: 5408251
 - nome: "Gamma The Magnet Warrior"
   nome_no_jogo: "Gamma the Magnet Warrior"
@@ -25648,6 +25658,7 @@
   nivel: 8
   def: 0
   texto: "While this card is face-up on the field, do not treat its Attribute as DARK. When this card attacks an opponent's monster, this card's ATK is double the ATK of the attacked monster during damage calculation. If this card attacks, change it to Defense Position after the Battle Phase. Additionally, by discarding 1 card from your hand during damage calculation, this card cannot be destroyed by battle."
+  impressao: {"tipo":"Monster","atributo":"DARK","raca":"Dragon","tipos":["Effect"],"nivel":8,"def":0,"texto":"You are unaffected by the effects of \"Clear World\". If this card attacks an opponent's monster, this card's ATK becomes twice the ATK of the attack target, during damage calculation only. If this card would be destroyed by an opponent's card effect, you can discard 1 card instead.","nome_pt":"Dragão Feroz Translúcido","texto_pt":"Você não é afetado pelos efeitos de \"Mundo Translúcido\". Se este card atacar um monstro do oponente, o ATK deste card se torna o dobro do ATK do alvo do ataque, apenas durante o cálculo de dano. Se este card seria destruído por um efeito de card do oponente, em vez disso, você pode descartar 1 card.","fonte":5550104}
   fonte: 5417232
 - nome: "Divine Dragon Ragnarok"
   passcode: 62113340
@@ -26492,6 +26503,7 @@
   atk: 1200
   def: 800
   texto: "When this card is face-up on the field, do not treat its Attribute as DARK. When this card in face-up Attack Position is destroyed by battle and sent to the Graveyard, the monster that destroyed it is also destroyed, and the top 3 cards from your opponent's Deck are sent to the Graveyard."
+  impressao: {"tipo":"Monster","atributo":"DARK","raca":"Fiend","tipos":["Effect"],"nivel":3,"atk":1200,"def":800,"texto":"You are unaffected by the effects of \"Clear World\". You can discard 2 cards, including this card; add 2 cards from your Deck to your hand, that are \"Clear World\" or Spells/Traps that mention it. You can only use this effect of \"Clear Phantom\" once per turn. If this card is destroyed: You can target 1 monster your opponent controls; destroy it, and if you do, send the top 3 cards of their Deck to the GY.","nome_pt":"Fantasma Translúcido","texto_pt":"Você não é afetado pelos efeitos de \"Mundo Translúcido\". Você pode descartar 2 cards, incluindo este card; adicione 2 cards do seu Deck à sua mão, que sejam \"Mundo Translúcido\" ou Magias/Armadilhas que o mencionem. Você só pode usar este efeito de \"Fantasma Translúcido\" uma vez por turno. Se este card for destruído: você pode escolher 1 monstro que seu oponente controla; destrua-o e, se isso acontecer, envie os 3 cards do topo do Deck dele para o Cemitério.","fonte":5900678}
   fonte: 5408250
 - nome: "Cyril, Monk of Dark World"
   numero_interno: 3785
@@ -26504,6 +26516,7 @@
   atk: 100
   def: 300
   texto: "When the effect of another card sends this card from your hand to the Graveyard, you can Special Summon it in Defense Position on your opponent's field. When you Special Summon it, your opponent must discard 1 card from their hand."
+  impressao: {"tipo":"Monster","atributo":"DARK","raca":"Fiend","tipos":["Effect"],"nivel":1,"atk":100,"def":300,"texto":"If this card is discarded to the GY by card effect: Special Summon this card to your opponent's field in Defense Position. If this card is Special Summoned by the effect of a \"Dark World\" card: Your opponent discards 1 card.","nome_pt":"Cerúli, Guru do Mundo Negro","texto_pt":"Se este card for descartado para o Cemitério por um efeito de card: Invoque este card por Invocação-Especial no campo do seu oponente em Posição de Defesa. Se este card for Invocado por Invocação-Especial pelo efeito de um card \"Mundo Negro\": seu oponente descarta 1 card.","fonte":5935895}
   fonte: 5417233
 - nome: "Dark Necrofear"
   passcode: 31829185
@@ -26558,6 +26571,7 @@
   atk: 0
   def: 0
   texto: "Tribute this card to Special Summon any 1 \"Uria, Lord of Searing Flames\", \"Hamon, Lord of Striking Thunder\" or \"Raviel, Lord of Phantasms\" from your Graveyard, ignoring the Summoning conditions. This card cannot attack the turn you activate this effect."
+  impressao: {"tipo":"Monster","atributo":"DARK","raca":"Fiend","tipos":["Effect"],"nivel":5,"atk":0,"def":0,"texto":"You can Tribute this card; Special Summon 1 \"Uria, Lord of Searing Flames\", \"Hamon, Lord of Striking Thunder\", or \"Raviel, Lord of Phantasms\" from your hand or Deck, ignoring its Summoning conditions, also monsters you control cannot attack for the rest of this turn. You can only use this effect of \"Dark Summoning Beast\" once per turn. You can banish this card from your GY; add 1 \"Uria, Lord of Searing Flames\", \"Hamon, Lord of Striking Thunder\", or \"Raviel, Lord of Phantasms\" from your Deck to your hand.","nome_pt":"Besta da Invocação Negra","texto_pt":"Você pode oferecer este card como Tributo; Invoque por Invocação-Especial 1 \"Uria, o Senhor das Chamas Cortantes\", \"Hamon, o Senhor do Trovão Impactante\" ou \"Raviel, o Senhor dos Fantasmas\" da sua mão ou do Deck, ignorando suas condições de Invocação e, além disso, os monstros que você controla não podem atacar pelo resto deste turno. Você só pode usar este efeito de \"Besta da Invocação Negra\" uma vez por turno. Você pode banir este card do seu Cemitério; adicione 1 \"Uria, o Senhor das Chamas Cortantes\", \"Hamon, o Senhor do Trovão Impactante\" ou \"Raviel, o Senhor dos Fantasmas\" do seu Deck à sua mão.","fonte":5897672}
   fonte: 5417239
 - nome: "Mist Archfiend"
   passcode: 28601770
@@ -29763,6 +29777,7 @@
   atk: 2300
   def: 1100
   texto: "When this card is face-up on the field, do not treat its Attribute as DARK. When there are monsters on your opponent's field, you can Summon this card with 1 Tribute. If there are no other cards in your hand or control, this card gains ATK equal to the original ATK of the face-up monster with the highest original ATK on your opponent's field."
+  impressao: {"tipo":"Monster","atributo":"DARK","raca":"Warrior","tipos":["Effect"],"nivel":7,"atk":2300,"def":1100,"texto":"You can Tribute Summon this card by Tributing 1 monster that mentions \"Clear World\". Gains ATK equal to the highest original ATK among monsters your opponent controls (your choice, if tied). You are unaffected by the effects of \"Clear World\". While this Tribute Summoned card is in the Monster Zone, your opponent cannot activate the effects of Special Summoned monsters on the field with less ATK than this card.","nome_pt":"Cavaleiro Cruel Translúcido","texto_pt":"Você pode Invocar este card por Invocação-Tributo ao oferecer como Tributo 1 monstro que mencione \"Mundo Translúcido\". Ganha ATK igual ao maior ATK original dentre os monstros que seu oponente controla (em caso de empate, você seleciona). Você não é afetado pelos efeitos de \"Mundo Translúcido\". Enquanto este card Invocado por Invocação-Tributo estiver na Zona de Monstros, seu oponente não pode ativar os efeitos de monstros Invocados por Invocação-Especial no campo com menos ATK que este card.","fonte":5638581}
   fonte: 5408249
 - nome: "Dark Scorpion - Cliff the Trap Remover"
   nome_no_jogo: "Cliff the Trap Remover"
@@ -37238,6 +37253,7 @@
   tipo: "Spell"
   propriedade: "Continuous"
   texto: "Activate by removing the top 5 cards of your Deck from play. As long as this card remains on the field, it is treated as \"Toon World\". When any Toon monsters you control are destroyed by battle, you can remove from play 1 card from the top of your Deck instead."
+  impressao: {"tipo":"Spell","propriedade":"Field","texto":"When this card is activated: Banish 3 cards from the top of your Deck, face-down. This card's name becomes \"Toon World\" while in the Field Zone. Your opponent cannot target Toon monsters you control with card effects. If a Toon monster(s) you control would be destroyed by battle or card effect, you can banish 1 card from the top of your Deck, face-down, for each of those monster(s) instead.","nome_pt":"Reino Toon","texto_pt":"Quando este card for ativado: bana 3 cards do topo do seu Deck, com a face para baixo. O nome deste card se torna \"Mundo Toon\" enquanto ele estiver na Zona do Campo. Seu oponente não pode escolher monstros Toon que você controla como alvo de efeitos de card. Se um ou mais monstros Toon que você controla seriam destruídos em batalha ou por um efeito de card, em vez disso, você pode banir 1 card do topo do seu Deck, com a face para baixo, para cada um desses monstros.","fonte":5954439}
   fonte: 5417244
 - nome: "Gemini Summoner"
   passcode: 19041767
@@ -37280,6 +37296,7 @@
   tipo: "Spell"
   propriedade: "Normal"
   texto: "Return the Fusion Material Monsters listed on any Fusion Monster Card from your field or your Graveyard to your Deck. Then, Special Summon any \"Elemental Hero\" Fusion Monster that uses \"Elemental Hero Neos\" as a Fusion Material Monster from your Extra Deck, ignoring the Summoning conditions."
+  impressao: {"tipo":"Spell","propriedade":"Normal","texto":"Shuffle into the Deck, from your hand, field, or GY, the Fusion Materials that are mentioned on an \"Elemental HERO\" Fusion Monster that mentions \"Elemental HERO Neos\" as material, then Special Summon that Fusion Monster from your Extra Deck, ignoring its Summoning conditions.","nome_pt":"Contato Milagroso","texto_pt":"Embaralhe no Deck, da sua mão, do campo ou do Cemitério, as Matérias de Fusão que forem mencionadas em um Monstro de Fusão \"HERÓI do Elemento\" que mencione \"Neos, o HERÓI do Elemento\" como matéria e, depois, Invoque por Invocação-Especial esse Monstro de Fusão do seu Deck Adicional, ignorando suas condições de Invocação.","fonte":5450207}
   fonte: 5417243
 - nome: "Abyssal Kingshark"
   passcode: 44223284

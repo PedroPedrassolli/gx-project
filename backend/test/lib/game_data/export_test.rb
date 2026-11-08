@@ -103,6 +103,7 @@ describe GameData::Export do
       "tipo" => "Spell", "propriedade" => "Equip", "texto" => "Equip only to a monster."
     })
     _(export.files["cartas.yml"]).must_include "- nome: \"Card One\"\n  passcode: 2134346\n"
+    _(files["cartas.yml"].find { |card| card["nome"] == "Anime Card" }["impressao"]).must_equal({ "tipo" => "Monster", "fonte" => 1600 })
   end
 
   it "não aceita página de pacote ou episódio como carta: tenta \"Nome (card)\", o aviso do topo e o nome sem caixa" do

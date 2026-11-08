@@ -16,3 +16,11 @@
 - { nome: "Labyrinth", numero_interno: 4, fonte: 4 }
 - { nome: "Ancient Gear", passcode: 500, fonte: 5 }
 - { nome: "Ancient Gear", fonte: 6 }
+- nome: "Cyril"
+  numero_interno: 7
+  passcode_oficial: 700
+  tipo: "Spell"
+  propriedade: "Continuous"
+  texto: "Anime text."
+  impressao: {"tipo": "Monster", "atributo": "LIGHT", "raca": "Fairy", "tipos": ["Effect"], "nivel": 4, "texto": "Printed text.", "nome_pt": "Cirilo", "fonte": 70}
+  fonte: 7

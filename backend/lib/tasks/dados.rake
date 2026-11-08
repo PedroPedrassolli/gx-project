@@ -8,7 +8,7 @@ namespace :dados do
     puts export.checks
   end
 
-  desc "Cruza o pool com os scripts e o BabelCDB da engine e com as imagens do YGOPRODeck"
+  desc "Cruza o pool com os scripts e o BabelCDB da engine, as imagens do YGOPRODeck e as errata da Yugipedia"
   task cobertura: :environment do
     require "sqlite3"
     require "net/http"
@@ -28,6 +28,11 @@ namespace :dados do
 
     cards = YAML.safe_load_file(Rails.root.join("db/seeds/jogo/cartas.yml"))
     coverage = GameData::Coverage.new(cards:, database:, scripts:, images:)
+    # Texto da época das cartas pré-errata: a versão que valia quando o jogo saiu.
+    client = GameData::Yugipedia.new
+    game = client.pages_by_id([ GameData::Export::GAME ]).fetch(GameData::Export::GAME)
+    coverage.era_texts = GameData::EraText.new(client, GameData::Wikitext.release_date(game.text))
+                                          .texts(coverage.pre_errata_names)
     File.write(Rails.root.join("db/seeds/jogo/cobertura.yml"), coverage.file)
     puts coverage.summary
   end
