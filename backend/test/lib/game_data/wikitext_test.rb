@@ -36,6 +36,27 @@ describe GameData::Wikitext do
     _(wikitext.plain(nil)).must_be_nil
   end
 
+  it "lê as versões em inglês da página de errata, com a legenda" do
+    text = "== Japanese ==\n| lore0 = 日本語\n== English ==\n{{Errata table\n| lore0 = Old [[text]] here\n" \
+           "| cap0 = [[MRD-069]]<br />[[Metal Raiders]]\n| lore1 = New text\nnext line\n| cap1 = {{database link}}\n}}"
+
+    _(wikitext.errata_versions(text)).must_equal [
+      { texto: "Old text here", legenda: "[[MRD-069]]<br />[[Metal Raiders]]" },
+      { texto: "New text\nnext line", legenda: "{{database link}}" }
+    ]
+  end
+
+  it "acha a primeira data de lançamento em inglês e datas escritas ou arquivadas" do
+    set = "| ja_release_date = May 3, 2002\n| na_release_date = June 26, 2002<ref>x</ref>\n| eu_release_date =\n" \
+          "| oc_release_date = March 1, 2002\n"
+
+    _(wikitext.release_date(set)).must_equal Date.new(2002, 3, 1)
+    _(wikitext.release_date("| na_release_date = soon\n")).must_be_nil
+    _(wikitext.date("Errata list (January 5, 2010)")).must_equal Date.new(2010, 1, 5)
+    _(wikitext.date("[http://web.archive.org/web/20090220140225/http://x.com FAQ]")).must_equal Date.new(2009, 2, 20)
+    _(wikitext.date("{{database link|6895}}")).must_be_nil
+  end
+
   it "reconhece a caixa de carta, mas não a de pacote, arquétipo ou episódio" do
     _(wikitext.card_infobox?("{{CardTable2\n| password = 1\n}}")).must_equal true
     _(wikitext.card_infobox?("{{About|x|y|z}}\n{{Anime card\n| types = Dragon\n}}")).must_equal true

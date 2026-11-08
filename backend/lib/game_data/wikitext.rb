@@ -32,6 +32,32 @@ module GameData
       CGI.unescapeHTML(cleaned).gsub(/[ \t]+/, " ").gsub(/ ?\n ?/, "\n").strip.presence
     end
 
+    # Versões do texto em inglês da página "Card Errata:", da mais antiga para a mais nova,
+    # cada uma com a legenda (o código e o pacote que imprimiram aquele texto).
+    def errata_versions(text)
+      english = section(text, "English")
+      english.scan(/^\|\s*lore(\d+)\s*=/).flatten.map do |number|
+        { texto: plain(long_field(english, "lore#{number}")), legenda: field(english, "cap#{number}").to_s }
+      end
+    end
+
+    # Primeira data de lançamento em inglês de um pacote ou do jogo.
+    def release_date(text)
+      %w[en_release_date na_release_date eu_release_date oc_release_date au_release_date]
+        .filter_map { |name| date(field(text, name)) }.min
+    end
+
+    # Primeira data escrita por extenso ("June 26, 2002") ou de um arquivo do
+    # web.archive.org ("/web/20090220..."). Sem nenhuma, nil.
+    def date(text)
+      match = text.to_s.match(/([A-Z][a-z]+) (\d{1,2}), (\d{4})/)
+      month = match && Date::MONTHNAMES.index(match[1])
+      return Date.new(match[3].to_i, month, match[2].to_i) if month
+
+      archived = text.to_s[%r{web\.archive\.org/web/(\d{8})}, 1]
+      Date.strptime(archived, "%Y%m%d") if archived
+    end
+
     # A página tem a caixa de uma carta ({{CardTable2}}, {{Anime card}}, a do jogo...)?
     # O nome de uma carta às vezes é também o de um pacote, arquétipo ou episódio.
     def card_infobox?(text)

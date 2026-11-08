@@ -10,7 +10,7 @@ describe Catalog::Importer do
     importer.run
 
     _(Card.order(:engine_code).pluck(:engine_code, :name)).must_equal [
-      [ 110, "Night Assailant" ], [ 200, "Trap Hole" ], [ 500, "Ancient Gear" ], [ 900, "Clear Wall" ]
+      [ 110, "Night Assailant" ], [ 200, "Trap Hole" ], [ 500, "Ancient Gear" ], [ 700, "Cyril" ], [ 900, "Clear Wall" ]
     ]
     _(card(900).slice(:passcode, :internal_number, :source_revision)).must_equal({ "passcode" => nil, "internal_number" => 3, "source_revision" => 3 })
   end
@@ -22,10 +22,24 @@ describe Catalog::Importer do
       .must_equal({ "card_type" => "Monster", "card_attribute" => "DARK", "race" => "Fiend",
                     "monster_types" => [ "Flip", "Effect" ], "level" => 3, "attack" => 200, "defense" => 500,
                     "name_pt" => "Assaltante Noturno" })
-    _(card(110).text).must_include "FLIP"
-    _(card(110).text_pt).must_include "VIRE"
+    _(card(200).text).must_equal "Destroy it."
     _(card(200).slice(:card_type, :property, :monster_types, :text_pt))
       .must_equal({ "card_type" => "Trap", "property" => "Normal", "monster_types" => [], "text_pt" => nil })
+  end
+
+  it "mostra o texto da época da carta pré-errata, sem o português, que é do texto atual" do
+    importer.run
+
+    _(card(110).slice(:text, :text_pt, :name_pt)).must_equal({ "text" => "FLIP: Destroy 1 monster.", "text_pt" => nil,
+                                                               "name_pt" => "Assaltante Noturno" })
+  end
+
+  it "mostra os dados da carta impressa quando a carta do anime usa a oficial" do
+    importer.run
+
+    _(card(700).slice(:name, :card_type, :property, :card_attribute, :level, :text, :name_pt, :source_revision))
+      .must_equal({ "name" => "Cyril", "card_type" => "Monster", "property" => nil, "card_attribute" => "LIGHT",
+                    "level" => 4, "text" => "Printed text.", "name_pt" => "Cirilo", "source_revision" => 70 })
   end
 
   it "grava os pacotes com a disponibilidade e monta os que juntam outros" do
@@ -57,7 +71,7 @@ describe Catalog::Importer do
     ConverterGroup.create!(amount: 50)
 
     _(importer.run).must_equal counts
-    _(counts).must_equal({ cards: 4, packs: 4, pack_cards: 9, banlist_entries: 1, converter_cards: 3 })
+    _(counts).must_equal({ cards: 5, packs: 4, pack_cards: 9, banlist_entries: 1, converter_cards: 3 })
     _(Card.order(:engine_code).pluck(:id)).must_equal ids
     _(ConverterGroup.exists?(amount: 50)).must_equal false
   end

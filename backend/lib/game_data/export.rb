@@ -199,8 +199,10 @@ module GameData
     def card_entry(card, title)
       name = Wikitext.card_name(card.title)
       name_in_game = Wikitext.card_name(title)
+      printed = printed_version(card, title)
       { nome: name, nome_no_jogo: (name_in_game unless name_in_game == name), **identity(card),
-        passcode_oficial: printed_version(card, title), **details(card), fonte: card.revision }
+        passcode_oficial: printed && passcode(printed), **details(card),
+        impressao: printed && details(printed).merge(fonte: printed.revision).compact, fonte: card.revision }
     end
 
     # O que o jogador vê, como a página da carta mostra: tipo (Monster, Spell ou Trap), a
@@ -218,11 +220,12 @@ module GameData
 
     def text_field(card, name) = Wikitext.plain(Wikitext.field(card.text, name))
 
-    # Carta do anime que o OCG imprimiu depois (com outro efeito ou outro nome): o passcode
-    # da impressão, que a cobertura usa quando não há script da versão do jogo.
+    # Carta do anime que o OCG imprimiu depois (com outro efeito ou outro nome): a página da
+    # impressão. A cobertura usa o passcode dela quando não há script da versão do jogo, e
+    # aí o jogador vê os dados da impressão (impressao no cartas.yml).
     def printed_version(card, title)
       official = @official[Wikitext.base_title(title)]
-      passcode(official) if official && official.id != card.id && passcode(card).nil?
+      official if official && official.id != card.id && passcode(card).nil? && passcode(official)
     end
 
     # Carta oficial tem passcode; versão que só existe no jogo tem o número interno dele.
@@ -257,6 +260,7 @@ module GameData
       document([ "Cartas do jogo de referência, uma por página da Yugipedia.",
                  "nome_no_jogo: o nome que o jogo usa, quando mudou depois.",
                  "passcode_oficial: carta do anime que o OCG imprimiu depois; o passcode da impressão.",
+                 "impressao: os mesmos dados (tipo a texto_pt e fonte), da carta impressa.",
                  "tipo a def: como a página da carta mostra (ATK ou DEF \"?\" fica sem valor).",
                  "texto: em inglês; nome_pt e texto_pt: em português, quando a carta saiu em português.",
                  "fonte: revisão da página da carta (yugipedia.com/index.php?oldid=N)." ],

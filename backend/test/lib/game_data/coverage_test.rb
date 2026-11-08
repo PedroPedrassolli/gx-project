@@ -33,7 +33,18 @@ describe GameData::Coverage do
 
   it "resume a cobertura" do
     _(coverage.summary).must_equal({ cartas: 11, oficiais: 5, normais: 1, pre_errata: 1, anime: 3, usar_oficial: 2,
-                                     tirar_do_pool: 1, sem_script: 1, sem_dados: 0, sem_imagem: 7 })
+                                     tirar_do_pool: 1, sem_script: 1, pre_errata_sem_texto: 1, sem_dados: 0,
+                                     sem_imagem: 7 })
+  end
+
+  it "grava o texto da época das cartas pré-errata, com a fonte" do
+    coverage.era_texts = { "Night Assailant" => { texto: "FLIP: Destroy 1 monster.", fonte: 77 } }
+    data = YAML.safe_load(coverage.file)
+
+    _(coverage.pre_errata_names).must_equal [ "Night Assailant" ]
+    _(data["excecoes"][0].slice("texto", "fonte_texto")).must_equal({ "texto" => "FLIP: Destroy 1 monster.", "fonte_texto" => 77 })
+    _(data["excecoes"][1]).wont_include "texto"
+    _(data["resumo"]["pre_errata_sem_texto"]).must_equal 0
   end
 
   it "grava só as exceções, com o script usado nas cartas do anime" do

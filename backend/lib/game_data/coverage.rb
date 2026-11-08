@@ -16,15 +16,21 @@ module GameData
                             .to_h { |row| [ row[:alias], row[:id] ] }
     end
 
+    # Texto da época das cartas pré-errata, por nome: { "Sangan" => { texto:, fonte: } }.
+    attr_writer :era_texts
+
     def entries
       @entries ||= @cards.map { |card| card["passcode"] ? official(card) : anime(card) }
     end
+
+    def pre_errata_names = entries.select { |entry| entry[:motivo] == "pre_errata" }.pluck(:nome)
 
     def summary
       { cartas: entries.size, oficiais: entries.count { |entry| entry[:passcode] },
         normais: entries.count { |entry| entry[:motivo] == "normal" },
         pre_errata: count("pre_errata"), anime: count("anime"), usar_oficial: count("usar_oficial"),
         tirar_do_pool: count("tirar_do_pool"), sem_script: count("sem_script"),
+        pre_errata_sem_texto: pre_errata_names.count { |name| !era_texts[name] },
         sem_dados: entries.count { |entry| entry[:codigo] && !@by_id[entry[:codigo]] },
         sem_imagem: entries.count { |entry| !entry[:imagem] } }
     end
@@ -34,16 +40,24 @@ module GameData
       [ "# Pool do jogo × engine (scripts e BabelCDB) × imagens do YGOPRODeck (ADR 0006).",
         "# Regra geral: a carta entra pelo próprio passcode, com o script oficial (carta Normal",
         "# não tem script) e a imagem do YGOPRODeck. Aqui ficam só as exceções:",
-        "#   pre_errata: usa o script antigo da carta (o jogo é de 2008);",
+        "#   pre_errata: usa o script antigo da carta (o jogo é de 2008) e o texto da época",
+        "#     (texto e fonte_texto: a versão da página \"Card Errata:\" que valia quando o jogo saiu);",
         "#   anime: versão do jogo, pelo script não oficial (VG, mesmo nome ou Anime);",
         "#   usar_oficial: carta do anime sem script; usa a carta impressa depois, de mesmo nome;",
         "#   tirar_do_pool: carta do anime sem script nenhum; fica fora até ganhar um script;",
         "#   sem_script: carta oficial sem script na engine.",
         "# Gerado por `bin/rails dados:cobertura`: não edite à mão.",
-        "resumo: #{flow(summary)}", "excecoes:", *exceptions.map { |entry| "  - #{flow(entry)}" } ].join("\n") + "\n"
+        "resumo: #{flow(summary)}", "excecoes:", *exceptions.map { |entry| "  - #{flow(with_era_text(entry))}" } ].join("\n") + "\n"
     end
 
     private
+
+    def era_texts = @era_texts || {}
+
+    def with_era_text(entry)
+      text = entry[:motivo] == "pre_errata" && era_texts[entry[:nome]]
+      text ? entry.merge(texto: text[:texto], fonte_texto: text[:fonte]) : entry
+    end
 
     def official(card)
       code = card["passcode"]
