@@ -28,8 +28,8 @@ React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──
 - Tudo roda em planos gratuitos, sem cartão: Vercel Hobby (funções em São Paulo), Supabase
   Free, Ably Free e GitHub Actions em repositório público. Os limites e quanto cada duelo
   gasta estão no [ADR 0004](docs/adr/0004-hospedagem.md).
-- Catálogo pela API em `/api/cards`, `/api/packs` e `/api/banlists`, com busca, filtros e cache
-  na CDN ([ADR 0007](docs/adr/0007-api-do-catalogo.md)).
+- Catálogo em `/cartas`: o pool inteiro, com busca e filtros. Os dados vêm da API em `/api/cards`, `/api/packs` e `/api/banlists`, com cache na CDN
+  ([ADR 0007](docs/adr/0007-api-do-catalogo.md)).
 - Licença AGPL-3.0: quem usa o site pela rede tem direito ao código ([ADR 0003](docs/adr/0003-agpl.md)).
 
 ## Rodar no seu computador

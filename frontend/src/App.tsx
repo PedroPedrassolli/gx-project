@@ -16,6 +16,12 @@ export function App() {
         </p>
       </header>
 
+      <p>
+        <a className="cta" href="/cartas">
+          Ver o catálogo de cartas
+        </a>
+      </p>
+
       <section aria-labelledby="status-title">
         <h2 id="status-title">Em construção</h2>
         <p>{phase ? `Fase atual: ${phase.code}, ${phase.name}.` : "Todas as fases terminaram."}</p>
