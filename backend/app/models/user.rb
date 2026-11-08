@@ -5,6 +5,8 @@ class User < ApplicationRecord
 
   has_secure_password
   has_many :sessions, dependent: :destroy
+  has_many :collection_cards, dependent: :delete_all
+  has_many :decks, dependent: :destroy
 
   normalizes :email, with: ->(email) { email.strip.downcase }
   normalizes :nickname, with: ->(nickname) { nickname.strip }

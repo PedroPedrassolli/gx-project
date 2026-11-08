@@ -18,7 +18,14 @@ module Accounts
       # O erro de faixa vira erro na data, que é o campo que a pessoa preencheu.
       user.errors.delete(:age_group)
       user.errors.add(:birth_date, birth_date_error(date)) unless user.age_group
-      user.errors.empty? && user.save
+      return false if user.errors.any?
+
+      # Conta nova já ganha o deck inicial do jogo (escopo 3.2): tudo ou nada.
+      User.transaction do
+        user.save!
+        Decks::StarterDeck.give_to(user)
+      end
+      true
     end
 
     private
