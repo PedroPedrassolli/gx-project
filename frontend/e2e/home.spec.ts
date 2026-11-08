@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => mockSession(page));
 test("a página inicial mostra o projeto e a fase atual", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: "GX Project" })).toBeVisible();
-  await expect(page.getByText("Fase atual: F2, Contas e montagem de decks.")).toBeVisible();
+  await expect(page.getByText("Fase atual: F3, Duelo 1x1 em sala.")).toBeVisible();
   await expect(page.getByRole("link", { name: "Ver o catálogo de cartas" })).toHaveAttribute(
     "href",
     "/cartas",
