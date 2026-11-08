@@ -7,7 +7,7 @@
 #   tirar_do_pool: carta do anime sem script nenhum; fica fora até ganhar um script;
 #   sem_script: carta oficial sem script na engine.
 # Gerado por `bin/rails dados:cobertura`: não edite à mão.
-resumo: { cartas: 3499, oficiais: 3415, normais: 617, pre_errata: 52, anime: 61, usar_oficial: 8, tirar_do_pool: 15, sem_script: 0, sem_dados: 0, sem_imagem: 76 }
+resumo: { cartas: 3496, oficiais: 3418, normais: 617, pre_errata: 52, anime: 61, usar_oficial: 5, tirar_do_pool: 12, sem_script: 0, sem_dados: 0, sem_imagem: 73 }
 excecoes:
   - { nome: "Night Assailant", passcode: 16226786, codigo: 16226796, motivo: "pre_errata", imagem: true }
   - { nome: "Sangan", passcode: 26202165, codigo: 511002631, motivo: "pre_errata", imagem: true }
@@ -28,7 +28,6 @@ excecoes:
   - { nome: "Ultimate Offering", passcode: 80604091, codigo: 511003023, motivo: "pre_errata", imagem: true }
   - { nome: "Attribute Chameleon", numero_interno: 3784, codigo: 100000198, motivo: "anime", script: "Attribute Chameleon", imagem: false }
   - { nome: "Attribute Gravity", numero_interno: 3783, codigo: 511000079, motivo: "anime", script: "Attribute Gravity", imagem: false }
-  - { nome: "Labyrinth of Nightmare", codigo: 66526672, motivo: "usar_oficial", imagem: true }
   - { nome: "Mind Crush", passcode: 15800838, codigo: 511003026, motivo: "pre_errata", imagem: true }
   - { nome: "Zero Sprite", numero_interno: 3766, codigo: 511000003, motivo: "anime", script: "Zero Sprite", imagem: false }
   - { nome: "Black Magic Revival Casket", numero_interno: 4822, codigo: 9287078, motivo: "usar_oficial", imagem: true }
@@ -74,7 +73,6 @@ excecoes:
   - { nome: "Flame Wall", numero_interno: 3771, codigo: 511000131, motivo: "anime", script: "Flame Wall", imagem: false }
   - { nome: "Fog Palace", numero_interno: 3767, motivo: "tirar_do_pool", imagem: false }
   - { nome: "Sacred Protective Barrier", numero_interno: 3768, motivo: "tirar_do_pool", imagem: false }
-  - { nome: "Crystal Counter", motivo: "tirar_do_pool", imagem: false }
   - { nome: "Necrovalley", passcode: 47355498, codigo: 511002998, motivo: "pre_errata", imagem: true }
   - { nome: "Dark Archetype", numero_interno: 3769, codigo: 100000032, motivo: "anime", script: "Dark Archetype", imagem: false }
   - { nome: "Dark Psycho Eye", numero_interno: 3770, codigo: 100000033, motivo: "anime", script: "Dark Psycho Eye", imagem: false }
@@ -139,9 +137,5 @@ excecoes:
   - { nome: "The Sky Lord", numero_interno: 3730, codigo: 100000109, motivo: "anime", script: "The Sky Lord", imagem: false }
   - { nome: "The Spiritual Lord", numero_interno: 3732, codigo: 100000108, motivo: "anime", script: "The Spiritual Lord", imagem: false }
   - { nome: "Toy Emperor", numero_interno: 3740, codigo: 511000006, motivo: "anime", script: "Toy Emperor", imagem: false }
-  - { nome: "Resurrection of Chakra", codigo: 39399168, motivo: "usar_oficial", imagem: true }
-  - { nome: "Pharaoh's Servant", motivo: "tirar_do_pool", imagem: false }
-  - { nome: "Penalty Game", motivo: "tirar_do_pool", imagem: false }
-  - { nome: "Ancient Gear", codigo: 31557782, motivo: "usar_oficial", imagem: true }
   - { nome: "Toon Kingdom", numero_interno: 3789, codigo: 511001251, motivo: "anime", script: "Toon Kingdom (VG)", imagem: false }
   - { nome: "Miracle Contact", numero_interno: 3752, codigo: 511600380, motivo: "anime", script: "Miracle Contact (Anime)", imagem: false }

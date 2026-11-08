@@ -129,14 +129,48 @@ module GameData
     # redirecionamento do nome antigo para o atual).
     def card_pages
       @card_pages ||= begin
-        in_game = @client.pages_by_title(titles, section: 0)
-        @official = @client.pages_by_title(titles.map { |title| Wikitext.base_title(title) }, section: 0)
-        titles.each_with_object({}) do |title, chosen|
+        in_game = card_pages_by_title(titles)
+        @official = official_pages
+        chosen = titles.each_with_object({}) do |title, found|
           card = choose(title, in_game[title], @official[Wikitext.base_title(title)])
-          chosen[title] = card if card
+          found[title] = card if card
         end
+        same_name_ignoring_case(chosen)
       end
     end
+
+    # Título sem página que só difere de outra carta na caixa das letras ("Feeds On Life" e
+    # "Feeds on Life"): a Yugipedia diferencia, o jogo não.
+    def same_name_ignoring_case(chosen)
+      by_name = chosen.values.index_by { |card| Wikitext.card_name(card.title).downcase }
+      (titles - chosen.keys).each do |title|
+        card = by_name[Wikitext.card_name(title).downcase]
+        chosen[title] = card if card
+      end
+      chosen
+    end
+
+    # Página oficial de cada título, sem o qualificador do jogo. Quando o nome puro é de
+    # outra coisa (pacote, arquétipo, episódio), a carta está em "Nome (card)" ou na página
+    # que o aviso do topo indica ("For the card, see Penalty Game!").
+    def official_pages
+      bases = titles.map { |title| Wikitext.base_title(title) }.uniq
+      pages = @client.pages_by_title(bases, section: 0)
+      options = bases.reject { |base| card_page?(pages[base]) }.index_with do |base|
+        [ "#{base} (card)", Wikitext.card_hatnote(pages[base]&.text.to_s) ].compact
+      end
+      found = card_pages_by_title(options.values.flatten.uniq)
+      bases.index_with do |base|
+        card_page?(pages[base]) ? pages[base] : options[base].filter_map { |title| found[title] }.first
+      end.compact
+    end
+
+    # Só vale página com a caixa de uma carta.
+    def card_pages_by_title(titles)
+      @client.pages_by_title(titles, section: 0).select { |_title, page| card_page?(page) }
+    end
+
+    def card_page?(page) = page.present? && Wikitext.card_infobox?(page.text)
 
     # Carta do anime que o jogo trouxe vale pela página do jogo, mesmo que o OCG tenha
     # impresso uma carta com o mesmo nome depois. As outras valem pela carta oficial (com

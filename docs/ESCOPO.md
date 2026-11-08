@@ -354,7 +354,7 @@ Fonte: Yugipedia (página de bônus e desafios do jogo de referência). Fórmula
 | 83 | New Bonus | 30 | Condição a descobrir; sem ela, fica desligado |
 
 ## Anexo B: dados a levantar na F0 (com fonte por item)
-1. Lista das 3.501 cartas, com os passcodes, incluindo as do anime e de DLC. Feito: `cartas.yml` e `extras.yml`, com 3.499 cartas (faltam 2, ver o README da pasta).
+1. Lista das 3.501 cartas, com os passcodes, incluindo as do anime e de DLC. Feito: `cartas.yml` e `extras.yml`, com 3.496 cartas (faltam 5, ver o README da pasta).
 2. Todos os pacotes: nome, preço, cartas e raridade por carta, regra de disponibilidade (dia, nível, %, código, UMD/nota). Páginas de cada pacote do jogo no Yugipedia. Feito: `pacotes.yml` (48 pacotes) e `disponibilidade.yml` (8 pendentes no Anexo C).
 3. Chances por raridade dentro do pacote, se existir fonte. Não achado: valem os pesos do admin (3.4); pergunta no Anexo C.
 4. Deck inicial. Feito: `deck_inicial.yml` (principal, side e 3 Destiny).
