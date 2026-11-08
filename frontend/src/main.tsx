@@ -5,6 +5,7 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import { App } from "./App.tsx";
 import { Catalog } from "./catalog/Catalog.tsx";
 import { Layout, NotFound } from "./Layout.tsx";
+import { LogInPage } from "./account/LogInPage.tsx";
 import "./styles.css";
 
 // Dados da API pelo TanStack Query; as páginas pelo React Router (escopo 5.8). A Vercel
@@ -24,6 +25,7 @@ createRoot(root).render(
           <Route element={<Layout />}>
             <Route index element={<App />} />
             <Route path="cartas" element={<Catalog />} />
+            <Route path="entrar" element={<LogInPage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSession, request } from "../api.ts";
+import { getSession, request, type User } from "../api.ts";
 
 // A sessão (quem está logado e o token CSRF) fica guardada pelo TanStack Query: todas as
 // telas leem dela, e entrar ou sair manda buscar de novo.
@@ -12,6 +12,15 @@ export function useSession() {
 function useRefreshSession() {
   const client = useQueryClient();
   return () => client.invalidateQueries({ queryKey: SESSION_KEY });
+}
+
+export function useLogIn() {
+  const refresh = useRefreshSession();
+  return useMutation({
+    mutationFn: (form: { email: string; password: string }) =>
+      request<{ user: User }>("POST", "/api/session", form),
+    onSuccess: refresh,
+  });
 }
 
 export function useLogOut() {
