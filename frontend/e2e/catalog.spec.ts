@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 // A API é simulada: o "vite preview" só serve o front.
@@ -25,26 +25,66 @@ const cards = [
   },
   { id: 3, name: "Mirror Force", name_pt: "Força Espelho", card_type: "Trap", property: "Normal" },
 ];
+const detail = {
+  ...cards[0],
+  passcode: 46986414,
+  text: "The ultimate wizard in terms of attack and defense.",
+  text_pt: "O mago definitivo em termos de ataque e defesa.",
+  packs: [{ id: 7, rarity: "ultra_rare" }],
+  source: "https://yugipedia.com/index.php?oldid=1",
+};
+const packs = [{ id: 7, name: "Beginner Monsters", position: 1, card_count: 1 }];
 
-test.beforeEach(async ({ page }) => {
-  await page.route("**/api/cards", (route) => route.fulfill({ json: { data: cards } }));
-});
+async function mockApi(page: Page) {
+  await page.route("**/api/**", async (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname === "/api/packs") return route.fulfill({ json: { data: packs } });
+    if (url.pathname === "/api/cards") {
+      const data = url.searchParams.get("pack") ? [{ ...cards[0], rarity: "ultra_rare" }] : cards;
+      return route.fulfill({ json: { data } });
+    }
+    if (url.pathname === "/api/cards/1") return route.fulfill({ json: { data: detail } });
+    return route.fulfill({ status: 404, json: { error: { status: 404 } } });
+  });
+}
+
+test.beforeEach(async ({ page }) => mockApi(page));
 
 test("lista as cartas e busca pelo nome em português", async ({ page }) => {
   await page.goto("/cartas");
   await expect(page.getByRole("status")).toHaveText("3 cartas");
   await page.getByLabel("Nome").fill("mago");
   await expect(page.getByRole("status")).toHaveText("1 carta");
-  await expect(page.getByRole("listitem")).toContainText("Mago Negro");
-  await expect(page.getByRole("listitem")).toContainText("Mago / Normal");
+  await expect(page.getByRole("button", { name: /Mago Negro/ })).toBeVisible();
 });
 
-test("filtra pelo tipo de carta e mostra a banlist", async ({ page }) => {
+test("filtra pelo tipo de carta e pelo pacote, com a raridade", async ({ page }) => {
   await page.goto("/cartas");
   await page.getByRole("radio", { name: "Magia" }).check();
+  await expect(page.getByRole("button", { name: /Pote da Ganância/ })).toContainText("Proibida");
+  await page.getByRole("button", { name: "Limpar filtros" }).click();
+  await page.getByText("Mais filtros").click();
+  await page.getByLabel("Pacote").selectOption({ label: "Beginner Monsters" });
   await expect(page.getByRole("status")).toHaveText("1 carta");
-  await expect(page.getByRole("listitem")).toContainText("Pote da Ganância");
-  await expect(page.getByRole("listitem")).toContainText("Proibida");
+  await expect(page.getByRole("button", { name: /Mago Negro/ })).toContainText("Ultra Rara");
+});
+
+test("mostra o detalhe da carta e troca o idioma do texto", async ({ page }) => {
+  await page.goto("/cartas");
+  await page.getByRole("button", { name: /Mago Negro/ }).click();
+  const panel = page.getByRole("region", { name: "Mago Negro" });
+  await expect(panel).toContainText("O mago definitivo");
+  await expect(panel).toContainText("Beginner Monsters · Ultra Rara");
+  await expect(page).toHaveURL(/carta=1/);
+  await page.getByRole("radio", { name: "Inglês" }).check();
+  await expect(page.getByRole("region", { name: "Dark Magician" })).toContainText(
+    "The ultimate wizard",
+  );
+});
+
+test("abre pelo link da carta e avisa quando ela não existe", async ({ page }) => {
+  await page.goto("/cartas?carta=99");
+  await expect(page.getByRole("heading", { name: "Carta não encontrada." })).toBeVisible();
 });
 
 test("avisa quando a API falha", async ({ page }) => {
@@ -53,9 +93,9 @@ test("avisa quando a API falha", async ({ page }) => {
   await expect(page.getByRole("alert")).toHaveText("Não deu para carregar as cartas.");
 });
 
-test("o catálogo passa no axe sem violações", async ({ page }) => {
-  await page.goto("/cartas");
-  await expect(page.getByRole("status")).toHaveText("3 cartas");
+test("o catálogo com uma carta aberta passa no axe sem violações", async ({ page }) => {
+  await page.goto("/cartas?carta=1");
+  await expect(page.getByRole("region", { name: "Mago Negro" })).toBeVisible();
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
 });

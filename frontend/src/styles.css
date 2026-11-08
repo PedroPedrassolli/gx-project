@@ -167,9 +167,54 @@ button {
   cursor: pointer;
 }
 
+.reset {
+  align-self: end;
+}
+
+.more {
+  grid-column: 1 / -1;
+}
+
+.more summary {
+  cursor: pointer;
+  color: var(--color-accent);
+}
+
+.more-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.75rem 1rem;
+  margin-top: 0.75rem;
+}
+
 :is(input, select, button):focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+.catalog-body {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* Na tela larga, o detalhe fica ao lado da lista; na estreita, em cima dela. */
+@media (min-width: 960px) {
+  .catalog-body {
+    grid-template-columns: minmax(0, 1fr) 24rem;
+  }
+
+  .results {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .card-detail {
+    position: sticky;
+    top: 1rem;
+    grid-row: 1;
+    grid-column: 2;
+    align-self: start;
+  }
 }
 
 .card-grid {
@@ -225,8 +270,15 @@ button {
   text-align: left;
 }
 
+.card-tile[aria-current="true"] {
+  border-color: var(--color-accent);
+  border-left-color: var(--frame);
+}
+
 .type-line,
-.stats {
+.stats,
+.muted,
+.other-name {
   margin: 0;
   color: var(--color-muted);
   font-size: 0.875rem;
@@ -239,4 +291,25 @@ button {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.1);
   font-size: 0.8rem;
+}
+
+.detail {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--color-border);
+  border-top: 8px solid var(--frame);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.detail h2 {
+  margin: 0;
+}
+
+.detail .text {
+  white-space: pre-line;
+}
+
+.packs {
+  padding-left: 1.25rem;
+  font-size: 0.875rem;
 }
