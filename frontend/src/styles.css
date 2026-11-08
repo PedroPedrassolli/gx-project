@@ -436,3 +436,16 @@ img[hidden] {
 .form .cta {
   justify-self: start;
 }
+
+/* Progresso da coleção: total e por pacote. */
+.progress h2 {
+  margin-top: 0;
+  font-size: 1.125rem;
+}
+
+.pack-progress {
+  display: grid;
+  gap: 0.25rem;
+  padding-left: 1.25rem;
+  color: var(--color-muted);
+}
