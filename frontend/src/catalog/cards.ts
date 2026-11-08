@@ -65,9 +65,9 @@ export const EMPTY_FILTERS: Filters = {
 };
 
 // Imagens das cartas no Cloudflare Pages (ADR 0004), em WebP com 3 larguras: p (112) na
-// lista, m (268) e g (421, a da imagem original) no detalhe.
+// lista, m (268) e g (813, a da imagem original) no detalhe.
 export const IMAGES = "https://gx-project-imagens.pages.dev/cards";
-export const IMAGE_WIDTHS = { p: 112, m: 268, g: 421 };
+export const IMAGE_WIDTHS = { p: 112, m: 268, g: 813 };
 
 export function imageUrl(code: number, size: keyof typeof IMAGE_WIDTHS): string {
   return `${IMAGES}/${size}/${code}.webp`;
