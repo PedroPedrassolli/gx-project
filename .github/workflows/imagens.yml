@@ -40,14 +40,37 @@ jobs:
       - name: Projeto no Cloudflare Pages
         id: projeto
         run: |
-          api="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects"
-          auth="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
-          if ! curl -fsS -H "$auth" "$api/$PROJECT" -o projeto.json; then
-            jq -n --arg name "$PROJECT" '{name: $name, production_branch: "main"}' |
-              curl -fsS -H "$auth" -H "Content-Type: application/json" --data @- "$api" -o projeto.json
-            echo "::notice title=Cloudflare Pages::Projeto $PROJECT criado."
+          base="https://api.cloudflare.com/client/v4"
+          api="$base/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects"
+          # Chama a API do Cloudflare: imprime o status HTTP e guarda a resposta em resposta.json.
+          cf() {
+            curl -sS -o resposta.json -w '%{http_code}' -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$@"
+          }
+
+          status=$(cf "$api/$PROJECT")
+          if [ "$status" = 404 ]; then
+            status=$(jq -n --arg name "$PROJECT" '{name: $name, production_branch: "main"}' |
+              cf -H "Content-Type: application/json" --data @- "$api")
+            [ "$status" != 200 ] || echo "::notice title=Cloudflare Pages::Projeto $PROJECT criado."
           fi
-          echo "site=https://$(jq -r '.result.subdomain' projeto.json)" >> "$GITHUB_OUTPUT"
+
+          # Deu erro: explica o que o Cloudflare respondeu e se o token vale, sem mostrar nada
+          # dos secrets (o log deste repositório é público).
+          if [ "$status" != 200 ]; then
+            errors=$(jq -r '[.errors[]? | "\(.code) \(.message)"] | join("; ")' resposta.json 2> /dev/null || true)
+            token="não vale (confira se colou o token inteiro)"
+            [ "$(cf "$base/user/tokens/verify")" != 200 ] || token="vale (token do usuário)"
+            [ "$(cf "$base/accounts/$CLOUDFLARE_ACCOUNT_ID/tokens/verify")" != 200 ] || token="vale (token da conta)"
+            account="não deu para conferir"
+            if [ "$(cf "$base/accounts?per_page=50")" = 200 ]; then
+              account="não está entre as contas do token"
+              jq -e --arg id "$CLOUDFLARE_ACCOUNT_ID" '.result | map(.id) | index($id)' resposta.json > /dev/null &&
+                account="está entre as contas do token"
+            fi
+            echo "::error title=Cloudflare Pages::HTTP $status ($errors). O token $token. O CLOUDFLARE_ACCOUNT_ID $account. O token precisa da permissão Conta → Cloudflare Pages → Editar."
+            exit 1
+          fi
+          echo "site=https://$(jq -r '.result.subdomain' resposta.json)" >> "$GITHUB_OUTPUT"
 
       - name: Gerar as imagens
         env:
