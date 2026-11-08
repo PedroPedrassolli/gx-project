@@ -39,6 +39,15 @@ Rails.application.configure do
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
+  # E-mail pelo SMTP do Brevo (ADR 0004 e 0008). Sem a chave na Vercel, nada sai: o
+  # envio só aparece no log.
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.perform_deliveries = ENV["BREVO_SMTP_KEY"].present?
+  config.action_mailer.smtp_settings = {
+    address: "smtp-relay.brevo.com", port: 587, authentication: :login, enable_starttls_auto: true,
+    user_name: ENV["BREVO_SMTP_LOGIN"], password: ENV["BREVO_SMTP_KEY"]
+  }
+
   # Cache no Postgres, dividido entre as instâncias da Vercel (Solid Cache; ADR 0008).
   config.cache_store = :solid_cache_store
 

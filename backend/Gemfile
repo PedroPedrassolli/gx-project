@@ -6,6 +6,8 @@ source "https://rubygems.org"
 gem "railties", "~> 8.1.4"
 gem "actionpack", "~> 8.1.4"
 gem "activerecord", "~> 8.1.4"
+# E-mail de verificação e de troca de senha, pelo SMTP do Brevo (ADR 0008).
+gem "actionmailer", "~> 8.1.4"
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.6"
 # Use the Puma web server [https://github.com/puma/puma]

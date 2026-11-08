@@ -10,9 +10,9 @@ class Api::RegistrationsControllerTest < ActionDispatch::IntegrationTest
   def sign_up(**changes) = post(api_registrations_path, params: form.merge(changes), as: :json)
   def field_errors = response.parsed_body["error"]["fields"]
 
-  it "cria a conta com a faixa de idade e já entra" do
+  it "cria a conta com a faixa de idade, já entra e manda o e-mail de confirmação" do
     travel_to Time.zone.local(2026, 11, 8) do
-      sign_up
+      assert_emails(1) { sign_up }
     end
 
     assert_response :created
