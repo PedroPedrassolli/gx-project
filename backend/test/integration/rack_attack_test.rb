@@ -37,6 +37,18 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     end
   end
 
+  it "conta pelo IP do jogador, que a Vercel manda no X-Real-IP" do
+    at_noon do
+      from = ->(ip, email) { post api_session_path, params: { email:, password: "errada123" }, headers: { "X-Real-IP" => ip }, as: :json }
+      30.times { |n| from.call("200.1.1.1", "jogador#{n}@example.com") }
+      from.call("200.1.1.1", "mais.um@example.com")
+      _(response.status).must_equal 429
+
+      from.call("200.2.2.2", "outro@example.com")
+      _(response.status).must_equal 401
+    end
+  end
+
   it "barra o 11º cadastro do mesmo IP dentro de 1 hora" do
     at_noon do
       10.times { post api_registrations_path, params: { email: "x" }, as: :json }

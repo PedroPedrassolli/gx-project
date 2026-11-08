@@ -44,6 +44,12 @@ class Realtime::AblyPublisherTest < ActiveSupport::TestCase
       assert_equal "o Ably respondeu 401 (40160: Action not permitted)", error.message
     end
 
+    it "transforma erro de rede (sem conexão, tempo esgotado) no erro do publicador" do
+      Net::HTTP.expects(:start).raises(Net::OpenTimeout)
+      error = assert_raises(Realtime::AblyPublisher::Error) { subject.publish(user_id: 7, event: "duel.delta", data: {}) }
+      assert_equal "sem conexão com o Ably (Net::OpenTimeout)", error.message
+    end
+
     it "avisa só com o status quando a resposta não explica" do
       broken = Net::HTTPBadGateway.new("1.1", "502", "Bad Gateway")
       broken.stubs(:body).returns("<html>erro</html>")

@@ -9,8 +9,12 @@ class Api::BaseController < ApplicationController
   # Os parâmetros vêm soltos no JSON, sem a cópia aninhada que o Rails faria.
   wrap_parameters false
 
+  # O Postgres e o bcrypt recusam o caractere nulo (\u0000): pedido com ele volta 400.
+  before_action :reject_null_bytes
+
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
   rescue_from ActionController::InvalidAuthenticityToken, with: :stale_page
+  rescue_from ActionDispatch::Http::Parameters::ParseError, with: :bad_request
 
   private
 
@@ -22,6 +26,21 @@ class Api::BaseController < ApplicationController
   end
 
   def not_found = render_error(:not_found, "Não encontrado.")
+
+  def bad_request = render_error(:bad_request, "Pedido inválido.")
+
+  def reject_null_bytes
+    bad_request if null_byte?(request.params)
+  end
+
+  def null_byte?(value)
+    case value
+    when String then value.include?("\u0000")
+    when Hash then value.any? { |key, item| null_byte?(key) || null_byte?(item) }
+    when Array then value.any? { |item| null_byte?(item) }
+    else false
+    end
+  end
 
   def stale_page = render_error(:forbidden, "A página ficou velha. Recarregue e tente de novo.")
 

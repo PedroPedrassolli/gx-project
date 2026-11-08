@@ -78,6 +78,26 @@ class Api::DecksControllerTest < ActionDispatch::IntegrationTest
     _(user.decks.count).must_equal 1
   end
 
+  it "recusa cartas fora do formato, sem apagar as do deck" do
+    [ { "0" => row("Armed Ninja") }, "Armed Ninja", [ "x", 1 ], [ row("Armed Ninja") ] * 201 ].each do |cards|
+      patch api_deck_path(starter), params: { cards: }, as: :json
+
+      assert_response :unprocessable_content
+      _(response.parsed_body["error"]["fields"]).must_equal({ "cards" => [ "precisa ser uma lista de até 200 cartas" ] })
+    end
+    _(starter.deck_cards.sum(:quantity)).must_equal 55
+
+    post validate_api_decks_path, params: { cards: { "a" => "b" } }, as: :json
+    assert_response :unprocessable_content
+  end
+
+  it "card_id e quantidade que não são números inteiros viram erro de carta" do
+    patch api_deck_path(starter), params: { cards: [ row("Armed Ninja").merge(quantity: true), row("Armed Ninja").merge(card_id: true) ] }, as: :json
+
+    assert_response :unprocessable_content
+    _(response.parsed_body["error"]["fields"]["cards"]).must_equal [ "Armed Ninja: de 1 a 3 cópias por seção (tem 0).", "A carta 0 não está no pool." ]
+  end
+
   it "troca o nome e todas as cartas do deck" do
     patch api_deck_path(starter), params: { name: "Novo nome", cards: [ row("Armed Ninja", "main", 1, destiny: true) ] }, as: :json
 

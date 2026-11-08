@@ -34,6 +34,10 @@ inválido pode ser salvo, nem como é o formato de texto, nem como a Destiny via
    salvar), `POST /api/decks/import` (cria a partir do arquivo: `{ name, kind, content }`,
    com `kind` igual a `ydk` ou `text`) e `GET /api/decks/:id/export.ydk` ou `.txt` (baixa o
    arquivo). Só o dono vê e mexe.
+7. **Pedido fora do formato (revisão de 08/11/2026):** `cards` precisa ser uma lista de até
+   200 objetos (um deck cheio tem 90 cartas); outra coisa volta 422 e não apaga as cartas do
+   deck. `card_id` e `quantity` que não são inteiros viram 0, que a validação recusa. O
+   arquivo importado vai até 50 KB (um `.ydk` cheio tem uns 1,5 KB).
 
 ## Consequências
 

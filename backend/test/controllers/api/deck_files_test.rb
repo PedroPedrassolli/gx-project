@@ -50,6 +50,13 @@ class Api::DeckFilesTest < ActionDispatch::IntegrationTest
     _(user.decks.count).must_equal 1
   end
 
+  it "recusa arquivo maior que 50 KB" do
+    import "#main\n#{"1234567\n" * 7_000}", kind: "ydk"
+
+    assert_response :unprocessable_content
+    _(response.parsed_body["error"]["message"]).must_equal "Arquivo grande demais: o limite é 50 KB."
+  end
+
   it "respeita o limite de decks ao importar" do
     Deck.insert_all!(49.times.map { |n| { user_id: user.id, name: "Deck #{n}" } })
     import "1 Armed Ninja", kind: "text"

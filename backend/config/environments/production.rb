@@ -45,6 +45,8 @@ Rails.application.configure do
   config.action_mailer.perform_deliveries = ENV["BREVO_SMTP_KEY"].present?
   config.action_mailer.smtp_settings = {
     address: "smtp-relay.brevo.com", port: 587, authentication: :login, enable_starttls_auto: true,
+    # Sem resposta do Brevo, desiste logo: o pedido do jogador não fica preso por 1 minuto.
+    open_timeout: 5, read_timeout: 10,
     user_name: ENV["BREVO_SMTP_LOGIN"], password: ENV["BREVO_SMTP_KEY"]
   }
 

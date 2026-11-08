@@ -50,6 +50,15 @@ class Api::EmailVerificationsControllerTest < ActionDispatch::IntegrationTest
       _(user.reload.email_verified_at).must_equal Time.zone.local(2026, 11, 8, 12)
     end
 
+    it "abrir o link de novo responde OK e guarda a data da primeira vez" do
+      token = user.generate_token_for(:email_verification)
+      travel_to(Time.zone.local(2026, 11, 8, 12)) { confirm token }
+      travel_to(Time.zone.local(2026, 11, 9, 12)) { confirm token }
+
+      assert_response :success
+      _(user.reload.email_verified_at).must_equal Time.zone.local(2026, 11, 8, 12)
+    end
+
     it "recusa token inválido, vencido ou de um e-mail que mudou" do
       token = user.generate_token_for(:email_verification)
 

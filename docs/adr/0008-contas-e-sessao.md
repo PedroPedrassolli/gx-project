@@ -17,12 +17,15 @@ limite de tentativas com Rack::Attack (6). O front e a API estão no mesmo domí
    SP 800-63B).
 2. **Sessão:** como o gerador de autenticação do Rails 8. Cada login cria uma linha em
    `sessions`, e o cookie assinado `session_id` guarda o id dela: `httponly`,
-   `SameSite=Lax`, `Secure` em produção, sem data para expirar. Sair apaga a linha. A tabela
-   não guarda IP nem navegador: não precisamos desses dados (LGPD, minimização).
+   `SameSite=Lax`, `Secure` em produção. Cada login vale 90 dias (o cookie vence junto) e,
+   ao entrar, os logins vencidos da conta são apagados; antes da revisão de 08/11/2026 a
+   sessão não vencia nunca. Sair apaga a linha. A tabela não guarda IP nem navegador: não
+   precisamos desses dados (LGPD, minimização).
 3. **CSRF:** `protect_from_forgery with: :exception`, com o token na sessão do Rails (o
    cookie criptografado `_gx_session`, `httponly`, `SameSite=Lax`), que o modo API não traz
    e voltou só para isso. O front pega o token em `GET /api/session` e manda no cabeçalho
-   `X-CSRF-Token` em todo pedido que muda algo; sem ele, 403. As rotas do catálogo só leem
+   `X-CSRF-Token` em todo pedido que muda algo; sem ele, 403. Entrar e sair trocam a sessão
+   do Rails (`reset_session`), então o token de antes deixa de valer. As rotas do catálogo só leem
    e não mexem na sessão, então não criam cookie e a CDN continua guardando as respostas.
 4. **Idade:** o cadastro recebe a data de nascimento, calcula os anos completos no dia de
    hoje em São Paulo e guarda só a faixa: `13-17` ou `18+`. Menos de 13 anos (ou data no
@@ -38,7 +41,8 @@ limite de tentativas com Rack::Attack (6). O front e a API estão no mesmo domí
    com o Solid Cache, o cache padrão do Rails 8. A memória de cada instância da Vercel não
    é dividida entre elas e se perde quando a instância para, então um contador em memória
    não segura quem tenta senhas. Limites: login, 5 por minuto por e-mail e 30 por minuto por
-   IP; cadastro, 10 por hora por IP (escola e casa dividem IP). Acima disso, 429.
+   IP; cadastro, 10 por hora por IP (escola e casa dividem IP). Acima disso, 429. O IP vem
+   do `X-Real-IP`, que a própria Vercel preenche e sobrescreve; fora dela, o da conexão.
 8. **Rotas:** `GET /api/session` (o usuário, ou `null`, e o token CSRF), `POST
    /api/session` (entrar), `DELETE /api/session` (sair) e `POST /api/registrations`
    (cadastro, já entra). Erro de validação volta com 422 e as mensagens em português por
@@ -52,7 +56,8 @@ limite de tentativas com Rack::Attack (6). O front e a API estão no mesmo domí
    troca de senha, 5 por hora por e-mail e 20 por IP. Os dados do Brevo ficam nos secrets
    do GitHub `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY` e `MAIL_FROM` (só o endereço do
    remetente verificado), e o workflow *E-mail na Vercel* copia para a Vercel e publica de
-   novo. Sem a chave, nada sai e o envio só aparece no log.
+   novo. Sem a chave, nada sai e o envio só aparece no log. O SMTP desiste em 5 s sem
+   conexão e em 10 s sem resposta, para o pedido não ficar preso.
 10. **Termos e privacidade (GXP-40):** o cadastro só cria a conta com o aceite dos termos de
     uso e da política de privacidade (`terms_accepted`; sem ele, 422 com o erro em `terms`).
     A conta guarda só a data do aceite, `terms_accepted_at`: a versão aceita é a que valia

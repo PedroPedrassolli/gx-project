@@ -6,7 +6,7 @@ module Accounts
 
     # params: e-mail, senha, apelido, data de nascimento e o aceite, como vieram do formulário.
     def initialize(params)
-      @user = User.new(email: params[:email], password: params[:password], nickname: params[:nickname])
+      @user = User.new(email: params[:email], password: params[:password].to_s, nickname: params[:nickname])
       @birth_date = params[:birth_date]
       @terms_accepted = ActiveModel::Type::Boolean.new.cast(params[:terms_accepted])
     end
@@ -31,6 +31,11 @@ module Accounts
       # Se o e-mail falhar, a conta fica criada: dá para pedir de novo depois.
       Mailing.deliver(AccountMailer.email_verification(user))
       true
+    rescue ActiveRecord::RecordNotUnique
+      # Outro cadastro com o mesmo e-mail ou apelido entrou no mesmo instante: validar de
+      # novo mostra qual dos dois já está em uso.
+      user.validate
+      false
     end
 
     private
@@ -43,7 +48,7 @@ module Accounts
     # A data vem no formato do campo de data do navegador: AAAA-MM-DD.
     def parse(text)
       Date.iso8601(text.to_s)
-    rescue Date::Error
+    rescue Date::Error, ArgumentError # ArgumentError: texto longo demais para ser data
       nil
     end
   end
