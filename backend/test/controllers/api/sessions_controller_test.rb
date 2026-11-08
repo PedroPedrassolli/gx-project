@@ -67,6 +67,46 @@ class Api::SessionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe "pedido estranho" do
+    it "JSON quebrado volta 400, com a mensagem da API" do
+      post api_session_path, params: "{", headers: { "CONTENT_TYPE" => "application/json" }
+
+      assert_response :bad_request
+      _(response.parsed_body["error"]["message"]).must_equal "Pedido inválido."
+    end
+
+    it "caractere nulo em qualquer campo volta 400 (o banco e o bcrypt não aceitam)" do
+      log_in(password: "duelista\u0000123")
+
+      assert_response :bad_request
+    end
+  end
+
+  describe "validade" do
+    it "a sessão vale 90 dias: depois disso, é preciso entrar de novo" do
+      log_in
+      travel(91.days) { get api_session_path }
+
+      _(response.parsed_body["user"]).must_be_nil
+    end
+
+    it "o login apaga as sessões vencidas da conta" do
+      user.sessions.create!(created_at: 100.days.ago)
+      log_in
+
+      _(user.sessions.count).must_equal 1
+    end
+
+    it "o cookie vence junto com a sessão" do
+      freeze_time do
+        log_in
+
+        expires = 90.days.from_now.httpdate
+        _(Array(response.headers["Set-Cookie"]).join("\n")).must_include "expires=#{expires}"
+      end
+    end
+  end
+
   describe "CSRF" do
     before { Api::BaseController.allow_forgery_protection = true }
     after { Api::BaseController.allow_forgery_protection = false }
@@ -84,6 +124,20 @@ class Api::SessionsControllerTest < ActionDispatch::IntegrationTest
       post api_session_path, params: { email: user.email, password: "duelista123" }, headers: { "X-CSRF-Token" => token }, as: :json
 
       assert_response :created
+    end
+
+    it "troca o token ao entrar e ao sair: o de antes não vale mais" do
+      get api_session_path
+      old_token = response.parsed_body["csrf_token"]
+      post api_session_path, params: { email: user.email, password: "duelista123" }, headers: { "X-CSRF-Token" => old_token }, as: :json
+      assert_response :created
+
+      delete api_session_path, headers: { "X-CSRF-Token" => old_token }
+      assert_response :forbidden
+
+      get api_session_path
+      delete api_session_path, headers: { "X-CSRF-Token" => response.parsed_body["csrf_token"] }
+      assert_response :no_content
     end
 
     it "não cria cookie nas rotas do catálogo, que a CDN guarda" do

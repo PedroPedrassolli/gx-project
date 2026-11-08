@@ -4,6 +4,8 @@ module Decks
   # coisa. Só não cria o deck quando nada do arquivo está no pool.
   class Import
     KINDS = %w[ydk text].freeze
+    # Um .ydk de deck cheio tem uns 1,5 KB; em texto, uns 4 KB.
+    MAX_BYTES = 50_000
     DEFAULT_NAME = "Deck importado".freeze
 
     attr_reader :deck, :warnings, :error
@@ -20,6 +22,7 @@ module Decks
     # true quando cria o deck. Senão, o motivo fica em error, ou os erros do deck em deck.errors.
     def save
       return fail_with("Formato desconhecido: use ydk ou text.") unless KINDS.include?(@kind)
+      return fail_with("Arquivo grande demais: o limite é 50 KB.") if @content.bytesize > MAX_BYTES
 
       rows = Editor.merge(@kind == "ydk" ? ydk_rows : text_rows).map { |row| at_most_three(row) }
       return fail_with("Nenhuma carta do arquivo está no pool.") if rows.empty?

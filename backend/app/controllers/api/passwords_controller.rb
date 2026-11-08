@@ -13,7 +13,7 @@ class Api::PasswordsController < Api::BaseController
   def update
     user = User.find_by_password_reset_token(params[:token].to_s)
     return render_error(:unprocessable_content, "Link vencido ou inválido. Peça outro e-mail.") unless user
-    return render_error(:unprocessable_content, "Confira a senha.", user.errors.to_hash) unless user.update(password: params[:password].presence)
+    return render_error(:unprocessable_content, "Confira a senha.", user.errors.to_hash) unless user.update(password: params[:password].to_s.presence)
 
     user.sessions.destroy_all
     render json: { user: }

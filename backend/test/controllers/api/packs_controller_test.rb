@@ -16,5 +16,13 @@ class Api::PacksControllerTest < ActionDispatch::IntegrationTest
       _(packs[3]["availability"]).must_equal({ "regra" => "missao", "missao" => "torneio_slifer_red" })
       _(response.headers["Cache-Control"]).must_include "s-maxage=3600"
     end
+
+    it "responde 304, sem corpo, quando o navegador já tem a versão atual" do
+      get api_packs_path
+      get api_packs_path, headers: { "If-None-Match" => response.headers["ETag"] }
+
+      assert_response :not_modified
+      _(response.body).must_be_empty
+    end
   end
 end

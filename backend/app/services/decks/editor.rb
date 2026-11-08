@@ -4,15 +4,22 @@ module Decks
   # que a tabela não aceita volta como erro: seção que não existe, menos de 1 ou mais de 3
   # cópias numa linha e carta fora do pool.
   class Editor
+    # Linhas por pedido: um deck tem no máximo 90 cartas (60 + 15 + 15), então 200 sobra.
+    MAX_ROWS = 200
+
     attr_reader :deck
 
     # Linhas do pedido somadas por carta e seção: [{ card_id:, section:, quantity:, destiny: }].
     def self.merge(cards)
-      cards.group_by { |row| [ row[:card_id].to_i, row[:section].to_s ] }.map do |(card_id, section), rows|
-        { card_id:, section:, quantity: rows.sum { |row| row[:quantity].to_i },
+      cards.group_by { |row| [ integer(row[:card_id]), row[:section].to_s ] }.map do |(card_id, section), rows|
+        { card_id:, section:, quantity: rows.sum { |row| integer(row[:quantity]) },
           destiny: rows.any? { |row| ActiveModel::Type::Boolean.new.cast(row[:destiny]) } }
       end
     end
+
+    # Número inteiro do pedido. O que não é (texto, booleano, 1.5) vira 0, que a validação
+    # recusa ("carta 0", "tem 0 cópias").
+    def self.integer(value) = Integer(value.to_s, 10, exception: false) || 0
 
     def initialize(deck)
       @deck = deck

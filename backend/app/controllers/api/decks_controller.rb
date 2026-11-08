@@ -5,6 +5,11 @@ class Api::DecksController < Api::BaseController
   before_action :set_deck, only: %i[show update destroy export]
   before_action :check_deck_limit, only: %i[create import]
 
+  class InvalidCards < StandardError; end
+  rescue_from InvalidCards do
+    render_error(:unprocessable_content, "Confira o deck.", { cards: [ "precisa ser uma lista de até #{Decks::Editor::MAX_ROWS} cartas" ] })
+  end
+
   # GET /api/decks
   def index
     decks = current_user.decks.order(:name).includes(:deck_cards)
@@ -76,9 +81,14 @@ class Api::DecksController < Api::BaseController
     @deck = current_user.decks.find(params[:id])
   end
 
-  # As cartas do pedido, ou nil quando não vieram (o deck mantém as que tem).
+  # As cartas do pedido, ou nil quando não vieram (o deck mantém as que tem). Precisa ser
+  # uma lista de objetos: outra coisa vira erro, em vez de apagar as cartas do deck.
   def card_params
-    params.permit(cards: %i[card_id section quantity destiny])[:cards]&.map { |row| row.to_h.symbolize_keys }
+    rows = params[:cards]
+    return if rows.nil?
+    raise InvalidCards unless rows.is_a?(Array) && rows.size <= Decks::Editor::MAX_ROWS && rows.all?(ActionController::Parameters)
+
+    rows.map { |row| row.permit(:card_id, :section, :quantity, :destiny).to_h.symbolize_keys }
   end
 
   def save(deck, status)

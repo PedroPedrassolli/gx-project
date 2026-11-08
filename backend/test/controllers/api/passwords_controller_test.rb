@@ -45,6 +45,12 @@ class Api::PasswordsControllerTest < ActionDispatch::IntegrationTest
       assert_response :unprocessable_content
     end
 
+    it "senha nova que não é texto não quebra" do
+      reset user.password_reset_token, true
+
+      _(response.parsed_body["error"]["fields"]).must_equal({ "password" => [ "é curta demais (mínimo de 8 caracteres)" ] })
+    end
+
     it "pede senha nova válida" do
       reset user.password_reset_token, "123"
       _(response.parsed_body["error"]["fields"]).must_equal({ "password" => [ "é curta demais (mínimo de 8 caracteres)" ] })

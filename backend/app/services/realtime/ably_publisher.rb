@@ -25,6 +25,8 @@ module Realtime
       request.body = JSON.generate(name: event, data:)
       response = Net::HTTP.start(HOST, 443, use_ssl: true, open_timeout: 2, read_timeout: 5) { |http| http.request(request) }
       raise Error, "o Ably respondeu #{response.code}#{reason(response)}" unless response.is_a?(Net::HTTPSuccess)
+    rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, SystemCallError, OpenSSL::SSL::SSLError, IOError => error
+      raise Error, "sem conexão com o Ably (#{error.class})"
     end
 
     private

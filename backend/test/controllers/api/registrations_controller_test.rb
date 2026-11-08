@@ -60,6 +60,27 @@ class Api::RegistrationsControllerTest < ActionDispatch::IntegrationTest
     _(User.count).must_equal 0
   end
 
+  it "senha que não é texto conta como senha inválida, sem quebrar" do
+    sign_up(password: 12345)
+
+    assert_response :unprocessable_content
+    _(field_errors["password"]).must_equal [ "é curta demais (mínimo de 8 caracteres)" ]
+  end
+
+  it "data de nascimento longa demais é só uma data inválida" do
+    sign_up(birth_date: "2" * 200)
+
+    _(field_errors["birth_date"]).must_equal [ "não é uma data válida" ]
+  end
+
+  it "cadastro com o mesmo e-mail no mesmo instante responde 422, não 500" do
+    User.any_instance.stubs(:save!).raises(ActiveRecord::RecordNotUnique)
+    sign_up
+
+    assert_response :unprocessable_content
+    _(User.count).must_equal 0
+  end
+
   it "pede a data de nascimento" do
     sign_up(birth_date: nil)
 
