@@ -22,7 +22,7 @@ on:
     types: [unlabeled, ready_for_review]
 
 permissions:
-  actions: read # ler as execuções da CI
+  actions: write # ler as execuções da CI e disparar o "Banco de produção"
   contents: write
   pull-requests: write
 
@@ -106,6 +106,14 @@ jobs:
           gh pr merge "$number" --repo "$REPO" --squash --delete-branch --match-head-commit "$SHA" \
             --subject "$title (#$number)" --body "Mesclado automaticamente: CI aprovada."
           echo "::notice title=Auto-merge::PR #$number mesclado."
+
+          # Mudou migração ou dados do catálogo? O push do merge não dispara o workflow do
+          # banco (mesma regra do GitHub), então ele é chamado aqui.
+          files=$(gh api "repos/$REPO/pulls/$number/files" --paginate --jq '.[].filename')
+          if grep -qE '^backend/db/(migrate|seeds)/' <<<"$files"; then
+            gh workflow run banco.yml --repo "$REPO" --ref main
+            echo "::notice title=Auto-merge::Banco de produção disparado."
+          fi
 
           [ "$is_bot" = "false" ] || exit 0
 
