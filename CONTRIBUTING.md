@@ -44,8 +44,9 @@ mudar o projeto sem quebrar nada.
   `timeout-minutes` e um push novo cancela a execução anterior.
 - **Vercel Hobby:** só uso pessoal e não comercial. Prévias desligadas
   (`git.deploymentEnabled`) e `scripts/vercel-ignorar-build.sh` (no *Ignored Build Step* do
-  projeto, não no `vercel.json`) só publica quando muda o que vai para o ar. Cada deploy guarda a imagem do container (Function Storage, 10 GB na conta
-  toda): evite pushes desnecessários e gems que não são usadas.
+  projeto, não no `vercel.json`) só publica quando muda o que vai para o ar. Cada deploy
+  guarda a imagem do container (Function Storage, 10 GB na conta toda): evite pushes
+  desnecessários e gems que não são usadas.
 - **Jira Free:** sem regras de automação (150 passos/mês). Os cards andam pelo `jira.yml`.
 - Antes de usar um serviço novo, confira o limite do plano gratuito e escreva a conta do
   custo mensal no PR. Nunca deixe ligada uma cobrança por excedente. Os limites conferidos
@@ -70,6 +71,10 @@ mudar o projeto sem quebrar nada.
 - Workflows disparados por `workflow_run` ou `status` só usam a versão que está na `main`.
 - **Actions fixadas pelo SHA do commit**, com a versão num comentário. Não troque por `@v7`:
   uma tag pode ser movida para outro código. O Dependabot atualiza o SHA e o comentário juntos.
+- **TypeScript 7:** o `typescript-eslint` ainda pede menos que 6.1
+  (`npm view typescript-eslint peerDependencies`), então o `dependabot.yml` ignora a versão
+  maior do TypeScript (o PR #2 quebrou o lint e a checagem de tipos). Quando o
+  `typescript-eslint` aceitar o 7, apague a regra e atualize os dois juntos.
 - **`overrides` no `frontend/package.json`**: força o `minimatch` 11 (alerta
   GHSA-g3hv-75wg-m249) enquanto o ESLint ainda pede o 10. Quando o ESLint passar a pedir o
   11 (`npm view eslint dependencies.minimatch`), apague o override.
@@ -80,4 +85,7 @@ mudar o projeto sem quebrar nada.
   de tempo real ficam na memória (ADR 0002). A `DATABASE_PASSWORD` vai só no GitHub: o workflow
   *Banco de produção* copia para a Vercel. O `CLOUDFLARE_API_TOKEN` (só Cloudflare Pages: Editar)
   e o `CLOUDFLARE_ACCOUNT_ID` também ficam só no GitHub, para o workflow *Imagens das cartas*.
+  Os do Brevo (`BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY` e `MAIL_FROM`) vão no GitHub, e o workflow
+  *E-mail na Vercel* copia para a Vercel e publica de novo. A `BACKUP_PASSPHRASE` fica só no
+  GitHub: é a senha que criptografa o backup semanal (veja o README).
 - Não apague dados permanentemente (branches, issues, cards, imagens, deploys) sem o Pedro pedir.

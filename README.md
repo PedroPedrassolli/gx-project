@@ -9,15 +9,21 @@ online, contra outras pessoas.
 > projeto não tem ligação com a Konami nem é aprovado por ela. Não usamos arte, música ou
 > logotipos dos jogos.
 
-**Situação:** em construção, na fase F0 (fundação, engine de duelo e levantamento dos dados).
+**Situação:** em construção. Prontas: F0 (fundação, engine de duelo e dados do jogo), F1
+(catálogo de cartas) e F2 (contas e montagem de decks). A próxima é a F3, o duelo 1x1 em
+sala. No ar: https://gx-project-two.vercel.app
 
 ## Como funciona
 
 ```
 React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──FFI──▶ engine de duelo (C++ + Lua)
-                                    │
-                                    └──▶ Postgres (Supabase)
+   │                                │
+   │                                ├──▶ Postgres (Supabase, em São Paulo)
+   │                                └──▶ e-mail (Brevo)
+   └──▶ imagens das cartas (Cloudflare Pages)
 ```
+
+A partir da F3, o tempo real dos duelos passa pelo Ably ([ADR 0002](docs/adr/0002-realtime.md)).
 
 - **Frontend** (`frontend/`): React + Vite + TypeScript.
 - **Backend** (`backend/`): Rails 8.1 em modo API. O servidor é a autoridade do duelo: cada
@@ -26,8 +32,15 @@ React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──
   scripts de carta do mesmo projeto ([ADR 0001](docs/adr/0001-engine.md)). O `/up/engine`
   refaz um duelo inteiro gravado para conferir que ela está no ar.
 - Tudo roda em planos gratuitos, sem cartão: Vercel Hobby (funções em São Paulo), Supabase
-  Free, Ably Free, Cloudflare Pages (imagens das cartas) e GitHub Actions em repositório público. Os limites e quanto cada duelo
-  gasta estão no [ADR 0004](docs/adr/0004-hospedagem.md).
+  Free, Ably Free, Cloudflare Pages (imagens das cartas), Brevo Free (e-mail) e GitHub
+  Actions em repositório público (CI e backup semanal). Os limites e quanto cada duelo gasta
+  estão no [ADR 0004](docs/adr/0004-hospedagem.md).
+- Contas ([ADR 0008](docs/adr/0008-contas-e-sessao.md)): cadastro a partir dos 13 anos, com
+  aceite dos [termos](https://gx-project-two.vercel.app/termos) e da
+  [política de privacidade](https://gx-project-two.vercel.app/privacidade), confirmação de e-mail,
+  troca de senha, baixar os dados e excluir a conta (LGPD).
+- Coleção e decks ([ADR 0009](docs/adr/0009-decks.md)): a conta nova ganha o deck inicial;
+  o Deck Edit monta Main, Extra e Side com Destiny, valida ao vivo e importa e exporta `.ydk`.
 - Catálogo em `/cartas`: o pool inteiro, com busca, filtros e o detalhe de cada carta, em
   português ou inglês. Os dados vêm da API em `/api/cards`, `/api/packs` e `/api/banlists`, com
   cache na CDN ([ADR 0007](docs/adr/0007-api-do-catalogo.md)). As imagens ficam num projeto
@@ -73,6 +86,8 @@ pg_restore --clean --if-exists --no-owner --dbname=gx_restaurado banco.dump
 ## Documentação
 
 - [Especificação](docs/ESCOPO.md): regras do produto, arquitetura, fases e dados a levantar.
+- [Decisões (ADRs)](docs/adr/): engine, tempo real, licença, hospedagem e planos gratuitos,
+  economia, dados do jogo, API do catálogo, contas e decks.
 
 ## Contribuir
 

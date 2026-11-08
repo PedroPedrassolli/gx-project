@@ -252,7 +252,7 @@ React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──
 | Ably Free | Realtime | 6 M mensagens/mês, 200 conexões, 200 canais, 500 msg/s, 64 KiB por mensagem |
 | Cloudflare Pages | Imagens das cartas | 20 mil arquivos; banda sem limite |
 | GitHub Actions (artefatos) | Backup | 30 dias de retenção; grátis em repo público |
-| Brevo Free | E-mail | 300 por dia; sem domínio próprio, o remetente sai como `@brevosend.com` |
+| Brevo Free | E-mail | 300 por dia; sem domínio próprio, o remetente não é autenticado e parte das mensagens pode cair no spam |
 | Sentry Developer | Erros | 5 mil erros por mês |
 | GitHub Actions | CI | Sem limite em repo público |
 
