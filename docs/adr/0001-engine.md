@@ -134,11 +134,12 @@ do banco ficam para o ADR de hospedagem (GXP-8).
   imagem e deixa a raiz do `CardScripts`, o script de cada carta do pool (pelo código da
   engine, `cobertura.yml`), as cartas do duelo do `/up/engine` e todo script citado por
   número num script que ficou (`LoadCardScript`, tokens). Ficam 3.693 dos 19.138 scripts de
-  carta: `official` de 56 MB para 15 MB, `unofficial` de 23 MB para 0,7 MB. A imagem foi de
-  294 MB para IMAGEM_DEPOIS; a ação fria do `/up/engine` no container, de 39,4 ms para
-  FRIA_DEPOIS. O `bin/rails engine:conferir` (na CI, dentro do container) carrega as 3.484
-  cartas do pool na engine e falha se alguma não tem script ou dá erro. O `.cdb` continua
-  inteiro: são 12 MB e uma carta citada por um efeito precisa dos dados dela.
+  carta: `official` de 30 MB para 5,4 MB e `unofficial` de 9,8 MB para 0,2 MB (tamanho dos
+  arquivos). Na CI, a imagem foi de 294 MB para 261 MB, e a ação fria do `/up/engine` no
+  container, de 39,4 ms para 26,3 ms (uma medida de cada; varia entre execuções). O
+  `bin/rails engine:conferir` (na CI, dentro do container) carrega as 3.484 cartas do pool na
+  engine e falha se alguma não tem script ou dá erro. O `.cdb` continua inteiro: são 12 MB, e
+  uma carta citada por um efeito precisa dos dados dela.
 - A CI e quem desenvolve precisam de g++, meson e ninja para compilar a engine (cerca de
   40 s; o `bin/setup` já chama o `bin/build-engine`).
 - O `/up/engine` refaz em produção, pelo replay, um duelo inteiro gravado: prova que a
