@@ -4,6 +4,13 @@ module GameData
   # exceções, cada uma com a decisão.
   class Coverage
     NORMAL_MONSTER = 0x10 # TYPE_NORMAL da engine: carta Normal não tem script
+    # Pré-errata que não vale (revisão de 07/11/2026, ADR 0006): o script segue uma versão
+    # que não era a de 2008 em inglês, e a de 2008 joga como a de hoje. Usa o oficial.
+    # Toon World e Dragon Seeker: versões que nunca saíram em inglês. Amazoness Fighter: ATK
+    # 1300 da primeira impressão, que já era 1500 em 2008. Blue-Eyes Ultimate Dragon: DEF
+    # 3000 do Gold Series (abril de 2008), que o Retro Pack (julho de 2008) voltou para 3800.
+    OFFICIAL_INSTEAD = { 15_259_703 => "Toon World", 28_563_545 => "Dragon Seeker",
+                         55_821_894 => "Amazoness Fighter", 23_995_346 => "Blue-Eyes Ultimate Dragon" }.freeze
 
     # cards: entradas do cartas.yml; database: linhas do BabelCDB ({ id:, alias:, type:,
     # name:, unofficial: }); scripts: { "official" => Set[ids], "pre-errata" => ...,
@@ -13,7 +20,7 @@ module GameData
       @by_id = database.index_by { |row| row[:id] }
       @by_name = database.group_by { |row| [ row[:unofficial], row[:name].downcase ] }
       @pre_errata = database.select { |row| row[:alias].positive? && script?("pre-errata", row[:id]) }
-                            .to_h { |row| [ row[:alias], row[:id] ] }
+                            .to_h { |row| [ row[:alias], row[:id] ] }.except(*OFFICIAL_INSTEAD.keys)
     end
 
     # Texto da época das cartas pré-errata, por nome: { "Sangan" => { texto:, fonte: } }.

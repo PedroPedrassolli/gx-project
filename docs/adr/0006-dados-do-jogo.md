@@ -48,7 +48,11 @@ pela API do MediaWiki.
    e o BabelCDB da engine e com a lista de imagens do YGOPRODeck, e grava só as exceções em
    `cobertura.yml`, cada uma com o código que a engine usa:
    - carta oficial com script pré-errata usa a versão antiga (o jogo é de 2008, e o escopo
-     fixa "MR1 + pré-errata");
+     fixa "MR1 + pré-errata"), menos quando a revisão de 07/11/2026 achou que o script segue
+     outra versão e a de 2008 em inglês joga como a de hoje: *Toon World* e *Dragon Seeker*
+     (versões que nunca saíram em inglês), *Amazoness Fighter* (ATK 1300 da primeira
+     impressão; em 2008 já era 1500) e *Blue-Eyes Ultimate Dragon* (DEF 3000 do *Gold
+     Series*, que o *Retro Pack* de julho de 2008 voltou para 3800). Essas usam o oficial;
    - carta do anime usa o script não oficial, nesta ordem: versão de video game (`(VG)`),
      mesmo nome, versão do anime (`(Anime)`);
    - carta do anime sem script usa a carta que o OCG imprimiu depois, se houver (o efeito

@@ -54,10 +54,11 @@ que juntam outros. Pode rodar quantas vezes quiser.
 Regra geral: a carta entra na engine pelo próprio passcode, com o script oficial (carta Normal
 não tem script) e a imagem do YGOPRODeck. Em 07/11/2026:
 
-- 3.418 cartas oficiais: todas têm dados no BabelCDB e imagem; 617 são Normais; 52 usam o
-  script antigo (pré-errata), porque o jogo é de 2008. Delas, 51 mostram o texto da época
-  (`texto` e `fonte_texto` no `cobertura.yml`); *Blue-Eyes Ultimate Dragon* só teve errata de
-  DEF e fica com o texto atual.
+- 3.418 cartas oficiais: todas têm dados no BabelCDB e imagem; 617 são Normais; 48 usam o
+  script antigo (pré-errata), porque o jogo é de 2008, e mostram o texto da época (`texto` e
+  `fonte_texto` no `cobertura.yml`). Outras 4 têm script pré-errata, mas ele não segue a
+  versão de 2008 em inglês, que joga como a de hoje: *Toon World*, *Dragon Seeker*,
+  *Amazoness Fighter* e *Blue-Eyes Ultimate Dragon* usam o script oficial.
 - 78 cartas do anime: 61 usam o script não oficial da versão de video game (ou do anime);
   5 não têm script e usam a carta que o OCG imprimiu depois (`passcode_oficial` no
   `cartas.yml`), e o jogador vê os dados dela (`impressao`); **12 ficam fora do pool** até
