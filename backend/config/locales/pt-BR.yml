@@ -22,3 +22,7 @@ pt-BR:
             nickname:
               invalid: "só aceita letras sem acento, números, _ e -"
               offensive: "não é permitido"
+  accounts:
+    birth_date:
+      invalid: "não é uma data válida"
+      too_young: "precisa ser de quem tem 13 anos ou mais"

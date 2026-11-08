@@ -37,5 +37,11 @@ module Backend
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+
+    # Cookies e sessão do Rails, que o modo API tira. A sessão só guarda o token CSRF; o
+    # login fica no cookie session_id (ADR 0008). Rota que não mexe na sessão não cria cookie.
+    config.session_store :cookie_store, key: "_gx_session", same_site: :lax, secure: Rails.env.production?
+    config.middleware.use ActionDispatch::Cookies
+    config.middleware.use config.session_store, config.session_options
   end
 end
