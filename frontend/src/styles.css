@@ -451,6 +451,24 @@ img[hidden] {
   color: var(--color-muted);
 }
 
+/* Lista de decks. */
+.deck-list {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.deck-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  align-items: baseline;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
 /* Deck Edit. */
 .deck-page {
   max-width: 72rem;
@@ -508,4 +526,19 @@ img[hidden] {
   gap: 0.75rem 1.25rem;
   align-items: center;
   margin: 0;
+}
+
+.danger {
+  border-color: #ff9d9d;
+  color: #ff9d9d;
+}
+
+.warnings {
+  padding: 0.75rem 1rem;
+  border: 1px solid #f0c674;
+  border-radius: var(--radius);
+}
+
+.warnings h2 {
+  margin-top: 0;
 }

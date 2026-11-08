@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { ApiError, request } from "../api.ts";
 import { useSession } from "../account/session.ts";
 import { displayName, type CardSummary, type Language } from "../catalog/cards.ts";
@@ -63,7 +63,11 @@ function Editor({ deck, cards, owned, language }: EditorProps) {
   const [rows, setRows] = useState<DeckRow[]>(deck.cards);
   const [name, setName] = useState(deck.name);
   const [section, setSection] = useState<Section>("main");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const warnings: string[] =
+    (useLocation().state as { warnings?: string[] } | null)?.warnings ?? [];
   const client = useQueryClient();
+  const navigate = useNavigate();
   const errors = useMemo(
     () => deckErrors(rows, cards, owned, language),
     [rows, cards, owned, language],
@@ -78,6 +82,13 @@ function Editor({ deck, cards, owned, language }: EditorProps) {
       client.invalidateQueries({ queryKey: ["decks"] });
     },
   });
+  const remove = useMutation({
+    mutationFn: () => request("DELETE", `/api/decks/${deck.id}`),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: ["decks"] });
+      navigate("/decks");
+    },
+  });
   const edit = (change: DeckEdit) => setRows((old) => editDeck(old, change));
   const cardName = (cardId: number) => {
     const card = cards.get(cardId);
@@ -87,6 +98,17 @@ function Editor({ deck, cards, owned, language }: EditorProps) {
   return (
     <main className="page deck-page">
       <h1>{deck.name}</h1>
+      {warnings.length > 0 && (
+        <section aria-labelledby="warnings-title" className="warnings">
+          <h2 id="warnings-title">Ficou de fora da importação</h2>
+          <ul>
+            {warnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section aria-labelledby="deck-title" className="deck-panel">
         <h2 id="deck-title">Deck</h2>
         <div className="form-field">
@@ -191,6 +213,28 @@ function Editor({ deck, cards, owned, language }: EditorProps) {
               {save.error instanceof ApiError ? save.error.message : "Sem conexão. Tente de novo."}
             </span>
           )}
+        </p>
+        <p className="deck-actions">
+          {unsaved ? (
+            <span className="muted">Salve para exportar.</span>
+          ) : (
+            <>
+              <a href={`/api/decks/${deck.id}/export.ydk`} download>
+                Exportar .ydk
+              </a>
+              <a href={`/api/decks/${deck.id}/export.txt`} download>
+                Exportar texto
+              </a>
+            </>
+          )}
+          <button
+            type="button"
+            className="danger"
+            disabled={remove.isPending}
+            onClick={() => (confirmDelete ? remove.mutate() : setConfirmDelete(true))}
+          >
+            {confirmDelete ? "Confirmar: apagar o deck" : "Apagar deck"}
+          </button>
         </p>
       </section>
     </main>

@@ -17,6 +17,7 @@ export function Layout() {
         </Link>
         <Link to="/cartas">Cartas</Link>
         {user && <Link to="/colecao">Coleção</Link>}
+        {user && <Link to="/decks">Decks</Link>}
         <span className="account">
           {user && (
             <>
