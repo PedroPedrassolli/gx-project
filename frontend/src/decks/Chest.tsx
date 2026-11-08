@@ -13,6 +13,7 @@ import { usePackRarities } from "../catalog/data.ts";
 import { CatalogFilters } from "../catalog/Filters.tsx";
 import { CardTile } from "../catalog/parts.tsx";
 import { copies, goesToExtra, type DeckRow, type Section } from "./deck.ts";
+import { allowDrop, dragCard, droppedRow } from "./drag.ts";
 
 const PAGE = 60;
 
@@ -26,6 +27,7 @@ type Props = {
   selected: number;
   onSelect: (id: number) => void;
   onAdd: (cardId: number, section: Section) => void;
+  onRemove: (cardId: number, section: Section) => void;
 };
 
 // Baú do Deck Edit (escopo 4): as cartas para pôr no deck, com os filtros do catálogo.
@@ -52,7 +54,15 @@ export function Chest(props: Props) {
   const reset = () => setShown(PAGE);
 
   return (
-    <section aria-labelledby="chest-title" className="chest">
+    <section
+      aria-labelledby="chest-title"
+      className="chest"
+      onDragOver={(event) => allowDrop(event, "baú")}
+      onDrop={(event) => {
+        const row = droppedRow(event);
+        if (row) props.onRemove(row.cardId, row.section);
+      }}
+    >
       <h2 id="chest-title">Baú</h2>
       <CatalogFilters
         title="Filtros do baú"
@@ -95,7 +105,12 @@ export function Chest(props: Props) {
           const name = displayName(card, language);
           const deckSection = goesToExtra(card) ? "extra" : "main";
           return (
-            <li key={card.id} className="chest-item">
+            <li
+              key={card.id}
+              className="chest-item"
+              draggable
+              onDragStart={(event) => dragCard(event, card.id)}
+            >
               <CardTile
                 card={card}
                 language={language}
