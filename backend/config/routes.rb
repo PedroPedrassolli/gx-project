@@ -17,6 +17,7 @@ Rails.application.routes.draw do
     resource :session, only: %i[show create destroy]
     resources :registrations, only: :create
     resource :email_verification, only: %i[create update]
+    resource :password, only: %i[create update]
     resource :me, only: :destroy, controller: "me" do
       get :export
     end

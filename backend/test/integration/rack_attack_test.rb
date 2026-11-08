@@ -47,6 +47,16 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     end
   end
 
+  it "barra o 6º pedido de troca de senha para o mesmo e-mail dentro de 1 hora" do
+    at_noon do
+      5.times { post api_password_path, params: { email: "jaden@example.com" }, as: :json }
+      _(response.status).must_equal 202
+
+      post api_password_path, params: { email: "Jaden@example.com" }, as: :json
+      _(response.status).must_equal 429
+    end
+  end
+
   it "ignora corpo que não é JSON e deixa o Rails responder" do
     post api_session_path, params: "email=jaden", headers: { "Content-Type" => "text/plain" }
 
