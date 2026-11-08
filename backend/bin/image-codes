@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+# Lista, uma por linha, as imagens do YGOPRODeck que o pool usa (GXP-26). O workflow
+# "Imagens das cartas" baixa só essas.
+require_relative "../lib/game_data/pool"
+
+puts GameData::Pool.image_codes(File.expand_path("../db/seeds/jogo", __dir__))

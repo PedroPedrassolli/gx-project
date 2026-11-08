@@ -34,6 +34,13 @@ describe Catalog::Importer do
                                                                "name_pt" => "Assaltante Noturno" })
   end
 
+  it "guarda a imagem: a do passcode, a da carta oficial na pré-errata e a da impressão" do
+    importer.run
+
+    _(Card.order(:engine_code).pluck(:engine_code, :image_code)).must_equal [ [ 110, 100 ], [ 200, 200 ], [ 500, 500 ],
+                                                                             [ 700, 700 ], [ 900, nil ] ]
+  end
+
   it "mostra os dados da carta impressa quando a carta do anime usa a oficial" do
     importer.run
 

@@ -51,6 +51,11 @@ Descartados na conferência:
 4. **Imagens das cartas no Cloudflare Pages**, num projeto só de imagens, publicado por um
    workflow manual com `wrangler pages deploy` (F1). Não pede cartão, e banda e requisições
    não têm limite. Com 3 tamanhos por carta, os 20 mil arquivos comportam até 6.600 cartas.
+   Na prática (GXP-26): projeto `gx-project-imagens`, workflow *Imagens das cartas*
+   (`imagens.yml`), caminhos `/cards/{p,m,g}/<código>.webp` (112 e 268 de largura e a
+   original, 421 x 614), cache de um ano. São 3.423 cartas com imagem, uns 10 mil arquivos;
+   as 73 do anime sem impressão ficam só com o texto. A imagem que já está no ar vem do
+   próprio site na próxima execução: o YGOPRODeck só recebe pedido de imagem nova.
    As imagens não entram no repositório (ADR 0003). O Vercel Blob não serve aqui: 2 mil
    uploads por mês não sobem 3 tamanhos de milhares de cartas, e 10 GB de transferência
    acabariam rápido.

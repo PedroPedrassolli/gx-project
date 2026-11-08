@@ -9,6 +9,11 @@ describe GameData::Pool do
     _(GameData::Pool.codes(seeds)).must_equal [ 110, 200, 900, 500, 700 ]
   end
 
+  it "dá a imagem de cada carta: a do passcode ou a da impressão; carta do anime sem impressão fica sem" do
+    # Night Assailant (pré-errata) usa a imagem da oficial; Cyril, a da impressão (700).
+    _(GameData::Pool.image_codes(seeds)).must_equal [ 100, 200, 500, 700 ]
+  end
+
   it "acha a exceção pela chave da carta" do
     exceptions = GameData::Pool.exceptions(seeds)
 
