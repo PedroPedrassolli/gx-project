@@ -54,9 +54,11 @@ export function Layout() {
         </span>
       </nav>
       {user && !user.email_verified && <ConfirmEmailNotice user={user} />}
-      <Suspense fallback={<Loading />}>
-        <Outlet />
-      </Suspense>
+      <div id="conteudo" tabIndex={-1}>
+        <Suspense fallback={<Loading />}>
+          <Outlet />
+        </Suspense>
+      </div>
       <SiteFooter />
     </>
   );
@@ -71,14 +73,11 @@ function Loading() {
   );
 }
 
-// Teclado: pula a barra do topo e vai direto ao conteúdo da página.
+// Teclado: pula a barra do topo e vai direto ao conteúdo da página (sem pôr #conteudo
+// no endereço).
 function skipToContent(event: MouseEvent<HTMLAnchorElement>) {
   event.preventDefault();
-  const main = document.querySelector<HTMLElement>("main");
-  if (main) {
-    main.tabIndex = -1;
-    main.focus();
-  }
+  document.getElementById("conteudo")?.focus();
 }
 
 // Aviso de fã, créditos, textos legais e o código-fonte (escopo, telas: "Legais").

@@ -37,7 +37,8 @@ test("o primeiro Tab mostra o link para pular a barra do topo", async ({ page })
   await expect(skip).toBeFocused();
   await expect(skip).toBeInViewport();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("main")).toBeFocused();
+  await expect(page.locator("#conteudo")).toBeFocused();
+  await expect(page).toHaveURL("/");
 
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
