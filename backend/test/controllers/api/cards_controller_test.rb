@@ -21,6 +21,13 @@ class Api::CardsControllerTest < ActionDispatch::IntegrationTest
       _(data.find { |card| card["name"] == "Clear Wall" }).wont_include "image"
     end
 
+    it "corta cada filtro em 100 caracteres: texto maior não acha nada e só gastaria CPU" do
+      Catalog::Snapshot.any_instance.expects(:search).with { |filters| filters[:q].length == 100 && filters[:race] == "Dragon" }.returns([])
+      get api_cards_path, params: { q: "a" * 5_000, race: "Dragon" }
+
+      assert_response :success
+    end
+
     it "busca pelo nome em inglês ou em português, sem acento e sem caixa" do
       _(names(q: "assaltante")).must_equal [ "Night Assailant" ]
       _(names(q: "NOTURNO")).must_equal [ "Night Assailant" ]
