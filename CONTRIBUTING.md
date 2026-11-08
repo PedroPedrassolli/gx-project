@@ -78,5 +78,6 @@ mudar o projeto sem quebrar nada.
 - **Segredos** (`SECRET_KEY_BASE`, `DATABASE_PASSWORD`, `ABLY_API_KEY`, tokens) ficam só nos painéis da
   Vercel e do GitHub. Nunca no repositório, em issue ou em PR. Sem a `ABLY_API_KEY`, os eventos
   de tempo real ficam na memória (ADR 0002). A `DATABASE_PASSWORD` vai só no GitHub: o workflow
-  *Banco de produção* copia para a Vercel.
+  *Banco de produção* copia para a Vercel. O `CLOUDFLARE_API_TOKEN` (só Cloudflare Pages: Editar)
+  e o `CLOUDFLARE_ACCOUNT_ID` também ficam só no GitHub, para o workflow *Imagens das cartas*.
 - Não apague dados permanentemente (branches, issues, cards, imagens, deploys) sem o Pedro pedir.

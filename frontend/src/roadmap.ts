@@ -3,7 +3,7 @@ export type Phase = { code: string; name: string; done: boolean };
 
 export const PHASES: Phase[] = [
   { code: "F0", name: "Fundação e dados", done: true },
-  { code: "F1", name: "Catálogo de cartas", done: false },
+  { code: "F1", name: "Catálogo de cartas", done: true },
   { code: "F2", name: "Contas e montagem de decks", done: false },
   { code: "F3", name: "Duelo 1x1 em sala", done: false },
   { code: "F4", name: "Economia e loja", done: false },

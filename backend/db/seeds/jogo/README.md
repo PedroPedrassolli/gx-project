@@ -20,7 +20,8 @@ Os itens 9 (Destiny Draw) e 10 (PV do Tag) estão no ADR 0001.
 
 Para gravar o catálogo no banco: `bin/rails catalogo:importar`. Ele usa o código da engine
 do `cobertura.yml`, deixa de fora as cartas que saíram do pool e monta a lista dos pacotes
-que juntam outros. Pode rodar quantas vezes quiser.
+que juntam outros. Pode rodar quantas vezes quiser. Mudou o pool? Rode também o workflow
+*Imagens das cartas*: ele baixa do YGOPRODeck só as imagens que ainda não estão no ar.
 
 ## Fonte e licença
 
@@ -63,7 +64,8 @@ não tem script) e a imagem do YGOPRODeck. Em 07/11/2026:
   5 não têm script e usam a carta que o OCG imprimiu depois (`passcode_oficial` no
   `cartas.yml`), e o jogador vê os dados dela (`impressao`); **12 ficam fora do pool** até
   alguém escrever o script.
-- As cartas do anime não têm imagem no YGOPRODeck: mostram só o texto (escopo, 3.2).
+- As cartas do anime não têm imagem no YGOPRODeck: mostram só o texto (escopo, 3.2). As 5
+  que usam a carta impressa depois mostram a imagem dela.
 
 ## O que não veio da fonte (respostas do Pedro ao Anexo C, 07/11/2026)
 

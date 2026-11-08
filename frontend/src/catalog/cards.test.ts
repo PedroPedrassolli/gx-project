@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   EMPTY_FILTERS,
   frame,
+  imageUrl,
   matches,
   plain,
   sortCards,
@@ -107,5 +108,16 @@ test("monta a linha de tipo em português", () => {
   assert.equal(
     typeLine({ id: 5, name: "Sogen", card_type: "Spell", property: "Field" }),
     "Magia de Campo",
+  );
+});
+
+test("a imagem vem do site das imagens, no tamanho pedido", () => {
+  assert.equal(
+    imageUrl(46986414, "p"),
+    "https://gx-project-imagens.pages.dev/cards/p/46986414.webp",
+  );
+  assert.equal(
+    imageUrl(46986414, "g"),
+    "https://gx-project-imagens.pages.dev/cards/g/46986414.webp",
   );
 });

@@ -111,7 +111,7 @@ jobs:
               echo "$code" >> falhas.txt
               return 0
             fi
-            # g: 421 x 614, o tamanho da original (uns 95 KB); m: 268 de largura (20 KB); p: 112 (6 KB).
+            # g: 813 x 1185, o tamanho da original (uns 85 KB); m: 268 de largura (20 KB); p: 112 (6 KB).
             cwebp -quiet -q 75 "originais/$code.jpg" -o "site/cards/g/$code.webp"
             cwebp -quiet -q 75 -resize 268 0 "originais/$code.jpg" -o "site/cards/m/$code.webp"
             cwebp -quiet -q 75 -resize 112 0 "originais/$code.jpg" -o "site/cards/p/$code.webp"
