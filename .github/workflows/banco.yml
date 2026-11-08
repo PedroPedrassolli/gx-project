@@ -1,6 +1,8 @@
 name: Banco de produção
 
 # Roda as migrações e grava o catálogo no Supabase quando a main muda o que vai para o banco.
+# O PR mesclado pelo auto-merge não dispara o push (o GitHub não encadeia workflows do
+# GITHUB_TOKEN): nesse caso, o próprio auto-merge chama este workflow.
 # Usa o pooler em modo sessão (porta 5432): ele aceita IPv4, como o runner do GitHub, e a
 # trava de sessão que as migrações usam (ADR 0004). Host e usuário vêm das variáveis do
 # repositório; a senha, do secret DATABASE_PASSWORD, que o Pedro cola. Sem eles, o workflow
