@@ -51,7 +51,7 @@ module Catalog
     def summary(card)
       { id: card.id, name: card.name, name_pt: card.name_pt, card_type: card.card_type, property: card.property,
         attribute: card.card_attribute, race: card.race, monster_types: card.monster_types.presence,
-        level: card.level, atk: card.attack, def: card.defense, banlist: @statuses[card.id] }.compact
+        level: card.level, atk: card.attack, def: card.defense, banlist: @statuses[card.id], image: card.image_code }.compact
     end
 
     def detail(card)

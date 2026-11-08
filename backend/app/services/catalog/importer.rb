@@ -45,6 +45,7 @@ module Catalog
     def card_row(card)
       code = engine_code(card)
       code && { engine_code: code, passcode: card["passcode"], internal_number: card["numero_interno"],
+                image_code: GameData::Pool.image_code(card, exceptions),
                 name: card["nome"], name_in_game: card["nome_no_jogo"], **shown(card) }
     end
 

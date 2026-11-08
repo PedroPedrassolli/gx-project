@@ -1,0 +1,89 @@
+name: Imagens das cartas
+
+# Publica as imagens das cartas do pool no projeto só de imagens do Cloudflare Pages
+# (GXP-26, ADR 0004), em WebP com 3 tamanhos: p (lista), m (campo) e g (zoom). Manual: as
+# imagens só mudam quando o pool muda.
+#
+# O YGOPRODeck pede para baixar uma vez e hospedar por conta própria. Por isso, a imagem
+# que já está no ar vem do próprio site (banda sem limite), e só a nova vem do YGOPRODeck,
+# com poucos pedidos por segundo. Precisa dos secrets CLOUDFLARE_API_TOKEN (só Pages: Edit)
+# e CLOUDFLARE_ACCOUNT_ID, colados pelo Pedro.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: imagens
+  cancel-in-progress: false
+
+env:
+  PROJECT: gx-project-imagens
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+jobs:
+  publicar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Conferir os secrets
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Faltam os secrets CLOUDFLARE_API_TOKEN e CLOUDFLARE_ACCOUNT_ID."
+            exit 1
+          fi
+
+      - name: Projeto no Cloudflare Pages
+        id: projeto
+        run: |
+          api="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects"
+          auth="Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+          if ! curl -fsS -H "$auth" "$api/$PROJECT" -o projeto.json; then
+            jq -n --arg name "$PROJECT" '{name: $name, production_branch: "main"}' |
+              curl -fsS -H "$auth" -H "Content-Type: application/json" --data @- "$api" -o projeto.json
+            echo "::notice title=Cloudflare Pages::Projeto $PROJECT criado."
+          fi
+          echo "site=https://$(jq -r '.result.subdomain' projeto.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Gerar as imagens
+        env:
+          SITE: ${{ steps.projeto.outputs.site }}
+        run: |
+          sudo apt-get install -y -q webp > /dev/null
+          ruby backend/bin/image-codes > codes.txt
+          mkdir -p originais site/cards/p site/cards/m site/cards/g
+          image() {
+            code=$1
+            for size in g m p; do
+              curl -fsS -o "site/cards/$size/$code.webp" "$SITE/cards/$size/$code.webp" 2> /dev/null || break
+              [ "$size" = p ] && return 0
+            done
+            # Ainda não está no ar: baixa a original uma vez e gera os 3 tamanhos.
+            sleep 0.25
+            if ! curl -fsS --retry 3 -o "originais/$code.jpg" "https://images.ygoprodeck.com/images/cards/$code.jpg"; then
+              echo "$code" >> falhas.txt
+              return 0
+            fi
+            # g: 421 x 614, o tamanho da original (uns 95 KB); m: 268 de largura (20 KB); p: 112 (6 KB).
+            cwebp -quiet -q 75 "originais/$code.jpg" -o "site/cards/g/$code.webp"
+            cwebp -quiet -q 75 -resize 268 0 "originais/$code.jpg" -o "site/cards/m/$code.webp"
+            cwebp -quiet -q 75 -resize 112 0 "originais/$code.jpg" -o "site/cards/p/$code.webp"
+          }
+          export -f image
+          # 4 por vez: o "$1" fica entre aspas simples para valer dentro do bash -c.
+          # shellcheck disable=SC2016
+          xargs -P 4 -I{} bash -c 'image "$1"' _ {} < codes.txt
+          # Um ano em cache: a imagem de um código não muda.
+          printf '/cards/*\n  Cache-Control: public, max-age=31536000, immutable\n' > site/_headers
+          novas=$(find originais -name '*.jpg' | wc -l)
+          echo "::notice title=Imagens::$(find site/cards/g -name '*.webp' | wc -l) de $(wc -l < codes.txt) cartas; $novas novas do YGOPRODeck; $(du -sh --apparent-size site | cut -f1)"
+          if [ -s falhas.txt ]; then
+            echo "::warning title=Sem imagem::$(wc -l < falhas.txt) cartas: $(head -n 20 falhas.txt | tr '\n' ' ')"
+          fi
+
+      - name: Publicar
+        run: npx --yes wrangler@4 pages deploy site --project-name "$PROJECT" --branch main --commit-dirty=true
