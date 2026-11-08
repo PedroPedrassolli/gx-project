@@ -52,7 +52,7 @@ module Catalog
     # usa a oficial; o texto da época, quando a carta usa a regra antiga. O texto em
     # português é o atual: se o texto da época é outro, fica só o inglês.
     def shown(card)
-      exception = exceptions[card.values_at("nome", "passcode", "numero_interno")]
+      exception = exceptions[GameData::Pool.key(card)]
       data = exception&.dig("motivo") == "usar_oficial" && card["impressao"] || card
       text = exception&.dig("texto") || data["texto"]
       { name_pt: data["nome_pt"], card_type: data["tipo"], property: data["propriedade"],
@@ -62,16 +62,9 @@ module Catalog
     end
 
     # O código da engine sai da cobertura; carta "tirar_do_pool" fica sem código e não entra.
-    def engine_code(card)
-      exception = exceptions[card.values_at("nome", "passcode", "numero_interno")]
-      return card["passcode"] unless exception
+    def engine_code(card) = GameData::Pool.engine_code(card, exceptions)
 
-      exception["codigo"] unless exception["motivo"] == "tirar_do_pool"
-    end
-
-    def exceptions
-      @exceptions ||= load("cobertura.yml")["excecoes"].index_by { |item| item.values_at("nome", "passcode", "numero_interno") }
-    end
+    def exceptions = @exceptions ||= GameData::Pool.exceptions(@directory)
 
     # Id da carta citada em outra lista: pelo passcode, pelo número interno ou pelo nome.
     def card_id(reference)

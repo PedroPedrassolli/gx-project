@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+# Deixa só os scripts Lua que o pool do jogo usa (GXP-21, ADR 0001). Roda no
+# Dockerfile.vercel, na cópia do código que vai para o container: o repositório não muda.
+#
+# Ficam a raiz do CardScripts (constant.lua, utility.lua, proc_*.lua...), o script de cada
+# carta do pool (pelo código da engine, cobertura.yml), as cartas do duelo do /up/engine e,
+# de forma repetida, todo script citado por número num script que ficou (LoadCardScript,
+# tokens, cartas copiadas). Número que não é carta não acha script e não traz nada.
+#
+# Uso: bin/prune-scripts [pasta do CardScripts]
+require "json"
+require "set"
+require_relative "../lib/game_data/pool"
+
+FOLDERS = %w[official pre-errata unofficial].freeze # as pastas que o Duel::ScriptLibrary lê
+CODE = /\d{3,9}/
+
+backend = File.expand_path("..", __dir__)
+scripts = ARGV[0] || File.join(backend, "vendor/engine/CardScripts")
+seeds = File.join(backend, "db/seeds/jogo")
+
+# Script de cada código: o primeiro achado, na ordem em que a engine procura.
+all = FOLDERS.flat_map { |folder| Dir[File.join(scripts, folder, "c*.lua")] }
+paths = {}
+all.each { |path| paths[File.basename(path)[/\d+/].to_i] ||= path }
+
+pool = GameData::Pool.codes(seeds)
+health = JSON.parse(File.read(File.join(backend, "app/services/duel/health_check_duel.json")))["decks"]
+             .flat_map { |deck| deck.values.flatten }
+roots = Dir[File.join(scripts, "*.lua")].flat_map { |path| File.binread(path).scan(CODE).map(&:to_i) }
+
+keep = Set.new
+wanted = pool + health + roots
+until wanted.empty?
+  path = paths[wanted.pop]
+  next if path.nil? || keep.include?(path)
+
+  keep << path
+  wanted.concat(File.binread(path).scan(CODE).map(&:to_i))
+end
+
+removed = all.reject { |path| keep.include?(path) }
+removed.each { |path| File.delete(path) }
+puts "Scripts de carta: #{keep.size} ficam, #{removed.size} saem."

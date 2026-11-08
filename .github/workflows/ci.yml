@@ -141,6 +141,10 @@ jobs:
           # A engine de duelo roda dentro do container (biblioteca nativa via FFI).
           curl -fsS http://localhost:8080/up/engine | tee engine.json | grep -q '"ok":true'
           echo "::notice title=Engine no container::$(cat engine.json)"
+          # Só os scripts do pool vão para a imagem (bin/prune-scripts): confere que cada
+          # carta do pool tem o seu e que todos carregam na engine.
+          docker exec backend bin/rails engine:conferir | tee conferir.txt
+          echo "::notice title=Scripts no container::$(tail -n 1 conferir.txt)"
 
       # Em caso de erro, mostra o código de cada rota e o fim do log como anotações,
       # que aparecem no resumo da execução sem precisar abrir o log inteiro.
