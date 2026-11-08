@@ -30,6 +30,7 @@ const cards = [
     atk: 2100,
     def: 1200,
   },
+  { id: 4, name: "Mirror Force", name_pt: "Força Espelho", card_type: "Trap", property: "Normal" },
 ];
 const deck = {
   id: 7,
@@ -88,6 +89,13 @@ async function mockDeckApi(page: Page) {
       json: { data: deck, meta: { warnings: ["O código 12345 não está no pool."] } },
     }),
   );
+  await page.route("**/api/cards/1", (route) =>
+    route.fulfill({
+      json: {
+        data: { ...cards[0], text: "The ultimate wizard.", source: "https://yugipedia.com" },
+      },
+    }),
+  );
   await page.route("**/api/decks/99", (route) =>
     route.fulfill({ status: 404, json: { error: { status: 404, message: "Não encontrado." } } }),
   );
@@ -131,7 +139,7 @@ test("marca Destiny, manda uma cópia para o Side e salva", async ({ page }) => 
   await page
     .getByRole("listitem")
     .filter({ hasText: "Mago Negro" })
-    .getByRole("button", { name: "Uma para o Side" })
+    .getByRole("button", { name: "Mandar uma cópia de Mago Negro para o Side" })
     .click();
   await page.getByRole("button", { name: "Salvar" }).click();
 
@@ -190,4 +198,40 @@ test("exporta o deck salvo e apaga depois de confirmar", async ({ page }) => {
   await page.getByRole("button", { name: "Apagar deck" }).click();
   await page.getByRole("button", { name: "Confirmar: apagar o deck" }).click();
   await expect(page).toHaveURL("/decks");
+});
+
+test("põe cartas do baú no deck, até 3 cópias, e mostra o detalhe", async ({ page }) => {
+  await page.goto("/decks/7");
+  const chest = page.getByRole("region", { name: "Baú" });
+  await expect(chest.getByRole("status")).toHaveText("3 cartas");
+
+  await chest.getByRole("button", { name: "Pôr Mago Negro no Main Deck" }).click();
+  await chest.getByRole("button", { name: "Pôr Mago Negro no Main Deck" }).click();
+  await expect(page.getByRole("button", { name: "Main Deck (4)" })).toBeVisible();
+  await expect(chest.getByRole("listitem").filter({ hasText: "Mago Negro" })).toContainText(
+    "Tenho 3 · no deck 3",
+  );
+
+  await chest
+    .getByRole("button", { name: "Pôr Elemental HERO Flame Wingman no Extra Deck" })
+    .click();
+  await expect(page.getByRole("button", { name: "Extra Deck (2)" })).toBeVisible();
+
+  await chest.getByRole("button", { name: /^Mago Negro/ }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "Mago Negro" })).toBeVisible();
+
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
+});
+
+test("o baú mostra também as cartas que o jogador não tem, se pedir", async ({ page }) => {
+  await page.goto("/decks/7");
+  const chest = page.getByRole("region", { name: "Baú" });
+  await chest.getByText("Mais filtros").click();
+  await chest.getByLabel("Só as que tenho").uncheck();
+
+  await expect(chest.getByRole("status")).toHaveText("4 cartas");
+  await expect(chest.getByRole("listitem").filter({ hasText: "Força Espelho" })).toContainText(
+    "Tenho 0 · no deck 0",
+  );
 });
