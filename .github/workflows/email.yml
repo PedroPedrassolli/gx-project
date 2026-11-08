@@ -1,0 +1,69 @@
+# Copia os dados do Brevo dos secrets do GitHub para a Vercel e publica de novo o deploy de
+# produção, para o Rails passar a mandar e-mail (ADR 0008). Rodar quando colar ou trocar
+# os secrets BREVO_SMTP_LOGIN, BREVO_SMTP_KEY e MAIL_FROM.
+name: E-mail na Vercel
+
+on:
+  workflow_dispatch:
+
+# Não lê nem escreve nada no repositório: só fala com a API da Vercel.
+permissions: {}
+
+env:
+  TEAM_ID: team_eX4xb41M3bSeVVVO64KwHMkc
+  PROJECT_ID: prj_muRjAZVGVSTTahcE6Gx0XPiLz5lO
+
+jobs:
+  copiar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Copiar para a Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          BREVO_SMTP_LOGIN: ${{ secrets.BREVO_SMTP_LOGIN }}
+          BREVO_SMTP_KEY: ${{ secrets.BREVO_SMTP_KEY }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+        run: |
+          resposta="$RUNNER_TEMP/vercel.json"
+          for name in BREVO_SMTP_LOGIN BREVO_SMTP_KEY MAIL_FROM; do
+            # Sem espaços nem quebras de linha que vêm junto ao colar.
+            value=$(printf '%s' "${!name}" | tr -d '[:space:]')
+            if [ -z "$value" ]; then
+              echo "::error::Falta o secret $name (Settings → Secrets and variables → Actions)."
+              exit 1
+            fi
+            echo "::add-mask::$value"
+            # O jq monta o JSON: nenhum caractere quebra o texto. upsert=true cria ou troca.
+            status=$(jq -n --arg key "$name" --arg value "$value" \
+              '{key: $key, value: $value, type: "sensitive", target: ["production"],
+                comment: "Copiada do secret do GitHub pelo workflow E-mail na Vercel"}' |
+              curl --silent --show-error --output "$resposta" --write-out "%{http_code}" \
+                -H "Authorization: Bearer $VERCEL_TOKEN" -H "Content-Type: application/json" \
+                --data @- "https://api.vercel.com/v10/projects/$PROJECT_ID/env?upsert=true&teamId=$TEAM_ID")
+            if [ "$status" -ge 300 ]; then
+              echo "::error::A Vercel recusou $name (HTTP $status): $(jq -r '.error.message // "sem mensagem"' "$resposta")"
+              exit 1
+            fi
+            echo "$name gravada na Vercel."
+          done
+
+      # Variável nova só vale em deploy novo: publica de novo o deploy de produção atual.
+      - name: Publicar de novo
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          api="https://api.vercel.com"
+          auth="Authorization: Bearer $VERCEL_TOKEN"
+          id=$(curl --silent --show-error -H "$auth" \
+            "$api/v6/deployments?projectId=$PROJECT_ID&target=production&state=READY&limit=1&teamId=$TEAM_ID" |
+            jq -r '.deployments[0].uid')
+          resposta="$RUNNER_TEMP/deploy.json"
+          status=$(jq -n --arg id "$id" '{name: "gx-project", deploymentId: $id, target: "production"}' |
+            curl --silent --show-error --output "$resposta" --write-out "%{http_code}" \
+              -H "$auth" -H "Content-Type: application/json" --data @- "$api/v13/deployments?teamId=$TEAM_ID")
+          if [ "$status" -ge 300 ]; then
+            echo "::error::A Vercel não publicou de novo (HTTP $status): $(jq -r '.error.message // "sem mensagem"' "$resposta")"
+            exit 1
+          fi
+          echo "::notice title=Vercel::Publicando de novo: https://$(jq -r '.url' "$resposta")"

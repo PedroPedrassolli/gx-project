@@ -29,6 +29,17 @@ Rack::Attack.throttle("cadastro por IP", limit: 10, period: 1.hour) do |request|
   request.ip if sign_up.call(request)
 end
 
+# Troca de senha: 5 pedidos por hora por e-mail e 20 por hora por IP.
+password_reset = ->(request) { request.post? && request.path == "/api/password" }
+
+Rack::Attack.throttle("troca de senha por e-mail", limit: 5, period: 1.hour) do |request|
+  email.call(request) if password_reset.call(request)
+end
+
+Rack::Attack.throttle("troca de senha por IP", limit: 20, period: 1.hour) do |request|
+  request.ip if password_reset.call(request)
+end
+
 # Reenvio do e-mail de confirmação: 5 por hora por IP (cada um gasta da cota do Brevo).
 Rack::Attack.throttle("reenvio de confirmação por IP", limit: 5, period: 1.hour) do |request|
   request.ip if request.post? && request.path == "/api/email_verification"

@@ -48,9 +48,11 @@ limite de tentativas com Rack::Attack (6). O front e a API estão no mesmo domí
    tem fila de jobs. Se o envio falhar, a conta não volta atrás; a pessoa pede de novo. O
    link de confirmação vale 2 dias e deixa de valer se o e-mail mudar
    (`generates_token_for`); o de troca de senha vale 1 hora e deixa de valer depois da troca
-   (`has_secure_password`). Reenvio da confirmação: 5 por hora por IP. Na Vercel:
-   `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY` e `MAIL_FROM` (o remetente verificado no Brevo); sem
-   a chave, nada sai e o envio só aparece no log.
+   (`has_secure_password`). Limites: reenvio da confirmação, 5 por hora por IP; pedido de
+   troca de senha, 5 por hora por e-mail e 20 por IP. Os dados do Brevo ficam nos secrets
+   do GitHub `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY` e `MAIL_FROM` (só o endereço do
+   remetente verificado), e o workflow *E-mail na Vercel* copia para a Vercel e publica de
+   novo. Sem a chave, nada sai e o envio só aparece no log.
 
 ## Alternativas consideradas
 
