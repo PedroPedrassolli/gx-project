@@ -20,8 +20,6 @@ concurrency:
 
 env:
   PROJECT: gx-project-imagens
-  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
 jobs:
   publicar:
@@ -30,11 +28,27 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # Tira espaços e quebras de linha que vêm junto ao colar (comum no celular) e confere o
+      # formato do ID da conta. Os passos seguintes usam os valores limpos.
       - name: Conferir os secrets
+        env:
+          PASTED_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PASTED_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+          token=$(printf '%s' "$PASTED_TOKEN" | tr -d '[:space:]')
+          account=$(printf '%s' "$PASTED_ACCOUNT" | tr -d '[:space:]')
+          if [ -z "$token" ] || [ -z "$account" ]; then
             echo "::error::Faltam os secrets CLOUDFLARE_API_TOKEN e CLOUDFLARE_ACCOUNT_ID."
             exit 1
+          fi
+          if [[ ! "$account" =~ ^[0-9a-f]{32}$ ]]; then
+            echo "::error::O CLOUDFLARE_ACCOUNT_ID não tem a cara de um ID de conta (32 caracteres, só números e letras de a até f). Ele está no endereço do painel: dash.cloudflare.com/ID-DA-CONTA/..."
+            exit 1
+          fi
+          echo "::add-mask::$token"
+          { echo "CLOUDFLARE_API_TOKEN=$token"; echo "CLOUDFLARE_ACCOUNT_ID=$account"; } >> "$GITHUB_ENV"
+          if [ "$token" != "$PASTED_TOKEN" ] || [ "$account" != "$PASTED_ACCOUNT" ]; then
+            echo "::notice title=Secrets::Tinham espaço ou quebra de linha; o workflow usa sem."
           fi
 
       - name: Projeto no Cloudflare Pages
@@ -57,10 +71,16 @@ jobs:
           # Deu erro: explica o que o Cloudflare respondeu e se o token vale, sem mostrar nada
           # dos secrets (o log deste repositório é público).
           if [ "$status" != 200 ]; then
-            errors=$(jq -r '[.errors[]? | "\(.code) \(.message)"] | join("; ")' resposta.json 2> /dev/null || true)
-            token="não vale (confira se colou o token inteiro)"
-            [ "$(cf "$base/user/tokens/verify")" != 200 ] || token="vale (token do usuário)"
-            [ "$(cf "$base/accounts/$CLOUDFLARE_ACCOUNT_ID/tokens/verify")" != 200 ] || token="vale (token da conta)"
+            why() { jq -r '[.errors[]? | "\(.code) \(.message)"] | join("; ")' resposta.json 2> /dev/null || true; }
+            errors=$(why)
+            token="não vale"
+            user=$(cf "$base/user/tokens/verify")
+            [ "$user" != 200 ] || token="vale (token do usuário)"
+            user="$user $(why)"
+            conta=$(cf "$base/accounts/$CLOUDFLARE_ACCOUNT_ID/tokens/verify")
+            [ "$conta" != 200 ] || token="vale (token da conta)"
+            conta="$conta $(why)"
+            echo "::warning title=Conferência do token::como token do usuário: $user; como token da conta: $conta"
             account="não deu para conferir"
             if [ "$(cf "$base/accounts?per_page=50")" = 200 ]; then
               account="não está entre as contas do token"
