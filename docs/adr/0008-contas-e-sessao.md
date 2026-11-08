@@ -19,11 +19,11 @@ limite de tentativas com Rack::Attack (6). O front e a API estão no mesmo domí
    `sessions`, e o cookie assinado `session_id` guarda o id dela: `httponly`,
    `SameSite=Lax`, `Secure` em produção, sem data para expirar. Sair apaga a linha. A tabela
    não guarda IP nem navegador: não precisamos desses dados (LGPD, minimização).
-3. **CSRF:** `protect_from_forgery with: :exception`, com o token num cookie criptografado
-   (`httponly`, `SameSite=Lax`) em vez da sessão do Rack, que a API não usa. O front pega o
-   token em `GET /api/session` e manda no cabeçalho `X-CSRF-Token` em todo pedido que muda
-   algo. As rotas do catálogo só leem e não criam cookie, então a CDN continua guardando as
-   respostas.
+3. **CSRF:** `protect_from_forgery with: :exception`, com o token na sessão do Rails (o
+   cookie criptografado `_gx_session`, `httponly`, `SameSite=Lax`), que o modo API não traz
+   e voltou só para isso. O front pega o token em `GET /api/session` e manda no cabeçalho
+   `X-CSRF-Token` em todo pedido que muda algo; sem ele, 403. As rotas do catálogo só leem
+   e não mexem na sessão, então não criam cookie e a CDN continua guardando as respostas.
 4. **Idade:** o cadastro recebe a data de nascimento, calcula os anos completos no dia de
    hoje em São Paulo e guarda só a faixa: `13-17` ou `18+`. Menos de 13 anos (ou data no
    futuro) recebe erro e nada é gravado. A data não aparece no log (`filter_parameters`).

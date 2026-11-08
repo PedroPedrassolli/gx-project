@@ -19,6 +19,10 @@ require "mocha/minitest"
 # Apoio dos testes (ex.: os bots que jogam duelos inteiros na engine).
 Rails.root.glob("test/support/**/*.rb").each { |file| require file }
 
+# Sem token CSRF nos testes, como o Rails faz por padrão (config/environments/test.rb não
+# chega à API, que liga a proteção por conta própria). O teste de CSRF liga de novo.
+Api::BaseController.allow_forgery_protection = false
+
 module ActiveSupport
   class TestCase
     # describe/it/let/subject do Minitest::Spec dentro das classes de teste do Rails.

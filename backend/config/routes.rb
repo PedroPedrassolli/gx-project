@@ -12,5 +12,9 @@ Rails.application.routes.draw do
     resources :cards, only: %i[index show]
     resources :packs, only: :index
     resources :banlists, only: :index
+
+    # Contas (ADR 0008): quem está logado, entrar e sair; cadastro.
+    resource :session, only: %i[show create destroy]
+    resources :registrations, only: :create
   end
 end

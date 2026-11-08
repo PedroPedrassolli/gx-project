@@ -18,6 +18,9 @@ class User < ApplicationRecord
   validates :role, inclusion: { in: ROLES }
   validate :nickname_must_be_clean
 
+  # O que a API mostra do usuário: nunca a senha.
+  def as_json(*) = { id:, email:, nickname:, age_group:, role: }
+
   private
 
   def nickname_must_be_clean
