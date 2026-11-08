@@ -186,7 +186,7 @@
 ```
 React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──FFI──▶ ygopro-core + scripts Lua
       ▲                            │            │
-      └──── Ably (canal privado) ◀─┘            └──▶ Postgres (Supabase) · Blob (backup) · Brevo (e-mail)
+      └──── Ably (canal privado) ◀─┘            └──▶ Postgres (Supabase) · GitHub (backup) · Brevo (e-mail)
 ```
 - **Imagens das cartas:** Cloudflare Pages, direto para o navegador (ADR 0004).
 - **Mesmo domínio:** o `vercel.json` repassa `/api/*` para o Rails, então o cookie de sessão é do próprio site.
@@ -251,7 +251,7 @@ React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──
 | Supabase Free | Postgres, em São Paulo (`sa-east-1`) | 500 MB de banco, 5 GB de saída; pausa após 7 dias sem uso (o `uptime.yml` chama `/up/db`); **sem backup** |
 | Ably Free | Realtime | 6 M mensagens/mês, 200 conexões, 200 canais, 500 msg/s, 64 KiB por mensagem |
 | Cloudflare Pages | Imagens das cartas | 20 mil arquivos; banda sem limite |
-| Vercel Blob | Backup | 1 GB; 2 mil uploads por mês |
+| GitHub Actions (artefatos) | Backup | 30 dias de retenção; grátis em repo público |
 | Brevo Free | E-mail | 300 por dia; sem domínio próprio, o remetente sai como `@brevosend.com` |
 | Sentry Developer | Erros | 5 mil erros por mês |
 | GitHub Actions | CI | Sem limite em repo público |
@@ -265,7 +265,7 @@ saiu na conferência: pede cartão para ativar e cobra o excedente (ADR 0004).
 - **Testes:** backend com Minitest (POROs, requests e transações de DP/loja); **contrato da engine** (duelos roteirizados com semente fixa → estado esperado, com um teste por mecânica: MR1, Fusão, Ritual, Sincro, Tag, Destiny Draw, Match/Side); um teste por bônus do Anexo A e por desafio; front com funções puras (reducer do duelo, filtros, validação) e Playwright + axe com 2 navegadores (1x1) e 4 (Tag).
 - **Segurança:** Brakeman e bundler-audit; Rack::Attack; cookie `SameSite` + token CSRF; sorteios e informação oculta só no servidor; segredos só nos painéis.
 - **Desempenho:** p95 de ação < 300 ms; uma mensagem por jogador por ação; replay de 30 dias.
-- **Backup:** `pg_dump` semanal, criptografado, salvo no Vercel Blob (ADR 0004).
+- **Backup:** `pg_dump` semanal, criptografado, guardado como artefato do GitHub Actions por 30 dias (ADR 0004).
 - **Documentação:** README e CONTRIBUTING em português. ADRs em `docs/` sobre engine, realtime, AGPL, hospedagem e economia.
 
 ## 7. Integrações e automações

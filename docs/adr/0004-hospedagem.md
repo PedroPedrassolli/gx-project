@@ -60,10 +60,13 @@ Descartados na conferência:
    As imagens não entram no repositório (ADR 0003). O Vercel Blob não serve aqui: 2 mil
    uploads por mês não sobem 3 tamanhos de milhares de cartas, e 10 GB de transferência
    acabariam rápido.
-5. **Backup no Vercel Blob, em loja privada** (F2): `pg_dump` semanal numa Action,
-   criptografado com `age` para uma chave pública guardada no repositório (a chave privada
-   fica só com o Pedro), guardando os 4 últimos. Gasta umas 10 operações avançadas por mês
-   e bem menos de 1 GB. O backup fica fora do Supabase de propósito.
+5. **Backup como artefato do GitHub Actions** (F2; mudou no GXP-41): `pg_dump` semanal do
+   schema `public` numa Action, criptografado com GPG (AES-256) com a senha do secret
+   `BACKUP_PASSPHRASE`, guardado como artefato por 30 dias (uns 4 backups). O backup fica
+   fora do Supabase de propósito. Era para ser no Vercel Blob com `age`, mas isso pedia ao
+   Pedro um token do Blob e um par de chaves gerado no computador; o artefato é grátis no
+   repositório público e só precisa de uma senha. Como qualquer pessoa pode baixar artefato
+   de repositório público, ele só sai criptografado. Restauração: README.
 6. **E-mail pelo Brevo Free** (F2), com um endereço de remetente só do projeto, nunca o
    pessoal. Sem domínio próprio, o remetente aparece como `@brevosend.com`. Um domínio
    próprio melhora a entrega, mas é pago: é decisão do Pedro.

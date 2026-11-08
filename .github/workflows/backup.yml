@@ -1,0 +1,73 @@
+# Backup semanal do banco de produção (ADR 0004): pg_dump só do schema public (sem os
+# contadores do Solid Cache), criptografado com a senha do secret BACKUP_PASSPHRASE e
+# guardado como artefato desta Action por 30 dias (uns 4 backups). O artefato do repositório
+# público pode ser baixado por qualquer pessoa: por isso só sai criptografado.
+#
+# Restaurar: README, "Backup do banco".
+name: Backup do banco
+
+on:
+  schedule:
+    - cron: "17 6 * * 1" # segunda, 3h17 em São Paulo
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      # Pooler em modo sessão (porta 5432): aceita IPv4, como o runner do GitHub (ADR 0004).
+      PGHOST: ${{ vars.DATABASE_HOST }}
+      PGUSER: ${{ vars.DATABASE_USER }}
+      PGPASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+      PGPORT: "5432"
+      PGDATABASE: postgres
+      PGSSLMODE: require
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Conferir os secrets
+        id: secrets
+        run: |
+          if [ -z "$PGPASSWORD" ] || [ -z "$PGHOST" ] || [ -z "$PGUSER" ]; then
+            echo "::warning::Falta o secret DATABASE_PASSWORD ou as variáveis DATABASE_HOST e DATABASE_USER: sem backup."
+            exit 0
+          fi
+          if [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::warning::Falta o secret BACKUP_PASSPHRASE: sem backup."
+            exit 0
+          fi
+          echo "pronto=true" >> "$GITHUB_OUTPUT"
+
+      # O pg_dump precisa ser da versão do servidor ou mais nova: vem do repositório do Postgres.
+      - name: Instalar o pg_dump
+        if: steps.secrets.outputs.pronto == 'true'
+        run: |
+          sudo apt-get install -y -qq postgresql-common > /dev/null
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y > /dev/null
+          sudo apt-get install -y -qq postgresql-client > /dev/null
+          pg_dump --version
+
+      - name: Gerar e criptografar
+        if: steps.secrets.outputs.pronto == 'true'
+        run: |
+          pg_dump --format=custom --no-owner --no-privileges --schema=public \
+            --exclude-table-data=solid_cache_entries --file=banco.dump
+          gpg --batch --yes --quiet --symmetric --cipher-algo AES256 --passphrase-fd 3 \
+            --output banco.dump.gpg banco.dump 3<<< "$BACKUP_PASSPHRASE"
+          rm banco.dump
+          echo "::notice title=Backup::banco.dump.gpg com $(du -h --apparent-size banco.dump.gpg | cut -f1)"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: steps.secrets.outputs.pronto == 'true'
+        with:
+          name: banco-${{ github.run_id }}
+          path: banco.dump.gpg
+          retention-days: 30
+          compression-level: 0 # já sai comprimido e criptografado
+          if-no-files-found: error
