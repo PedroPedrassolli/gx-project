@@ -112,3 +112,17 @@ test.describe("cadastro", () => {
     expect(results.violations).toEqual([]);
   });
 });
+
+test("pede para confirmar o e-mail e manda o link de novo", async ({ page }) => {
+  await mockSession(page, { loggedIn: true });
+  await page.route("**/api/email_verification", (route) => route.fulfill({ status: 202 }));
+  await page.goto("/");
+
+  const notice = page.getByRole("status").filter({ hasText: "Confirme seu e-mail" });
+  await expect(notice).toContainText(PLAYER.email);
+  await notice.getByRole("button", { name: "Mandar de novo" }).click();
+  await expect(notice).toContainText("Mandamos de novo.");
+
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
+});
