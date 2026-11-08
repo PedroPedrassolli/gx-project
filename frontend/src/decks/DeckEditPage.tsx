@@ -10,6 +10,7 @@ import { useCardLanguage } from "../catalog/language.ts";
 import { useCollection } from "../collection/api.ts";
 import { useDeck, type Deck } from "./api.ts";
 import { Chest } from "./Chest.tsx";
+import { allowDrop, dragRow, droppedCard } from "./drag.ts";
 import {
   SECTIONS,
   deckErrors,
@@ -136,6 +137,7 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
           selected={selected}
           onSelect={setSelected}
           onAdd={(cardId, to) => edit({ type: "add", cardId, section: to })}
+          onRemove={(cardId, from) => edit({ type: "remove", cardId, section: from })}
         />
         <div className="deck-side">
           {selected > 0 && (
@@ -167,17 +169,34 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
                   type="button"
                   aria-pressed={section === item}
                   onClick={() => setSection(item)}
+                  onDragOver={(event) => allowDrop(event, "deck")}
+                  onDrop={(event) => {
+                    const cardId = droppedCard(event);
+                    if (cardId) edit({ type: "add", cardId, section: item });
+                  }}
                 >
                   {SECTIONS[item].title} ({sectionCount(rows, item)})
                 </button>
               ))}
             </div>
 
-            <ul className="deck-rows" aria-label={SECTIONS[section].title}>
+            <ul
+              className="deck-rows"
+              aria-label={SECTIONS[section].title}
+              onDragOver={(event) => allowDrop(event, "deck")}
+              onDrop={(event) => {
+                const cardId = droppedCard(event);
+                if (cardId) edit({ type: "add", cardId, section });
+              }}
+            >
               {rows
                 .filter((row) => row.section === section)
                 .map((row) => (
-                  <li key={`${row.card_id}-${row.section}`}>
+                  <li
+                    key={`${row.card_id}-${row.section}`}
+                    draggable
+                    onDragStart={(event) => dragRow(event, row.card_id, section)}
+                  >
                     <span className="row-name">
                       {row.quantity}× {cardName(row.card_id)}
                     </span>

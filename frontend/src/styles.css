@@ -584,6 +584,16 @@ img[hidden] {
   gap: 0.35rem;
 }
 
+.chest-item[draggable="true"],
+.deck-rows li[draggable="true"] {
+  cursor: grab;
+}
+
+/* Lista vazia continua sendo um lugar para soltar carta. */
+.deck-rows {
+  min-height: 3rem;
+}
+
 .chest-actions {
   display: flex;
   gap: 0.5rem;

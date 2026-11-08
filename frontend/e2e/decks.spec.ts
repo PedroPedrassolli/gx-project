@@ -235,3 +235,23 @@ test("o baú mostra também as cartas que o jogador não tem, se pedir", async (
     "Tenho 0 · no deck 0",
   );
 });
+
+test("arrasta carta do baú para o Side e uma linha do deck de volta para o baú", async ({
+  page,
+}) => {
+  await page.goto("/decks/7");
+  const chest = page.getByRole("region", { name: "Baú" });
+
+  await chest
+    .getByRole("listitem")
+    .filter({ hasText: "Mago Negro" })
+    .dragTo(page.getByRole("button", { name: "Side Deck (0)" }));
+  await expect(page.getByRole("button", { name: "Side Deck (1)" })).toBeVisible();
+
+  await page
+    .getByRole("list", { name: "Main Deck" })
+    .getByRole("listitem")
+    .filter({ hasText: "Pote da Ganância" })
+    .dragTo(chest);
+  await expect(page.getByRole("button", { name: "Main Deck (2)" })).toBeVisible();
+});
