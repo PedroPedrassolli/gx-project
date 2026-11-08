@@ -2,9 +2,11 @@ import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router";
 import { ApiError, request } from "../api.ts";
+import { usePageTitle } from "../pageTitle.ts";
 
 // Confirmação do e-mail pelo link (/verificar-email?token=...): confirma assim que abre.
 export function VerifyEmailPage() {
+  usePageTitle("Confirmar e-mail");
   const [params] = useSearchParams();
   const client = useQueryClient();
   const confirm = useMutation({

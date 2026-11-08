@@ -20,9 +20,11 @@ import {
   type DeckRow,
   type Section,
 } from "./deck.ts";
+import { usePageTitle } from "../pageTitle.ts";
 
 // Deck Edit (escopo 3.3 e 4): as seções do deck, a validação ao vivo e salvar.
 export function DeckEditPage() {
+  usePageTitle("Editar deck");
   const id = Number(useParams().id);
   const user = useSession().data?.user;
   const deck = useDeck(id);

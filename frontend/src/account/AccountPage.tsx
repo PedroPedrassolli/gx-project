@@ -4,12 +4,14 @@ import { Link } from "react-router";
 import { ApiError, request } from "../api.ts";
 import { useSession } from "./session.ts";
 import { TextField } from "./TextField.tsx";
+import { usePageTitle } from "../pageTitle.ts";
 
 const AGE_GROUPS = { "13-17": "13 a 17 anos", "18+": "18 anos ou mais" };
 
 // Minha conta (escopo 3.1): os dados da conta e os direitos da LGPD, baixar tudo o que
 // guardamos e excluir a conta (GXP-36).
 export function AccountPage() {
+  usePageTitle("Minha conta");
   const session = useSession();
   const user = session.data?.user;
   const client = useQueryClient();

@@ -25,10 +25,33 @@ body {
   margin: 0;
 }
 
+/* Toda página ocupa pelo menos a tela: o rodapé começa abaixo dela e não pula quando o
+   conteúdo chega da API (CLS). */
 .page {
   max-width: 44rem;
+  min-height: 100vh;
   margin: 0 auto;
   padding: calc(var(--gutter) * 2) var(--gutter);
+}
+
+/* Link para pular a barra do topo: só aparece com o foco do teclado. */
+.skip-link {
+  position: absolute;
+  top: -4rem;
+  left: var(--gutter);
+  z-index: 10;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: var(--color-surface);
+}
+
+.skip-link:focus {
+  top: 0.5rem;
+}
+
+/* Título e conteúdo recebem o foco por código (ao navegar): sem contorno, não são campos. */
+[tabindex="-1"]:focus {
+  outline: none;
 }
 
 h1 {
@@ -611,8 +634,10 @@ img[hidden] {
   margin-top: 0;
 }
 
+/* A carta estica e os botões ficam embaixo: a linha do baú fica alinhada. */
 .chest-item {
   display: grid;
+  grid-template-rows: 1fr auto;
   gap: 0.35rem;
 }
 
@@ -636,6 +661,12 @@ img[hidden] {
   display: grid;
   grid-template-columns: max-content 1fr;
   gap: 0.4rem 1rem;
+}
+
+/* E-mail longo quebra a linha em vez de passar da tela no celular. */
+.account-data dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .account-data dt {

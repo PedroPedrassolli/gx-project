@@ -4,11 +4,13 @@ import { Link, useNavigate } from "react-router";
 import { ApiError, request } from "../api.ts";
 import { useSession } from "../account/session.ts";
 import { useDecks, type Deck } from "./api.ts";
+import { usePageTitle } from "../pageTitle.ts";
 
 type Created = { data: Deck; meta?: { warnings: string[] } };
 
 // Os decks do jogador: abrir, criar um vazio ou importar de um arquivo (escopo 3.3).
 export function DecksPage() {
+  usePageTitle("Decks");
   const session = useSession();
   const user = session.data?.user;
   const decks = useDecks(Boolean(user));
