@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { mockSession } from "./support.ts";
+
+test.beforeEach(async ({ page }) => mockSession(page));
 
 test("a página inicial mostra o projeto e a fase atual", async ({ page }) => {
   await page.goto("/");
