@@ -39,8 +39,8 @@ Rails.application.configure do
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
-  # Replace the default in-process memory cache store with a durable alternative.
-  # config.cache_store = :mem_cache_store
+  # Cache no Postgres, dividido entre as instâncias da Vercel (Solid Cache; ADR 0008).
+  config.cache_store = :solid_cache_store
 
   # O fallback das traduções (para o inglês) fica no config/application.rb, para todos
   # os ambientes.

@@ -6,6 +6,9 @@ require "active_model/railtie"
 require "active_record/railtie"
 require "action_controller/railtie"
 require "action_view/railtie"
+# O Solid Cache traz um job de limpeza (não usado: a limpeza roda numa thread) que precisa
+# do Active Job carregado.
+require "active_job/railtie"
 require "rails/test_unit/railtie"
 
 # Require the gems listed in Gemfile, including any gems
