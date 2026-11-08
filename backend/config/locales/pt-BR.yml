@@ -1,0 +1,24 @@
+# Mensagens de validação em português, sem o nome do campo: a tela mostra cada uma ao
+# lado do seu campo. O que não estiver aqui sai em inglês (config/application.rb).
+pt-BR:
+  errors:
+    messages:
+      blank: "não pode ficar em branco"
+      taken: "já está em uso"
+      invalid: "não é válido"
+      inclusion: "não está na lista"
+      confirmation: "não confere"
+      too_short: "é curto demais (mínimo de %{count} caracteres)"
+      too_long: "é longo demais (máximo de %{count} caracteres)"
+      password_too_long: "é longa demais (máximo de 72 bytes)"
+  activerecord:
+    errors:
+      models:
+        user:
+          attributes:
+            password:
+              blank: "não pode ficar em branco"
+              too_short: "é curta demais (mínimo de %{count} caracteres)"
+            nickname:
+              invalid: "só aceita letras sem acento, números, _ e -"
+              offensive: "não é permitido"

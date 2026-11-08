@@ -42,9 +42,8 @@ Rails.application.configure do
   # Replace the default in-process memory cache store with a durable alternative.
   # config.cache_store = :mem_cache_store
 
-  # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
-  # the I18n.default_locale when a translation cannot be found).
-  config.i18n.fallbacks = true
+  # O fallback das traduções (para o inglês) fica no config/application.rb, para todos
+  # os ambientes.
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
