@@ -4,10 +4,30 @@ module GameData
   module Wikitext
     module_function
 
-    # Valor de um campo de infobox: "| size = 68" → "68". Campo vazio vira nil.
+    # Valor de um campo de infobox: "| size = 68" → "68". Campo vazio vira nil. Comentário
+    # HTML ("<!-- achado no jogo -->") não faz parte do valor.
     def field(text, name)
       value = text[/^\|\s*#{Regexp.escape(name)}\s*=[ \t]*(.*)$/, 1]
-      value&.strip.presence
+      value&.gsub(/<!--.*?(?:-->|\z)/, "")&.strip.presence
+    end
+
+    # A página tem a caixa de uma carta ({{CardTable2}}, {{Anime card}}, a do jogo...)?
+    # O nome de uma carta às vezes é também o de um pacote, arquétipo ou episódio.
+    def card_infobox?(text)
+      text.match?(/^\{\{\s*(?:CardTable2|[^{}|\n]*\bcard)\s*(?:\||$)/i)
+    end
+
+    # Página que o aviso do topo indica para a carta oficial: {{For|the card|"[[Penalty Game!]]"}}
+    # → "Penalty Game!". No {{About}}, o primeiro item é o assunto da própria página.
+    def card_hatnote(text)
+      text.scan(/\{\{(For|About)\|([^{}]*)\}\}/).each do |template, body|
+        items = body.gsub(/\[\[([^\]|]+)(?:\|[^\]]*)?\]\]/, '\\1').split("|").map(&:strip)
+        items.shift if template == "About"
+        items.each_slice(2) do |about, title|
+          return title.delete('"') if title && about.match?(/\bcard\b/i) && !about.match?(/anime|manga|rush/i)
+        end
+      end
+      nil
     end
 
     # Texto de uma seção "== Nome ==", até a próxima seção do mesmo nível ou acima.

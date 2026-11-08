@@ -12,6 +12,30 @@ describe GameData::Wikitext do
     _(wikitext.field(text, "type")).must_be_nil
   end
 
+  it "tira comentário HTML do valor do campo" do
+    text = "| password = 39399168<!-- achado no jogo -->\n| lore = Texto <!-- nota\n"
+
+    _(wikitext.field(text, "password")).must_equal "39399168"
+    _(wikitext.field(text, "lore")).must_equal "Texto"
+  end
+
+  it "reconhece a caixa de carta, mas não a de pacote, arquétipo ou episódio" do
+    _(wikitext.card_infobox?("{{CardTable2\n| password = 1\n}}")).must_equal true
+    _(wikitext.card_infobox?("{{About|x|y|z}}\n{{Anime card\n| types = Dragon\n}}")).must_equal true
+    _(wikitext.card_infobox?("{{Infobox set\n| type = Booster\n}}")).must_equal false
+    _(wikitext.card_infobox?("{{Infobox archseries\n}}\n{{Card converter list\n}}")).must_equal false
+  end
+
+  it "acha a carta oficial no aviso do topo da página" do
+    for_note = "{{For|the card|\"[[Penalty Game!]]\"}}"
+    about = "{{About|the [[archetype]]|the anime card|X (anime)|the card|\"\"Ancient Gear\"\" (card)}}"
+
+    _(wikitext.card_hatnote(for_note)).must_equal "Penalty Game!"
+    _(wikitext.card_hatnote(about)).must_equal "Ancient Gear (card)"
+    _(wikitext.card_hatnote("{{About|the card|the set|Some Set}}")).must_be_nil
+    _(wikitext.card_hatnote("sem aviso")).must_be_nil
+  end
+
   it "separa uma seção até a próxima do mesmo nível" do
     text = "== Um ==\nprimeiro\n=== Sub ===\nainda\n== Dois ==\nsegundo"
 

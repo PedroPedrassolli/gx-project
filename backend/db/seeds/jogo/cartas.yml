@@ -414,7 +414,7 @@
 - { nome: "Hard-sellin' Zombie", passcode: 94374859, fonte: 5633295 }
 - { nome: "Infinite Dismissal", passcode: 54109233, fonte: 6017314 }
 - { nome: "Judgment of the Desert", passcode: 4869446, fonte: 5448436 }
-- { nome: "Labyrinth of Nightmare", fonte: 5780973 }
+- { nome: "Labyrinth of Nightmare", passcode: 66526672, fonte: 6017324 }
 - { nome: "Level Limit - Area A", passcode: 54976796, fonte: 5716993 }
 - { nome: "Light-Imprisoning Mirror", passcode: 53341729, fonte: 5449059 }
 - { nome: "Limit Reverse", passcode: 27551, fonte: 5827502 }
@@ -2178,7 +2178,7 @@
 - { nome: "Cloudian Squall", passcode: 90135989, fonte: 5602940 }
 - { nome: "Crystal Beast Amber Mammoth", passcode: 69937550, fonte: 5825153 }
 - { nome: "Crystal Beast Cobalt Eagle", passcode: 21698716, fonte: 5443420 }
-- { nome: "Crystal Counter", fonte: 5946578 }
+- { nome: "Counter Gem", nome_no_jogo: "Crystal Counter", passcode: 11136371, fonte: 5443310 }
 - { nome: "Crystal Pair", passcode: 47121070, fonte: 5443440 }
 - { nome: "Crystal Raigeki", passcode: 96331676, fonte: 5443442 }
 - { nome: "Crystal Release", passcode: 10004783, fonte: 5443443 }
@@ -3448,7 +3448,7 @@
 - { nome: "Punished Eagle", passcode: 74703140, fonte: 5854535 }
 - { nome: "Rabid Horseman", passcode: 94905343, fonte: 6017574 }
 - { nome: "Rare Fish", passcode: 80516007, fonte: 5452373 }
-- { nome: "Resurrection of Chakra", fonte: 5638777 }
+- { nome: "Resurrection of Chakra", passcode: 39399168, fonte: 5638777 }
 - { nome: "Revival of Dokurorider", passcode: 31066283, fonte: 5452679 }
 - { nome: "Rhaimundos of the Red Sword", passcode: 62403074, fonte: 5827236 }
 - { nome: "Roaring Ocean Snake", passcode: 19066538, fonte: 5891988 }
@@ -3481,9 +3481,6 @@
 - { nome: "Wings of Wicked Flame", passcode: 92944626, fonte: 5827696 }
 - { nome: "Worm Drake", passcode: 73216412, fonte: 6017899 }
 - { nome: "Zombie Warrior", passcode: 31339260, fonte: 6017917 }
-- { nome: "Pharaoh's Servant", fonte: 5780963 }
-- { nome: "Penalty Game", fonte: 5945661 }
-- { nome: "Ancient Gear", fonte: 5977395 }
 - { nome: "Elemental HERO Air Neos", nome_no_jogo: "Elemental Hero Air Neos", passcode: 11502550, fonte: 5761208 }
 - { nome: "Berserker Soul", passcode: 15381252, fonte: 5828579 }
 - { nome: "Illusion Gate", passcode: 33017964, fonte: 5932420 }

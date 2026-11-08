@@ -6,7 +6,7 @@ mão. As decisões estão no [ADR 0006](../../../../docs/adr/0006-dados-do-jogo.
 
 | Arquivo | O que tem | Anexo B |
 | --- | --- | --- |
-| `cartas.yml` | 3.499 cartas: nome atual, nome no jogo (quando mudou depois), passcode ou o número interno do jogo (versões do anime), o passcode da impressão posterior das cartas do anime e a fonte | 1 |
+| `cartas.yml` | 3.496 cartas: nome atual, nome no jogo (quando mudou depois), passcode ou o número interno do jogo (versões do anime), o passcode da impressão posterior das cartas do anime e a fonte | 1 |
 | `pacotes.yml` | 48 pacotes na ordem da loja: preço em DP, cartas por pacote, tamanho e cada carta com a raridade | 2 |
 | `disponibilidade.yml` | como cada pacote fica disponível (escrito à mão) | 2 |
 | `deck_inicial.yml` | deck principal, side e as 3 cartas marcadas como Destiny | 4 |
@@ -35,26 +35,28 @@ que juntam outros. Pode rodar quantas vezes quiser.
 
 ## Conferências (07/11/2026)
 
-- **3.499 cartas**; a página do jogo diz 3.501. As 2 que faltam não estão em nenhuma das
+- **3.496 cartas**; a página do jogo diz 3.501. As 5 que faltam não estão em nenhuma das
   listas lidas.
 - *Checkered Flag 2*: 3.477 cartas pela regra, igual à página. *Checkered Flag 1*: 2.268 pela
   regra; a página diz 2.267.
-- 77 cartas são versões do jogo (cartas do anime): têm o número interno do jogo e não têm
-  passcode. 7 cartas do anime não têm nenhum dos dois.
-- 212 cartas mudaram de nome depois do jogo (`nome_no_jogo`).
-- O conversor cita "That Which Feeds On Life", que a Yugipedia não acha com esse nome: no
-  `conversor.yml` sai só o nome.
+- 78 cartas são do anime: 77 têm o número interno do jogo e não têm passcode; 1 não tem
+  nenhum dos dois.
+- 213 cartas mudaram de nome depois do jogo (`nome_no_jogo`).
+- Título do jogo sem página própria cai na página do nome puro, que às vezes é de um pacote,
+  arquétipo ou episódio. Só vale página com a caixa de uma carta: o gerador tenta
+  `Nome (card)`, depois a página que o aviso do topo indica e, por último, uma carta com o
+  mesmo nome em outra caixa de letras ("Feeds On Life" e "Feeds on Life").
 
 ## Cobertura na engine e nas imagens (`cobertura.yml`)
 
 Regra geral: a carta entra na engine pelo próprio passcode, com o script oficial (carta Normal
 não tem script) e a imagem do YGOPRODeck. Em 07/11/2026:
 
-- 3.415 cartas oficiais: todas têm dados no BabelCDB e imagem; 617 são Normais; 52 usam o
+- 3.418 cartas oficiais: todas têm dados no BabelCDB e imagem; 617 são Normais; 52 usam o
   script antigo (pré-errata), porque o jogo é de 2008.
-- 84 cartas do anime: 61 usam o script não oficial da versão de video game (ou do anime);
-  8 não têm script e usam a carta que o OCG imprimiu depois (`passcode_oficial` no
-  `cartas.yml`); **15 ficam fora do pool** até alguém escrever o script.
+- 78 cartas do anime: 61 usam o script não oficial da versão de video game (ou do anime);
+  5 não têm script e usam a carta que o OCG imprimiu depois (`passcode_oficial` no
+  `cartas.yml`); **12 ficam fora do pool** até alguém escrever o script.
 - As cartas do anime não têm imagem no YGOPRODeck: mostram só o texto (escopo, 3.2).
 
 ## O que não veio da fonte (respostas do Pedro ao Anexo C, 07/11/2026)

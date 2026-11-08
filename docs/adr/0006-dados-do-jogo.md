@@ -58,8 +58,8 @@ pela API do MediaWiki.
 
 ## Consequências
 
-- O pool tem 3.499 cartas; a página do jogo diz 3.501. Das 84 cartas do anime, 61 têm
-  script, 8 usam a impressão posterior e 15 saem do pool (lista no `cobertura.yml`, para o
+- O pool tem 3.496 cartas; a página do jogo diz 3.501. Das 78 cartas do anime, 61 têm
+  script, 5 usam a impressão posterior e 12 saem do pool (lista no `cobertura.yml`, para o
   Pedro revisar quando quiser).
 - Regra de nível e chances por raridade não estão na Yugipedia: valem a regra provisória e
   os pesos do admin que o escopo já prevê, e as duas perguntas vão para o Anexo C.
@@ -68,7 +68,7 @@ pela API do MediaWiki.
 
 ## Alternativas descartadas
 
-- **Copiar as tabelas à mão:** 3.499 cartas e 48 pacotes, sem como refazer depois.
+- **Copiar as tabelas à mão:** 3.496 cartas e 48 pacotes, sem como refazer depois.
 - **Achar o passcode pelo nome no BabelCDB:** 198 nomes do jogo não batem com o nome atual,
   e as cartas do anime têm o mesmo nome da impressão posterior.
 - **Interpretar o texto da disponibilidade no código:** muitos formatos de frase para 48

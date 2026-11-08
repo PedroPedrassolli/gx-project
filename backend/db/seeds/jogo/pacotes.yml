@@ -455,7 +455,7 @@
     - { nome: "Hard-sellin' Zombie", passcode: 94374859, raridade: "comum" }
     - { nome: "Infinite Dismissal", passcode: 54109233, raridade: "comum" }
     - { nome: "Judgment of the Desert", passcode: 4869446, raridade: "comum" }
-    - { nome: "Labyrinth of Nightmare", raridade: "comum" }
+    - { nome: "Labyrinth of Nightmare", passcode: 66526672, raridade: "comum" }
     - { nome: "Level Limit - Area A", passcode: 54976796, raridade: "comum" }
     - { nome: "Light-Imprisoning Mirror", passcode: 53341729, raridade: "comum" }
     - { nome: "Limit Reverse", passcode: 27551, raridade: "comum" }
@@ -2381,7 +2381,7 @@
     - { nome: "Cloudian Squall", passcode: 90135989, raridade: "comum" }
     - { nome: "Crystal Beast Amber Mammoth", passcode: 69937550, raridade: "comum" }
     - { nome: "Crystal Beast Cobalt Eagle", passcode: 21698716, raridade: "comum" }
-    - { nome: "Crystal Counter", raridade: "comum" }
+    - { nome: "Counter Gem", passcode: 11136371, raridade: "comum" }
     - { nome: "Crystal Pair", passcode: 47121070, raridade: "comum" }
     - { nome: "Crystal Raigeki", passcode: 96331676, raridade: "comum" }
     - { nome: "Crystal Release", passcode: 10004783, raridade: "comum" }
@@ -3866,7 +3866,7 @@
     - { nome: "Punished Eagle", passcode: 74703140, raridade: "comum" }
     - { nome: "Rabid Horseman", passcode: 94905343, raridade: "comum" }
     - { nome: "Rare Fish", passcode: 80516007, raridade: "comum" }
-    - { nome: "Resurrection of Chakra", raridade: "comum" }
+    - { nome: "Resurrection of Chakra", passcode: 39399168, raridade: "comum" }
     - { nome: "Revival of Dokurorider", passcode: 31066283, raridade: "comum" }
     - { nome: "Rhaimundos of the Red Sword", passcode: 62403074, raridade: "comum" }
     - { nome: "Roaring Ocean Snake", passcode: 19066538, raridade: "comum" }
