@@ -1,6 +1,6 @@
-# Banco: Postgres. Quando existe a variável DATABASE_URL (produção na Vercel,
-# apontando para o Supabase, e a CI), o Rails usa ela no lugar destes valores.
-# No seu computador, sem DATABASE_URL, vale o socket local do Postgres.
+# Banco: Postgres. No seu computador vale o socket local. Na CI, a variável DATABASE_URL
+# aponta para o Postgres do serviço e o Rails usa ela no lugar destes valores. Em
+# produção, o Supabase pelas variáveis da seção production (ADR 0004).
 default: &default
   adapter: postgresql
   encoding: unicode

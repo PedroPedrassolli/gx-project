@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_07_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_08_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -41,6 +41,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_07_210000) do
     t.integer "source_revision", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "name_pt"
+    t.string "card_type"
+    t.string "property"
+    t.string "card_attribute"
+    t.string "race"
+    t.string "monster_types", default: [], null: false, array: true
+    t.integer "level"
+    t.integer "attack"
+    t.integer "defense"
+    t.text "text"
+    t.text "text_pt"
     t.index ["engine_code"], name: "index_cards_on_engine_code", unique: true
   end
 

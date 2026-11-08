@@ -19,6 +19,23 @@ describe GameData::Wikitext do
     _(wikitext.field(text, "lore")).must_equal "Texto"
   end
 
+  it "lê campo de várias linhas até o próximo campo ou o fim da caixa" do
+    text = "{{CardTable2\n| text = Primeira linha\nsegunda linha <!-- nota -->\n| level = 4\n| lore = Última\n}}"
+
+    _(wikitext.long_field(text, "text")).must_equal "Primeira linha\nsegunda linha"
+    _(wikitext.long_field(text, "lore")).must_equal "Última"
+    _(wikitext.long_field(text, "pt_text")).must_be_nil
+  end
+
+  it "limpa a marcação da wiki do texto da carta" do
+    text = "Send to the [[Graveyard|GY]]:<br />'''Add''' 1 [[monster]] &quot;Sangan&quot; &amp; <ins>more</ins>\n  ok"
+
+    _(wikitext.plain(text)).must_equal "Send to the GY:\nAdd 1 monster \"Sangan\" & more\nok"
+    _(wikitext.plain("When your opponent {{Hover|Summons|Normal Summons}}. {{Hover|*|Nota da wiki}}")).must_equal "When your opponent Summons."
+    _(wikitext.plain("")).must_be_nil
+    _(wikitext.plain(nil)).must_be_nil
+  end
+
   it "reconhece a caixa de carta, mas não a de pacote, arquétipo ou episódio" do
     _(wikitext.card_infobox?("{{CardTable2\n| password = 1\n}}")).must_equal true
     _(wikitext.card_infobox?("{{About|x|y|z}}\n{{Anime card\n| types = Dragon\n}}")).must_equal true

@@ -6,7 +6,7 @@ mão. As decisões estão no [ADR 0006](../../../../docs/adr/0006-dados-do-jogo.
 
 | Arquivo | O que tem | Anexo B |
 | --- | --- | --- |
-| `cartas.yml` | 3.496 cartas: nome atual, nome no jogo (quando mudou depois), passcode ou o número interno do jogo (versões do anime), o passcode da impressão posterior das cartas do anime e a fonte | 1 |
+| `cartas.yml` | 3.496 cartas: nome atual, nome no jogo (quando mudou depois), passcode ou o número interno do jogo (versões do anime), o passcode da impressão posterior das cartas do anime, tipo, atributo, raça, nível, ATK, DEF, o texto em inglês e, quando a carta saiu em português, nome e texto em português, e a fonte | 1 |
 | `pacotes.yml` | 48 pacotes na ordem da loja: preço em DP, cartas por pacote, tamanho e cada carta com a raridade | 2 |
 | `disponibilidade.yml` | como cada pacote fica disponível (escrito à mão) | 2 |
 | `deck_inicial.yml` | deck principal, side e as 3 cartas marcadas como Destiny | 4 |
@@ -42,6 +42,8 @@ que juntam outros. Pode rodar quantas vezes quiser.
 - 78 cartas são do anime: 77 têm o número interno do jogo e não têm passcode; 1 não tem
   nenhum dos dois.
 - 213 cartas mudaram de nome depois do jogo (`nome_no_jogo`).
+- 2.221 monstros, 723 magias e 552 armadilhas, todos com texto em inglês; 2.574 têm nome e
+  2.521 têm texto em português. 24 monstros têm ATK "?" e 17 têm DEF "?" (ficam sem valor).
 - Título do jogo sem página própria cai na página do nome puro, que às vezes é de um pacote,
   arquétipo ou episódio. Só vale página com a caixa de uma carta: o gerador tenta
   `Nome (card)`, depois a página que o aviso do topo indica e, por último, uma carta com o

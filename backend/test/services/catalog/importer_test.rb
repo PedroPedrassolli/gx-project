@@ -15,6 +15,19 @@ describe Catalog::Importer do
     _(card(900).slice(:passcode, :internal_number, :source_revision)).must_equal({ "passcode" => nil, "internal_number" => 3, "source_revision" => 3 })
   end
 
+  it "grava o que o jogador vê de cada carta" do
+    importer.run
+
+    _(card(110).slice(:card_type, :card_attribute, :race, :monster_types, :level, :attack, :defense, :name_pt))
+      .must_equal({ "card_type" => "Monster", "card_attribute" => "DARK", "race" => "Fiend",
+                    "monster_types" => [ "Flip", "Effect" ], "level" => 3, "attack" => 200, "defense" => 500,
+                    "name_pt" => "Assaltante Noturno" })
+    _(card(110).text).must_include "FLIP"
+    _(card(110).text_pt).must_include "VIRE"
+    _(card(200).slice(:card_type, :property, :monster_types, :text_pt))
+      .must_equal({ "card_type" => "Trap", "property" => "Normal", "monster_types" => [], "text_pt" => nil })
+  end
+
   it "grava os pacotes com a disponibilidade e monta os que juntam outros" do
     importer.run
 
