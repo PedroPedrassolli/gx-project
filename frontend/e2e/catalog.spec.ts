@@ -14,6 +14,7 @@ const cards = [
     level: 7,
     atk: 2500,
     def: 2100,
+    image: 46986414,
   },
   {
     id: 2,
@@ -22,6 +23,7 @@ const cards = [
     card_type: "Spell",
     property: "Normal",
     banlist: "forbidden",
+    image: 55144522,
   },
   { id: 3, name: "Mirror Force", name_pt: "Força Espelho", card_type: "Trap", property: "Normal" },
 ];
@@ -48,7 +50,24 @@ async function mockApi(page: Page) {
   });
 }
 
-test.beforeEach(async ({ page }) => mockApi(page));
+// Imagens simuladas: a do Pote da Ganância não carrega, para ver que ela some.
+const PIXEL = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=",
+  "base64",
+);
+
+async function mockImages(page: Page) {
+  await page.route(/\.pages\.dev\//, (route) =>
+    route.request().url().includes("/55144522.")
+      ? route.abort()
+      : route.fulfill({ contentType: "image/png", body: PIXEL }),
+  );
+}
+
+test.beforeEach(async ({ page }) => {
+  await mockApi(page);
+  await mockImages(page);
+});
 
 test("lista as cartas e busca pelo nome em português", async ({ page }) => {
   await page.goto("/cartas");
@@ -80,6 +99,16 @@ test("mostra o detalhe da carta e troca o idioma do texto", async ({ page }) => 
   await expect(page.getByRole("region", { name: "Dark Magician" })).toContainText(
     "The ultimate wizard",
   );
+});
+
+test("mostra a miniatura e a imagem da carta, e esconde a que não carrega", async ({ page }) => {
+  await page.goto("/cartas?carta=1");
+  const thumb = page.getByRole("button", { name: /Mago Negro/ }).locator("img");
+  await expect(thumb).toHaveAttribute("src", /\/cards\/p\/46986414\.webp$/);
+  await expect(thumb).toHaveAttribute("loading", "lazy");
+  await expect(page.getByRole("img", { name: "Imagem da carta Mago Negro" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Pote da Ganância/ }).locator("img")).toBeHidden();
+  await expect(page.getByRole("button", { name: /Força Espelho/ }).locator("img")).toHaveCount(0);
 });
 
 test("abre pelo link da carta e avisa quando ela não existe", async ({ page }) => {

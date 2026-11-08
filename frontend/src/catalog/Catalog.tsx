@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type SyntheticEvent } from "react";
 import {
   EMPTY_FILTERS,
+  IMAGE_WIDTHS,
   displayName,
   frame,
+  imageUrl,
   matches,
   sortCards,
   typeLine,
@@ -69,6 +71,30 @@ function Stats({ card }: { card: CardSummary }) {
       {label(ATTRIBUTES, card.attribute)} · ★ {card.level} · ATK {card.atk ?? "?"} / DEF{" "}
       {card.def ?? "?"}
     </p>
+  );
+}
+
+// Imagem que não carregou some: fica a cor da moldura na lista e só o texto no detalhe.
+function hide(event: SyntheticEvent<HTMLImageElement>) {
+  event.currentTarget.hidden = true;
+}
+
+// Miniatura da lista (o nome está do lado, então a imagem não tem texto alternativo).
+function Thumb({ card }: { card: CardSummary }) {
+  return (
+    <span className="thumb">
+      {card.image !== undefined && (
+        <img
+          src={imageUrl(card.image, "p")}
+          alt=""
+          width={56}
+          height={82}
+          loading="lazy"
+          decoding="async"
+          onError={hide}
+        />
+      )}
+    </span>
   );
 }
 
@@ -150,6 +176,19 @@ function Detail({
     <article className={`detail frame-${frame(card)}`}>
       <h2 id="detail-title">{displayName(card, language)}</h2>
       {other && other !== displayName(card, language) && <p className="other-name">{other}</p>}
+      {card.image !== undefined && (
+        <img
+          key={card.id}
+          className="detail-image"
+          src={imageUrl(card.image, "m")}
+          srcSet={`${imageUrl(card.image, "m")} ${IMAGE_WIDTHS.m}w, ${imageUrl(card.image, "g")} ${IMAGE_WIDTHS.g}w`}
+          sizes={`${IMAGE_WIDTHS.m}px`}
+          width={IMAGE_WIDTHS.m}
+          height={391}
+          alt={`Imagem da carta ${displayName(card, language)}`}
+          onError={hide}
+        />
+      )}
       <p className="type-line">{typeLine(card)}</p>
       <Stats card={card} />
       {card.banlist && <p className="badge">{label(BANLIST, card.banlist)}</p>}
@@ -403,13 +442,16 @@ export function Catalog() {
                   aria-current={selected === card.id || undefined}
                   onClick={() => select(card.id)}
                 >
-                  <strong>{displayName(card, language)}</strong>
-                  <span className="type-line">{typeLine(card)}</span>
-                  <Stats card={card} />
-                  {card.banlist && <span className="badge">{label(BANLIST, card.banlist)}</span>}
-                  {rarities && (
-                    <span className="badge">{label(RARITIES, rarities.get(card.id))}</span>
-                  )}
+                  <Thumb card={card} />
+                  <span className="tile-text">
+                    <strong>{displayName(card, language)}</strong>
+                    <span className="type-line">{typeLine(card)}</span>
+                    <Stats card={card} />
+                    {card.banlist && <span className="badge">{label(BANLIST, card.banlist)}</span>}
+                    {rarities && (
+                      <span className="badge">{label(RARITIES, rarities.get(card.id))}</span>
+                    )}
+                  </span>
                 </button>
               </li>
             ))}

@@ -255,9 +255,9 @@ button {
 }
 
 .card-tile {
-  display: grid;
-  gap: 0.2rem;
-  align-content: start;
+  display: flex;
+  gap: 0.6rem;
+  align-items: start;
   width: 100%;
   height: 100%;
   padding: 0.5rem 0.6rem;
@@ -273,6 +273,40 @@ button {
 .card-tile[aria-current="true"] {
   border-color: var(--color-accent);
   border-left-color: var(--frame);
+}
+
+.tile-text {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+/* Miniatura na proporção da carta; sem imagem, fica a cor da moldura, mais apagada. */
+.thumb {
+  flex: none;
+  width: 56px;
+  aspect-ratio: 421 / 614;
+  overflow: hidden;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--frame) 40%, transparent);
+}
+
+.thumb img {
+  width: 100%;
+  height: auto;
+}
+
+.detail-image {
+  display: block;
+  width: 100%;
+  max-width: 268px;
+  height: auto;
+  margin: 1rem auto;
+  border-radius: 10px;
+}
+
+img[hidden] {
+  display: none;
 }
 
 .type-line,
