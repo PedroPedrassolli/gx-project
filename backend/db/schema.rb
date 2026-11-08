@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_08_110000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_08_120100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -56,6 +56,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_08_110000) do
     t.index ["engine_code"], name: "index_cards_on_engine_code", unique: true
   end
 
+  create_table "collection_cards", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "card_id", null: false
+    t.integer "quantity", null: false
+    t.datetime "obtained_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["card_id"], name: "index_collection_cards_on_card_id"
+    t.index ["user_id", "card_id"], name: "index_collection_cards_on_user_id_and_card_id", unique: true
+  end
+
   create_table "converter_group_cards", force: :cascade do |t|
     t.bigint "converter_group_id", null: false
     t.bigint "card_id", null: false
@@ -70,6 +81,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_08_110000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["amount"], name: "index_converter_groups_on_amount", unique: true
+  end
+
+  create_table "deck_cards", force: :cascade do |t|
+    t.bigint "deck_id", null: false
+    t.bigint "card_id", null: false
+    t.string "section", null: false
+    t.integer "quantity", null: false
+    t.boolean "destiny", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["card_id"], name: "index_deck_cards_on_card_id"
+    t.index ["deck_id", "card_id", "section"], name: "index_deck_cards_on_deck_id_and_card_id_and_section", unique: true
+  end
+
+  create_table "decks", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_decks_on_user_id"
   end
 
   create_table "pack_cards", force: :cascade do |t|
@@ -126,8 +157,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_08_110000) do
 
   add_foreign_key "banlist_entries", "banlists"
   add_foreign_key "banlist_entries", "cards"
+  add_foreign_key "collection_cards", "cards"
+  add_foreign_key "collection_cards", "users"
   add_foreign_key "converter_group_cards", "cards"
   add_foreign_key "converter_group_cards", "converter_groups"
+  add_foreign_key "deck_cards", "cards"
+  add_foreign_key "deck_cards", "decks"
+  add_foreign_key "decks", "users"
   add_foreign_key "pack_cards", "cards"
   add_foreign_key "pack_cards", "packs"
   add_foreign_key "sessions", "users"

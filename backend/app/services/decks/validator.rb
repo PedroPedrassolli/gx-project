@@ -18,6 +18,17 @@ module Decks
       @collection = collection
     end
 
+    # O validador com os dados do banco: as cartas do deck, a banlist do jogo e a coleção
+    # do dono do deck.
+    def self.for(deck)
+      rows = deck.deck_cards.to_a
+      card_ids = rows.map(&:card_id)
+      banlist = BanlistEntry.joins(:banlist).where(banlists: { name: Catalog::Importer::DEFAULT_BANLIST }, card_id: card_ids)
+      collection = deck.user.collection_cards.where(card_id: card_ids)
+      new(entries: rows, cards: Card.where(id: card_ids).index_by(&:id),
+          banlist: banlist.pluck(:card_id, :status).to_h, collection: collection.pluck(:card_id, :quantity).to_h)
+    end
+
     def valid? = errors.empty?
 
     # Os erros de tamanho vêm primeiro; depois, os de cada carta, pela ordem do nome.

@@ -1,6 +1,10 @@
 require "test_helper"
 
 class Api::RegistrationsControllerTest < ActionDispatch::IntegrationTest
+  include StarterDeckCards
+
+  before { load_starter_deck_cards }
+
   let(:form) { { email: "jaden@example.com", password: "duelista123", nickname: "JadenYuki", birth_date: "2010-05-01" } }
 
   def sign_up(**changes) = post(api_registrations_path, params: form.merge(changes), as: :json)
@@ -15,6 +19,7 @@ class Api::RegistrationsControllerTest < ActionDispatch::IntegrationTest
     _(response.parsed_body["user"]).must_include "id"
     _(User.last.age_group).must_equal "13-17"
     _(User.last.sessions.count).must_equal 1
+    _(User.last.decks.pluck(:name)).must_equal [ "Deck inicial" ]
     get api_session_path
     _(response.parsed_body["user"]["nickname"]).must_equal "JadenYuki"
   end
