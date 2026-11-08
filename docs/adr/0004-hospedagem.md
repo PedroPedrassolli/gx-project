@@ -19,7 +19,7 @@ escolhas que saíram disso.
 | Supabase Free | Postgres | 500 MB de banco; 5 GB de saída, contando o que o banco manda para o Rails pelo pooler; 2 projetos ativos; pausa depois de 1 semana sem uso; sem backup | Não cobra. Aviso, um prazo de tolerância e depois restrição do projeto | [preços](https://supabase.com/pricing), [saída](https://supabase.com/docs/guides/platform/manage-your-usage/egress), [FAQ](https://supabase.com/docs/guides/platform/billing-faq) |
 | Ably Free | Tempo real | 6 milhões de mensagens; 200 conexões e 200 canais ao mesmo tempo; 500 mensagens por segundo; 64 KiB por mensagem | Recusa | [preços](https://ably.com/pricing) |
 | Cloudflare Pages (Free) | Imagens das cartas | 20 mil arquivos por site; 25 MiB por arquivo; banda e requisições a arquivos estáticos sem limite | Recusa o deploy | [limites](https://developers.cloudflare.com/pages/platform/limits/) |
-| Brevo Free | E-mail | 300 e-mails por dia. Sem domínio próprio, o Brevo troca o domínio do remetente por `@brevosend.com` (domínio gratuito, como gmail ou outlook, não pode ser autenticado) | Para de enviar até o dia seguinte | [Brevo](https://www.brevo.com/bulk-email-service/), [remetente](https://help.brevo.com/hc/en-us/articles/16045394674066) |
+| Brevo Free | E-mail | 300 e-mails por dia. Sem domínio próprio, o remetente não é autenticado (domínio gratuito, como gmail ou outlook, não pode ser): o Brevo pode trocá-lo por um endereço dele, e parte das mensagens pode cair no spam | Para de enviar até o dia seguinte | [Brevo](https://www.brevo.com/bulk-email-service/), [remetente](https://help.brevo.com/hc/en-us/articles/16045394674066) |
 | Sentry Developer | Erros | 5 mil erros; 5 milhões de spans; 50 replays; 1 usuário; 30 dias de histórico | Descarta o excedente (sem cartão não existe pay-as-you-go) | [preços](https://sentry.io/pricing/) |
 | GitHub Actions | CI, uptime, backup | Grátis em repositório público com runners padrão; job de até 6 h; workflow agendado é desligado depois de 60 dias sem atividade no repositório | — | [cobrança](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions), [limites](https://docs.github.com/en/actions/reference/usage-limits-billing-and-administration) |
 
@@ -67,9 +67,10 @@ Descartados na conferência:
    Pedro um token do Blob e um par de chaves gerado no computador; o artefato é grátis no
    repositório público e só precisa de uma senha. Como qualquer pessoa pode baixar artefato
    de repositório público, ele só sai criptografado. Restauração: README.
-6. **E-mail pelo Brevo Free** (F2), com um endereço de remetente só do projeto, nunca o
-   pessoal. Sem domínio próprio, o remetente aparece como `@brevosend.com`. Um domínio
-   próprio melhora a entrega, mas é pago: é decisão do Pedro.
+6. **E-mail pelo Brevo Free** (F2). A ideia era um endereço de remetente só do projeto; o
+   Pedro preferiu o próprio e-mail (08/11/2026), que também é o contato dos textos legais.
+   Endereço gratuito (outlook, gmail) não pode ser autenticado, então parte das mensagens
+   pode cair no spam. Um domínio próprio melhora a entrega, mas é pago: é decisão do Pedro.
 7. **Erros no Sentry Developer**, com a proteção contra picos ligada e o ruído filtrado
    antes de enviar.
 8. **Medir toda semana.** O resumo semanal mostra o uso de cada serviço e avisa acima de
