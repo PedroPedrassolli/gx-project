@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router";
 import { App } from "./App.tsx";
 import { Catalog } from "./catalog/Catalog.tsx";
+import { CollectionPage } from "./collection/CollectionPage.tsx";
 import { Layout, NotFound } from "./Layout.tsx";
 import { LogInPage } from "./account/LogInPage.tsx";
 import { SignUpPage } from "./account/SignUpPage.tsx";
@@ -28,6 +29,7 @@ createRoot(root).render(
           <Route element={<Layout />}>
             <Route index element={<App />} />
             <Route path="cartas" element={<Catalog />} />
+            <Route path="colecao" element={<CollectionPage />} />
             <Route path="entrar" element={<LogInPage />} />
             <Route path="cadastro" element={<SignUpPage />} />
             <Route path="esqueci-a-senha" element={<ForgotPasswordPage />} />

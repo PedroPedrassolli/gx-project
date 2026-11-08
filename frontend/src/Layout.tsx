@@ -16,6 +16,7 @@ export function Layout() {
           GX Project
         </Link>
         <Link to="/cartas">Cartas</Link>
+        {user && <Link to="/colecao">Coleção</Link>}
         <span className="account">
           {user && (
             <>
