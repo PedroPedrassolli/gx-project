@@ -16,5 +16,6 @@ Rails.application.routes.draw do
     # Contas (ADR 0008): quem está logado, entrar e sair; cadastro.
     resource :session, only: %i[show create destroy]
     resources :registrations, only: :create
+    resource :collection, only: :show
   end
 end

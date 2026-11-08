@@ -9,6 +9,11 @@ module Authentication
     Current.user
   end
 
+  # Para controller que exige login: `before_action :require_authentication`.
+  def require_authentication
+    render_error(:unauthorized, "Entre na sua conta para continuar.") unless current_user
+  end
+
   def find_session_by_cookie
     Session.find_by(id: cookies.signed[:session_id]) if cookies.signed[:session_id]
   end
