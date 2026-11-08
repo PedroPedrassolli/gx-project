@@ -6,7 +6,10 @@ class Api::CardsController < Api::BaseController
   def index
     return unless catalog_stale?
 
-    cards = snapshot.search(params.permit(*FILTERS).to_h.symbolize_keys)
+    # Cada filtro vai até 100 caracteres: nenhum nome de carta passa disso, e um texto
+    # gigante só gastaria CPU (a busca compara com as 3.500 cartas).
+    filters = params.permit(*FILTERS).to_h.symbolize_keys.transform_values { |value| value.to_s[0, 100] }
+    cards = snapshot.search(filters)
     render json: { data: cards, meta: { total: cards.size, version: snapshot.version } }
   end
 
