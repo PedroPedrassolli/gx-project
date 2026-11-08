@@ -80,10 +80,27 @@ h2 {
   font-weight: 600;
 }
 
-footer {
-  margin-top: 3rem;
+/* Rodapé de todas as páginas: aviso de fã, créditos e textos legais. */
+.site-footer {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1.25rem var(--gutter) 2rem;
+  border-top: 1px solid var(--color-border);
   color: var(--color-muted);
   font-size: 0.875rem;
+}
+
+.site-footer p {
+  margin: 0 0 0.5rem;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 a {
@@ -612,4 +629,22 @@ img[hidden] {
 
 .account-data dd {
   margin: 0;
+}
+
+/* Termos de uso e política de privacidade. */
+.legal li + li {
+  margin-top: 0.75rem;
+}
+
+.legal table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.legal th,
+.legal td {
+  padding: 0.5rem 0.75rem 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
 }

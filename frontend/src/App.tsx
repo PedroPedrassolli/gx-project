@@ -1,8 +1,5 @@
 import { currentPhase, PHASES } from "./roadmap.ts";
 
-// A AGPL pede que quem usa o site pela rede consiga baixar o código-fonte.
-const SOURCE_URL = "https://github.com/PedroPedrassolli/gx-project";
-
 export function App() {
   const phase = currentPhase(PHASES);
 
@@ -33,16 +30,6 @@ export function App() {
           ))}
         </ol>
       </section>
-
-      <footer>
-        <p>
-          Yu-Gi-Oh! é marca registrada da Konami. Este projeto não tem ligação com a Konami nem é
-          aprovado por ela.
-        </p>
-        <p>
-          <a href={SOURCE_URL}>Código-fonte</a> sob a licença AGPL-3.0.
-        </p>
-      </footer>
     </main>
   );
 }
