@@ -31,8 +31,9 @@ inválido pode ser salvo, nem como é o formato de texto, nem como a Destiny via
    costuma ter cartas que não existem aqui).
 6. **Rotas:** `GET /api/decks` (lista), `GET /api/decks/:id`, `POST /api/decks`,
    `PATCH /api/decks/:id`, `DELETE /api/decks/:id`, `POST /api/decks/validate` (valida sem
-   salvar), `POST /api/decks/import` (cria a partir do arquivo) e
-   `GET /api/decks/:id/export?format=ydk|text` (baixa o arquivo). Só o dono vê e mexe.
+   salvar), `POST /api/decks/import` (cria a partir do arquivo: `{ name, kind, content }`,
+   com `kind` igual a `ydk` ou `text`) e `GET /api/decks/:id/export.ydk` ou `.txt` (baixa o
+   arquivo). Só o dono vê e mexe.
 
 ## Consequências
 
