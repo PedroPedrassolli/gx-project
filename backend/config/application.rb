@@ -27,8 +27,11 @@ module Backend
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
-    # config.eager_load_paths << Rails.root.join("extras")
+    # Horário de São Paulo (as datas continuam gravadas em UTC) e mensagens em português,
+    # com o inglês do Rails para o que não tiver tradução.
+    config.time_zone = "Brasilia"
+    config.i18n.default_locale = :"pt-BR"
+    config.i18n.fallbacks = [ :en ]
 
     # Only loads a smaller set of middleware suitable for API only apps.
     # Middleware like session, flash, cookies can be added back manually.

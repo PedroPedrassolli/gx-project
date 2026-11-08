@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_08_030000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_08_100100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -94,10 +94,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_08_030000) do
     t.index ["name"], name: "index_packs_on_name", unique: true
   end
 
+  create_table "sessions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.string "email", null: false
+    t.string "password_digest", null: false
+    t.string "nickname", null: false
+    t.string "age_group", null: false
+    t.string "role", default: "player", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "lower((nickname)::text)", name: "index_users_on_lower_nickname", unique: true
+    t.index ["email"], name: "index_users_on_email", unique: true
+  end
+
   add_foreign_key "banlist_entries", "banlists"
   add_foreign_key "banlist_entries", "cards"
   add_foreign_key "converter_group_cards", "cards"
   add_foreign_key "converter_group_cards", "converter_groups"
   add_foreign_key "pack_cards", "cards"
   add_foreign_key "pack_cards", "packs"
+  add_foreign_key "sessions", "users"
 end
