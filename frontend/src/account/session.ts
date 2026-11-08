@@ -23,6 +23,15 @@ export function useLogIn() {
   });
 }
 
+export function useSignUp() {
+  const refresh = useRefreshSession();
+  return useMutation({
+    mutationFn: (form: { email: string; password: string; nickname: string; birth_date: string }) =>
+      request<{ user: User }>("POST", "/api/registrations", form),
+    onSuccess: refresh,
+  });
+}
+
 export function useLogOut() {
   const refresh = useRefreshSession();
   return useMutation({ mutationFn: () => request("DELETE", "/api/session"), onSuccess: refresh });
