@@ -94,3 +94,149 @@ a:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
+
+/* ---- Catálogo: inspirado nas cores dos três dormitórios do GX, com desenho próprio. ---- */
+.cta {
+  display: inline-block;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.catalog-page {
+  max-width: 80rem;
+}
+
+.catalog-header::after {
+  display: block;
+  height: 4px;
+  margin-top: 0.75rem;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #e2443b 0 33%, #f2c230 33% 66%, #3f7fe8 66%);
+  content: "";
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.75rem 1rem;
+  margin: 1.5rem 0;
+}
+
+.field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.field.wide {
+  grid-column: 1 / -1;
+}
+
+.field > label:not(.choice),
+.field > legend {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.choice {
+  display: inline-flex;
+  gap: 0.35rem;
+  margin-right: 1rem;
+}
+
+input[type="search"],
+input[type="number"],
+select,
+button {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+button {
+  width: auto;
+  cursor: pointer;
+}
+
+:is(input, select, button):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+/* Cor da moldura de cada espécie de carta (cards.ts, frame). */
+.frame-normal {
+  --frame: #d9b25f;
+}
+
+.frame-effect {
+  --frame: #e0823f;
+}
+
+.frame-fusion {
+  --frame: #a77be0;
+}
+
+.frame-ritual {
+  --frame: #5b95e8;
+}
+
+.frame-synchro {
+  --frame: #e6e6ee;
+}
+
+.frame-spell {
+  --frame: #35b892;
+}
+
+.frame-trap {
+  --frame: #d85a97;
+}
+
+.card-tile {
+  display: grid;
+  gap: 0.2rem;
+  align-content: start;
+  width: 100%;
+  height: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-left: 6px solid var(--frame);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+}
+
+.type-line,
+.stats {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.badge {
+  justify-self: start;
+  margin: 0.25rem 0;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+}
