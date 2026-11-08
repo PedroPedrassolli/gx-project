@@ -7,6 +7,8 @@ import { Catalog } from "./catalog/Catalog.tsx";
 import { Layout, NotFound } from "./Layout.tsx";
 import { LogInPage } from "./account/LogInPage.tsx";
 import { SignUpPage } from "./account/SignUpPage.tsx";
+import { ForgotPasswordPage, NewPasswordPage } from "./account/PasswordPages.tsx";
+import { VerifyEmailPage } from "./account/VerifyEmailPage.tsx";
 import "./styles.css";
 
 // Dados da API pelo TanStack Query; as páginas pelo React Router (escopo 5.8). A Vercel
@@ -28,6 +30,9 @@ createRoot(root).render(
             <Route path="cartas" element={<Catalog />} />
             <Route path="entrar" element={<LogInPage />} />
             <Route path="cadastro" element={<SignUpPage />} />
+            <Route path="esqueci-a-senha" element={<ForgotPasswordPage />} />
+            <Route path="nova-senha" element={<NewPasswordPage />} />
+            <Route path="verificar-email" element={<VerifyEmailPage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
