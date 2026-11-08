@@ -9,6 +9,7 @@ import { DecksPage } from "./decks/DecksPage.tsx";
 import { DeckEditPage } from "./decks/DeckEditPage.tsx";
 import { Layout, NotFound } from "./Layout.tsx";
 import { LogInPage } from "./account/LogInPage.tsx";
+import { AccountPage } from "./account/AccountPage.tsx";
 import { SignUpPage } from "./account/SignUpPage.tsx";
 import { ForgotPasswordPage, NewPasswordPage } from "./account/PasswordPages.tsx";
 import { VerifyEmailPage } from "./account/VerifyEmailPage.tsx";
@@ -35,6 +36,7 @@ createRoot(root).render(
             <Route path="decks" element={<DecksPage />} />
             <Route path="decks/:id" element={<DeckEditPage />} />
             <Route path="entrar" element={<LogInPage />} />
+            <Route path="conta" element={<AccountPage />} />
             <Route path="cadastro" element={<SignUpPage />} />
             <Route path="esqueci-a-senha" element={<ForgotPasswordPage />} />
             <Route path="nova-senha" element={<NewPasswordPage />} />

@@ -21,7 +21,9 @@ export function Layout() {
         <span className="account">
           {user && (
             <>
-              <span>Olá, {user.nickname}</span>
+              <span>
+                Olá, <Link to="/conta">{user.nickname}</Link>
+              </span>
               <button type="button" className="link-button" onClick={() => logOut.mutate()}>
                 Sair
               </button>

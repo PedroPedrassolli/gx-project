@@ -598,3 +598,18 @@ img[hidden] {
   display: flex;
   gap: 0.5rem;
 }
+
+/* Minha conta. */
+.account-data {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.4rem 1rem;
+}
+
+.account-data dt {
+  color: var(--color-muted);
+}
+
+.account-data dd {
+  margin: 0;
+}
