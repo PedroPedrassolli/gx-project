@@ -58,8 +58,11 @@ updates:
         update-types: [minor]
     # Os tipos do Node acompanham a versão que roda o projeto (Node 24, .nvmrc): versão
     # maior nova só quando o projeto trocar de Node.
+    # O TypeScript 7 espera o typescript-eslint aceitar a versão (PR #2; veja o CONTRIBUTING).
     ignore:
       - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "deps(frontend)"
