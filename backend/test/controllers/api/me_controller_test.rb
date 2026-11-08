@@ -33,7 +33,7 @@ class Api::MeControllerTest < ActionDispatch::IntegrationTest
       _(response.headers["Content-Disposition"]).must_include "filename=\"gx-project-meus-dados.json\""
       file = JSON.parse(response.body)
       _(file["exported_at"]).must_equal "2026-11-08T12:00:00.000-03:00"
-      _(file["account"].keys).must_equal %w[email email_verified_at nickname age_group role created_at]
+      _(file["account"].keys).must_equal %w[email email_verified_at nickname age_group role terms_accepted_at created_at]
       _(file["account"]["email"]).must_equal "jaden@example.com"
       _(file["sessions"].size).must_equal 1
       _(file["collection"].sum { |card| card["quantity"] }).must_equal 55

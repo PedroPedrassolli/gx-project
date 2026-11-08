@@ -5,7 +5,9 @@ class Api::RegistrationsControllerTest < ActionDispatch::IntegrationTest
 
   before { load_starter_deck_cards }
 
-  let(:form) { { email: "jaden@example.com", password: "duelista123", nickname: "JadenYuki", birth_date: "2010-05-01" } }
+  let(:form) do
+    { email: "jaden@example.com", password: "duelista123", nickname: "JadenYuki", birth_date: "2010-05-01", terms_accepted: true }
+  end
 
   def sign_up(**changes) = post(api_registrations_path, params: form.merge(changes), as: :json)
   def field_errors = response.parsed_body["error"]["fields"]
@@ -18,6 +20,7 @@ class Api::RegistrationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :created
     _(response.parsed_body["user"]).must_include "id"
     _(User.last.age_group).must_equal "13-17"
+    _(User.last.terms_accepted_at).must_equal Time.zone.local(2026, 11, 8)
     _(User.last.sessions.count).must_equal 1
     _(User.last.decks.pluck(:name)).must_equal [ "Deck inicial" ]
     get api_session_path
@@ -47,6 +50,14 @@ class Api::RegistrationsControllerTest < ActionDispatch::IntegrationTest
     _(response.parsed_body["error"]["message"]).must_equal "Confira os campos."
     _(field_errors).must_equal({ "email" => [ "não é válido" ], "password" => [ "é curta demais (mínimo de 8 caracteres)" ],
                                  "nickname" => [ "não é permitido" ], "birth_date" => [ "não é uma data válida" ] })
+  end
+
+  it "pede o aceite dos termos de uso e da política de privacidade" do
+    sign_up(terms_accepted: nil)
+
+    assert_response :unprocessable_content
+    _(field_errors).must_equal({ "terms" => [ "aceite os termos de uso e a política de privacidade para criar a conta" ] })
+    _(User.count).must_equal 0
   end
 
   it "pede a data de nascimento" do

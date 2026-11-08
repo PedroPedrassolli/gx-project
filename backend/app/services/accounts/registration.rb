@@ -1,23 +1,26 @@
 module Accounts
   # Cadastro (escopo 3.1; ADR 0008). Da data de nascimento só sai a faixa de idade: a data
-  # não é guardada.
+  # não é guardada. Sem o aceite dos termos e da política de privacidade, não há conta.
   class Registration
     attr_reader :user
 
-    # params: e-mail, senha, apelido e data de nascimento, como vieram do formulário.
+    # params: e-mail, senha, apelido, data de nascimento e o aceite, como vieram do formulário.
     def initialize(params)
       @user = User.new(email: params[:email], password: params[:password], nickname: params[:nickname])
       @birth_date = params[:birth_date]
+      @terms_accepted = ActiveModel::Type::Boolean.new.cast(params[:terms_accepted])
     end
 
     # true quando cria a conta; senão, os erros de cada campo ficam em user.errors.
     def save
       date = parse(@birth_date)
       user.age_group = AgeGroup.for(date) if date
+      user.terms_accepted_at = Time.current if @terms_accepted
       user.validate
       # O erro de faixa vira erro na data, que é o campo que a pessoa preencheu.
       user.errors.delete(:age_group)
       user.errors.add(:birth_date, birth_date_error(date)) unless user.age_group
+      user.errors.add(:terms, I18n.t("accounts.terms.required")) unless @terms_accepted
       return false if user.errors.any?
 
       # Conta nova já ganha o deck inicial do jogo (escopo 3.2): tudo ou nada.
