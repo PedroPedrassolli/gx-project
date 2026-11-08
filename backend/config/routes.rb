@@ -17,5 +17,8 @@ Rails.application.routes.draw do
     resource :session, only: %i[show create destroy]
     resources :registrations, only: :create
     resource :collection, only: :show
+    resources :decks, only: %i[index show create update destroy] do
+      post :validate, on: :collection
+    end
   end
 end

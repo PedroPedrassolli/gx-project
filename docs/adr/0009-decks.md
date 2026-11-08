@@ -15,7 +15,8 @@ inválido pode ser salvo, nem como é o formato de texto, nem como a Destiny via
    jogador sai e volta. Toda resposta com um deck traz `errors` (as mensagens do
    `Decks::Validator`) e `valid`. Quem barra é quem usa: sala e fila (F3 e F5) só aceitam
    deck válido. O que a tabela não aceita continua barrado ao salvar: seção que não existe,
-   menos de 1 ou mais de 3 cópias numa linha e carta fora do pool.
+   menos de 1 ou mais de 3 cópias numa linha e carta fora do pool. Cada conta tem até 50
+   decks, para o banco grátis não crescer sem limite.
 2. **Linhas:** uma por carta e seção, com a quantidade e a marca de Destiny. Salvar troca
    todas as linhas do deck de uma vez. Carta repetida na mesma seção do pedido é somada.
 3. **`.ydk`** (YGOPro e EDOPro): um código por cópia, nas seções `#main`, `#extra` e

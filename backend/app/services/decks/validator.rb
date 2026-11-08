@@ -18,14 +18,16 @@ module Decks
       @collection = collection
     end
 
-    # O validador com os dados do banco: as cartas do deck, a banlist do jogo e a coleção
-    # do dono do deck.
-    def self.for(deck)
-      rows = deck.deck_cards.to_a
-      card_ids = rows.map(&:card_id)
+    # O validador de um deck do banco.
+    def self.for(deck) = build(deck.user, deck.deck_cards.to_a)
+
+    # O validador com os dados do banco: as cartas das linhas, a banlist do jogo e a
+    # coleção do jogador.
+    def self.build(user, entries)
+      card_ids = entries.map(&:card_id)
       banlist = BanlistEntry.joins(:banlist).where(banlists: { name: Catalog::Importer::DEFAULT_BANLIST }, card_id: card_ids)
-      collection = deck.user.collection_cards.where(card_id: card_ids)
-      new(entries: rows, cards: Card.where(id: card_ids).index_by(&:id),
+      collection = user.collection_cards.where(card_id: card_ids)
+      new(entries:, cards: Card.where(id: card_ids).index_by(&:id),
           banlist: banlist.pluck(:card_id, :status).to_h, collection: collection.pluck(:card_id, :quantity).to_h)
     end
 
