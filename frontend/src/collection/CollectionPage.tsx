@@ -1,19 +1,12 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
-import { request } from "../api.ts";
 import { useSession } from "../account/session.ts";
 import { EMPTY_FILTERS, matches, sortCards, type Filters } from "../catalog/cards.ts";
 import { useCardDetail, useCatalog, usePackRarities } from "../catalog/data.ts";
 import { CatalogFilters } from "../catalog/Filters.tsx";
 import { useCardLanguage } from "../catalog/language.ts";
 import { CardTile, Detail } from "../catalog/parts.tsx";
-
-type Progress = { owned: number; cards: number; percent: number };
-type Collection = {
-  data: { card_id: number; quantity: number; obtained_at: string }[];
-  meta: { total: Progress; packs: (Progress & { id: number })[] };
-};
+import { useCollection, type Progress } from "./api.ts";
 
 const PAGE = 60;
 const percent = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
@@ -28,11 +21,7 @@ export function CollectionPage() {
   const session = useSession();
   const user = session.data?.user;
   const catalog = useCatalog();
-  const collection = useQuery({
-    queryKey: ["collection"],
-    queryFn: () => request<Collection>("GET", "/api/collection"),
-    enabled: Boolean(user),
-  });
+  const collection = useCollection(Boolean(user));
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [pack, setPack] = useState("");
   const [language, setLanguage] = useCardLanguage();
