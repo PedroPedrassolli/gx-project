@@ -200,8 +200,23 @@ module GameData
       name = Wikitext.card_name(card.title)
       name_in_game = Wikitext.card_name(title)
       { nome: name, nome_no_jogo: (name_in_game unless name_in_game == name), **identity(card),
-        passcode_oficial: printed_version(card, title), fonte: card.revision }
+        passcode_oficial: printed_version(card, title), **details(card), fonte: card.revision }
     end
+
+    # O que o jogador vê, como a página da carta mostra: tipo (Monster, Spell ou Trap), a
+    # propriedade da magia ou armadilha, atributo, raça e os outros tipos do monstro
+    # ("Fiend / Effect"), nível, ATK, DEF ("?" fica sem valor) e o texto em inglês e, se a
+    # carta saiu em português, também em português. A página do jogo chama o texto de "lore".
+    def details(card)
+      race, *types = text_field(card, "types").to_s.split("/").map(&:strip)
+      { tipo: text_field(card, "card_type") || "Monster", propriedade: text_field(card, "property"),
+        atributo: text_field(card, "attribute"), raca: race, tipos: types.presence,
+        nivel: number(card, "level"), atk: number(card, "atk"), def: number(card, "def"),
+        texto: Wikitext.plain(Wikitext.long_field(card.text, "text") || Wikitext.long_field(card.text, "lore")),
+        nome_pt: text_field(card, "pt_name"), texto_pt: Wikitext.plain(Wikitext.long_field(card.text, "pt_text")) }
+    end
+
+    def text_field(card, name) = Wikitext.plain(Wikitext.field(card.text, name))
 
     # Carta do anime que o OCG imprimiu depois (com outro efeito ou outro nome): o passcode
     # da impressão, que a cobertura usa quando não há script da versão do jogo.
@@ -242,8 +257,10 @@ module GameData
       document([ "Cartas do jogo de referência, uma por página da Yugipedia.",
                  "nome_no_jogo: o nome que o jogo usa, quando mudou depois.",
                  "passcode_oficial: carta do anime que o OCG imprimiu depois; o passcode da impressão.",
+                 "tipo a def: como a página da carta mostra (ATK ou DEF \"?\" fica sem valor).",
+                 "texto: em inglês; nome_pt e texto_pt: em português, quando a carta saiu em português.",
                  "fonte: revisão da página da carta (yugipedia.com/index.php?oldid=N)." ],
-               cards.map { |card| "- #{flow(card)}" })
+               cards.map { |card| block(card) })
     end
 
     def packs_file
@@ -303,6 +320,11 @@ module GameData
     end
 
     def flow(hash) = "{ #{hash.compact.map { |key, value| "#{key}: #{json(value)}" }.join(', ')} }"
+
+    # Item de lista com um campo por linha ("- nome: ...", "  passcode: ...").
+    def block(hash)
+      hash.compact.map.with_index { |(key, value), index| "#{index.zero? ? '-' : ' '} #{key}: #{json(value)}" }.join("\n")
+    end
     def json(value) = JSON.generate(value)
   end
 end

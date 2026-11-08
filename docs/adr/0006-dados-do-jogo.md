@@ -1,7 +1,7 @@
 # ADR 0006: dados do jogo de referência
 
 - **Data:** 07/11/2026
-- **Situação:** aceita (GXP-6 e GXP-7).
+- **Situação:** aceita (GXP-6, GXP-7 e GXP-25).
 
 ## Contexto
 
@@ -55,6 +55,12 @@ pela API do MediaWiki.
      pode diferir, mas a carta fica jogável);
    - sem nada disso, a carta sai do pool até alguém escrever o script. Tudo isso é
      reversível: é só dado.
+9. **O que o jogador vê (GXP-25).** Tipo, propriedade, atributo, raça, os outros tipos do
+   monstro, nível, ATK, DEF e o texto saem da caixa da página da carta, sem a marcação da
+   wiki. O texto fica em inglês e, quando a carta saiu em português, também em português; a
+   tela escolhe pela configuração do jogador. O BabelCDB não entra aqui: ele não tem licença
+   (ADR 0001). Os valores ficam como a página escreve (`Monster`, `DARK`, `Fiend`) e a tela
+   traduz.
 
 ## Consequências
 

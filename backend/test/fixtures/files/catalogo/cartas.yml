@@ -1,5 +1,17 @@
-- { nome: "Night Assailant", passcode: 100, fonte: 1 }
-- { nome: "Trap Hole", passcode: 200, fonte: 2 }
+- nome: "Night Assailant"
+  passcode: 100
+  tipo: "Monster"
+  atributo: "DARK"
+  raca: "Fiend"
+  tipos: ["Flip", "Effect"]
+  nivel: 3
+  atk: 200
+  def: 500
+  texto: "FLIP: Target 1 monster your opponent controls; destroy it."
+  nome_pt: "Assaltante Noturno"
+  texto_pt: "VIRE: destrua 1 monstro."
+  fonte: 1
+- { nome: "Trap Hole", passcode: 200, tipo: "Trap", propriedade: "Normal", texto: "Destroy it.", fonte: 2 }
 - { nome: "Clear Wall", numero_interno: 3, fonte: 3 }
 - { nome: "Labyrinth", numero_interno: 4, fonte: 4 }
 - { nome: "Ancient Gear", passcode: 500, fonte: 5 }

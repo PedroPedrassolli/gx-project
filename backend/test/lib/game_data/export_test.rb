@@ -43,9 +43,23 @@ describe GameData::Export do
   end
 
   let(:cards) do
-    [ wiki_page(id: 10, revision: 1000, title: "Card One", text: "{{CardTable2\n| password = 02134346\n}}"),
+    [ wiki_page(id: 10, revision: 1000, title: "Card One", text: <<~WIKI),
+        {{CardTable2
+        | password = 02134346
+        | attribute = DARK
+        | types = [[Fiend]] / [[Effect Monster|Effect]]
+        | level = 3
+        | atk = 1000
+        | def = ?
+        | text = If this card is sent to the [[Graveyard|GY]]:<br />'''Add''' 1 &quot;monster&quot;
+        from your Deck.
+        | pt_name = Card Um
+        | pt_text = Se este card for enviado para o Cemitério: adicione 1 monstro.
+        }}
+      WIKI
       wiki_page(id: 11, revision: 1100, title: "New Name", text: "{{CardTable2\n| password = 12345678\n}}"),
-      wiki_page(id: 12, revision: 1200, title: "Game Card (X)", text: "{{Game card\n| internal_number = 3778\n}}"),
+      wiki_page(id: 12, revision: 1200, title: "Game Card (X)",
+                text: "{{Game card\n| card_type = Spell\n| property = Equip\n| internal_number = 3778\n| lore = Equip only to a monster.\n}}"),
       wiki_page(id: 13, revision: 1300, title: "Extra Card", text: "{{CardTable2\n| password = 87654321\n}}"),
       wiki_page(id: 14, revision: 1400, title: "Extra Card (X)", text: "{{Game card\n| internal_number = 4000\n}}"),
       wiki_page(id: 15, revision: 1500, title: "Anime Card (X)", text: "{{Game card\n| internal_number = 3800\n}}"),
@@ -62,7 +76,9 @@ describe GameData::Export do
   let(:files) { export.files.transform_values { |text| YAML.safe_load(text) } }
 
   it "grava uma carta por página, com passcode ou número interno e a fonte" do
-    _(files["cartas.yml"]).must_equal [
+    keys = %w[nome nome_no_jogo passcode numero_interno passcode_oficial fonte]
+
+    _(files["cartas.yml"].map { |card| card.slice(*keys) }).must_equal [
       { "nome" => "Card One", "passcode" => 2_134_346, "fonte" => 1000 },
       { "nome" => "New Name", "nome_no_jogo" => "Old Name", "passcode" => 12_345_678, "fonte" => 1100 },
       { "nome" => "Game Card", "numero_interno" => 3778, "fonte" => 1200 },
@@ -73,6 +89,20 @@ describe GameData::Export do
       { "nome" => "Penalty!", "nome_no_jogo" => "Penalty", "passcode" => 967_928, "fonte" => 2100 }
     ]
     _(export.files["cartas.yml"]).must_include "CC BY-SA"
+  end
+
+  it "grava o que o jogador vê: tipo, atributo, raça, nível, ATK, DEF e o texto em inglês e português" do
+    card_one, _new_name, game_card = files["cartas.yml"]
+
+    _(card_one.except("nome", "passcode", "fonte")).must_equal({
+      "tipo" => "Monster", "atributo" => "DARK", "raca" => "Fiend", "tipos" => [ "Effect" ], "nivel" => 3,
+      "atk" => 1000, "texto" => "If this card is sent to the GY:\nAdd 1 \"monster\"\nfrom your Deck.",
+      "nome_pt" => "Card Um", "texto_pt" => "Se este card for enviado para o Cemitério: adicione 1 monstro."
+    })
+    _(game_card.slice("tipo", "propriedade", "texto")).must_equal({
+      "tipo" => "Spell", "propriedade" => "Equip", "texto" => "Equip only to a monster."
+    })
+    _(export.files["cartas.yml"]).must_include "- nome: \"Card One\"\n  passcode: 2134346\n"
   end
 
   it "não aceita página de pacote ou episódio como carta: tenta \"Nome (card)\", o aviso do topo e o nome sem caixa" do

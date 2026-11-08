@@ -1,3 +1,5 @@
+require "cgi"
+
 module GameData
   # Tira os dados do texto das páginas da Yugipedia (formato wiki). São só funções que
   # recebem texto e devolvem listas e hashes: nada de rede aqui.
@@ -9,6 +11,25 @@ module GameData
     def field(text, name)
       value = text[/^\|\s*#{Regexp.escape(name)}\s*=[ \t]*(.*)$/, 1]
       value&.gsub(/<!--.*?(?:-->|\z)/, "")&.strip.presence
+    end
+
+    # Como o field, mas o valor pode seguir nas linhas de baixo, até o próximo campo ("|")
+    # ou o fim da caixa ("}}"). Serve para o texto das cartas.
+    def long_field(text, name)
+      value = text[/^\|\s*#{Regexp.escape(name)}\s*=[ \t]*(.*?)(?=^\||^\}\}|\z)/m, 1]
+      value&.gsub(/<!--.*?(?:-->|\z)/m, "")&.strip.presence
+    end
+
+    # Texto para o jogador, sem a marcação da wiki: "[[Graveyard|GY]]" → "GY", sem negrito
+    # nem itálico, "<br />" vira quebra de linha, as outras tags somem e "&amp;" vira "&".
+    # {{Hover|Summons|Normal Summons}} fica "Summons"; o "*" de nota da wiki some.
+    def plain(text)
+      return if text.blank?
+
+      cleaned = text.gsub(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/, '\\1').gsub(/'{2,}/, "")
+                    .gsub(/\{\{Hover\|([^|{}]*)\|[^{}]*\}\}/) { Regexp.last_match(1) == "*" ? "" : Regexp.last_match(1) }
+                    .gsub(%r{<br\s*/?>}i, "\n").gsub(/<[^>]*>/, "")
+      CGI.unescapeHTML(cleaned).gsub(/[ \t]+/, " ").gsub(/ ?\n ?/, "\n").strip.presence
     end
 
     # A página tem a caixa de uma carta ({{CardTable2}}, {{Anime card}}, a do jogo...)?

@@ -34,6 +34,16 @@ describe "dados do jogo de referência" do
     _(prizes - names).must_be_empty
   end
 
+  it "tem o que o jogador vê de toda carta: tipo e texto; atributo, raça e nível do monstro" do
+    cards = load("cartas.yml")
+    monsters, others = cards.partition { |card| card["tipo"] == "Monster" }
+
+    _(cards.pluck("tipo").uniq.sort).must_equal %w[Monster Spell Trap]
+    _(cards.reject { |card| card["texto"].present? && card["fonte"].is_a?(Integer) }).must_be_empty
+    _(monsters.reject { |card| card.values_at("atributo", "raca", "nivel").all?(&:present?) }).must_be_empty
+    _(others.reject { |card| card["propriedade"].present? && card["atributo"].nil? }).must_be_empty
+  end
+
   it "guarda a fonte e o preço de todo pacote" do
     _(packs.reject { |pack| pack["fonte"].is_a?(Integer) && pack["preco"].is_a?(Integer) }).must_be_empty
   end
