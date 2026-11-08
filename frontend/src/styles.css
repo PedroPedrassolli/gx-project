@@ -381,6 +381,14 @@ img[hidden] {
   color: var(--color-muted);
 }
 
+.notice {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0.6rem var(--gutter);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-muted);
+}
+
 .link-button {
   padding: 0;
   border: 0;

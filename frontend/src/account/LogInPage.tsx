@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ApiError } from "../api.ts";
 import { useLogIn } from "./session.ts";
 import { TextField } from "./TextField.tsx";
@@ -42,6 +42,9 @@ export function LogInPage() {
           {logIn.isPending ? "Entrando…" : "Entrar"}
         </button>
       </form>
+      <p>
+        <Link to="/esqueci-a-senha">Esqueci a senha</Link>
+      </p>
     </main>
   );
 }
