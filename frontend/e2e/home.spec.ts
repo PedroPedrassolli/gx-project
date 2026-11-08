@@ -4,7 +4,7 @@ import AxeBuilder from "@axe-core/playwright";
 test("a página inicial mostra o projeto e a fase atual", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1, name: "GX Project" })).toBeVisible();
-  await expect(page.getByText("Fase atual: F0, Fundação e dados.")).toBeVisible();
+  await expect(page.getByText("Fase atual: F1, Catálogo de cartas.")).toBeVisible();
 });
 
 test("a página inicial passa no axe sem violações", async ({ page }) => {
