@@ -2,7 +2,8 @@
 # válido e os erros do Decks::Validator: deck incompleto pode ser salvo como rascunho.
 class Api::DecksController < Api::BaseController
   before_action :require_authentication
-  before_action :set_deck, only: %i[show update destroy]
+  before_action :set_deck, only: %i[show update destroy export]
+  before_action :check_deck_limit, only: %i[create import]
 
   # GET /api/decks
   def index
@@ -17,10 +18,6 @@ class Api::DecksController < Api::BaseController
 
   # POST /api/decks
   def create
-    if current_user.decks.count >= Deck::LIMIT_PER_USER
-      return render_error(:unprocessable_content, "Você chegou ao limite de #{Deck::LIMIT_PER_USER} decks.")
-    end
-
     save(current_user.decks.build, :created)
   end
 
@@ -42,7 +39,38 @@ class Api::DecksController < Api::BaseController
     render json: { data: { valid: validator.valid?, errors: validator.errors } }
   end
 
+  # POST /api/decks/import: { name, kind: "ydk" ou "text", content }. Cria o deck com o
+  # que achou no pool e devolve os avisos do que ficou de fora.
+  def import
+    import = Decks::Import.new(current_user, params.permit(:name, :kind, :content))
+    if import.save
+      render json: { data: detail(import.deck), meta: { warnings: import.warnings } }, status: :created
+    else
+      render_error(:unprocessable_content, import.error || "Confira o deck.", import.deck.errors.to_hash.presence)
+    end
+  end
+
+  # GET /api/decks/:id/export.ydk ou .txt: o arquivo para baixar.
+  def export
+    rows = @deck.deck_cards.includes(:card).order(:id)
+    case params[:format]
+    when "ydk"
+      file = Decks::Ydk.dump(rows.map { |row| { section: row.section, code: row.card.passcode || row.card.engine_code, quantity: row.quantity } })
+    when "txt"
+      file = Decks::Text.dump(rows.map { |row| { section: row.section, name: row.card.name, quantity: row.quantity, destiny: row.destiny } })
+    else
+      return not_found
+    end
+    send_data file, filename: "#{@deck.name}.#{params[:format]}", type: "text/plain"
+  end
+
   private
+
+  def check_deck_limit
+    return if current_user.decks.count < Deck::LIMIT_PER_USER
+
+    render_error(:unprocessable_content, "Você chegou ao limite de #{Deck::LIMIT_PER_USER} decks.")
+  end
 
   def set_deck
     @deck = current_user.decks.find(params[:id])

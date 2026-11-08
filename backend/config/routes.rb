@@ -18,7 +18,11 @@ Rails.application.routes.draw do
     resources :registrations, only: :create
     resource :collection, only: :show
     resources :decks, only: %i[index show create update destroy] do
-      post :validate, on: :collection
+      collection do
+        post :validate
+        post :import
+      end
+      get :export, on: :member
     end
   end
 end
