@@ -23,11 +23,18 @@ export function useLogIn() {
   });
 }
 
+type SignUpForm = {
+  email: string;
+  password: string;
+  nickname: string;
+  birth_date: string;
+  terms_accepted: boolean;
+};
+
 export function useSignUp() {
   const refresh = useRefreshSession();
   return useMutation({
-    mutationFn: (form: { email: string; password: string; nickname: string; birth_date: string }) =>
-      request<{ user: User }>("POST", "/api/registrations", form),
+    mutationFn: (form: SignUpForm) => request<{ user: User }>("POST", "/api/registrations", form),
     onSuccess: refresh,
   });
 }

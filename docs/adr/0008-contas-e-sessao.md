@@ -53,6 +53,12 @@ limite de tentativas com Rack::Attack (6). O front e a API estão no mesmo domí
    do GitHub `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY` e `MAIL_FROM` (só o endereço do
    remetente verificado), e o workflow *E-mail na Vercel* copia para a Vercel e publica de
    novo. Sem a chave, nada sai e o envio só aparece no log.
+10. **Termos e privacidade (GXP-40):** o cadastro só cria a conta com o aceite dos termos de
+    uso e da política de privacidade (`terms_accepted`; sem ele, 422 com o erro em `terms`).
+    A conta guarda só a data do aceite, `terms_accepted_at`: a versão aceita é a que valia
+    nesse dia, e as páginas `/termos` e `/privacidade` mostram a data da versão. Texto novo
+    muda essa data e ganha aviso no site; o aceite de novo, se um dia for preciso, fica para
+    quando houver a primeira mudança.
 
 ## Alternativas consideradas
 

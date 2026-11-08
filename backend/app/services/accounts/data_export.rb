@@ -9,7 +9,7 @@ module Accounts
     def as_json(*)
       {
         exported_at: Time.current,
-        account: @user.slice(:email, :email_verified_at, :nickname, :age_group, :role, :created_at),
+        account: @user.slice(:email, :email_verified_at, :nickname, :age_group, :role, :terms_accepted_at, :created_at),
         sessions: @user.sessions.order(:created_at).map { |session| { created_at: session.created_at } },
         collection: @user.collection_cards.includes(:card).order(:obtained_at, :id).map do |row|
           { card: row.card.name, quantity: row.quantity, obtained_at: row.obtained_at }

@@ -31,7 +31,12 @@ export function Layout() {
               </button>
             </>
           )}
-          {session.isSuccess && !user && <Link to="/entrar">Entrar</Link>}
+          {session.isSuccess && !user && (
+            <>
+              <Link to="/entrar">Entrar</Link>
+              <Link to="/cadastro">Criar conta</Link>
+            </>
+          )}
         </span>
       </nav>
       {user && !user.email_verified && <ConfirmEmailNotice user={user} />}

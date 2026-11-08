@@ -45,6 +45,9 @@ export function LogInPage() {
       <p>
         <Link to="/esqueci-a-senha">Esqueci a senha</Link>
       </p>
+      <p>
+        Ainda não tem conta? <Link to="/cadastro">Criar conta</Link>
+      </p>
     </main>
   );
 }

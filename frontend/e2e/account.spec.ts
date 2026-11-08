@@ -27,6 +27,17 @@ test("mostra o erro do login e fica na página", async ({ page }) => {
   await expect(page).toHaveURL("/entrar");
 });
 
+test("quem não tem conta acha o cadastro no topo e no entrar", async ({ page }) => {
+  await mockSession(page);
+  await page.goto("/");
+  await topbar(page).getByRole("link", { name: "Criar conta" }).click();
+  await expect(page).toHaveURL("/cadastro");
+
+  await page.goto("/entrar");
+  await page.getByRole("main").getByRole("link", { name: "Criar conta" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Criar conta" })).toBeVisible();
+});
+
 test("sai pela barra do topo", async ({ page }) => {
   await mockSession(page, { loggedIn: true });
   await page.goto("/");
@@ -63,6 +74,20 @@ test.describe("cadastro", () => {
     await mockSession(page);
     await page.route("**/api/registrations", (route) => {
       const form = route.request().postDataJSON();
+      if (!form.terms_accepted) {
+        return route.fulfill({
+          status: 422,
+          json: {
+            error: {
+              status: 422,
+              message: "Confira os campos.",
+              fields: {
+                terms: ["aceite os termos de uso e a política de privacidade para criar a conta"],
+              },
+            },
+          },
+        });
+      }
       if (form.nickname === "Mestre_Porra") {
         return route.fulfill({
           status: 422,
@@ -83,12 +108,16 @@ test.describe("cadastro", () => {
     await page.goto("/cadastro");
   });
 
-  async function fill(page: import("@playwright/test").Page, nickname: string) {
+  const terms = (page: import("@playwright/test").Page) =>
+    page.getByRole("checkbox", { name: /Li e aceito os Termos de uso/ });
+
+  async function fill(page: import("@playwright/test").Page, nickname: string, accept = true) {
     await page.getByLabel("E-mail").fill(PLAYER.email);
     await page.getByLabel("Senha").fill(PASSWORD);
     await page.getByLabel("Apelido").fill(nickname);
     await page.getByLabel("Data de nascimento").fill("2010-05-01");
-    await page.getByRole("button", { name: "Criar conta" }).click();
+    if (accept) await terms(page).check();
+    await page.getByRole("main").getByRole("button", { name: "Criar conta" }).click();
   }
 
   test("cria a conta e pede para confirmar o e-mail", async ({ page }) => {
@@ -96,6 +125,22 @@ test.describe("cadastro", () => {
 
     await expect(page.getByRole("heading", { level: 1, name: "Conta criada!" })).toBeVisible();
     await expect(page.getByRole("status")).toContainText(PLAYER.email);
+  });
+
+  test("pede o aceite dos termos, com os links para ler antes", async ({ page }) => {
+    await expect(page.getByRole("link", { name: "Termos de uso" }).first()).toHaveAttribute(
+      "target",
+      "_blank",
+    );
+    await fill(page, "JadenYuki", false);
+
+    await expect(terms(page)).toHaveAttribute("aria-invalid", "true");
+    await expect(terms(page)).toHaveAccessibleDescription(
+      "Aceite os termos de uso e a política de privacidade para criar a conta.",
+    );
+    await terms(page).check();
+    await page.getByRole("main").getByRole("button", { name: "Criar conta" }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Conta criada!" })).toBeVisible();
   });
 
   test("mostra o erro de cada campo ao lado dele, e passa no axe", async ({ page }) => {
