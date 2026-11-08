@@ -13,6 +13,9 @@ gem "puma", ">= 6.0"
 
 # Senha das contas com has_secure_password (ADR 0008).
 gem "bcrypt", "~> 3.1.7"
+# Limite de tentativas no login e no cadastro, contando no Postgres pelo Solid Cache (ADR 0008).
+gem "rack-attack", "~> 6.8"
+gem "solid_cache", "~> 1.0"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
