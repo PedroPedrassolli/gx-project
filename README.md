@@ -55,6 +55,21 @@ npm test             # testes unitários
 npm run test:e2e     # navegador + acessibilidade (axe)
 ```
 
+## Backup do banco
+
+O workflow *Backup do banco* roda toda segunda: faz o `pg_dump` do banco de produção (só o
+schema `public`), criptografa com a senha do secret `BACKUP_PASSPHRASE` e guarda como
+artefato da Action por 30 dias. Para restaurar num Postgres local:
+
+```bash
+# 1. Baixe o artefato "banco-..." da execução que quiser (aba Actions) e descompacte o zip.
+# 2. Abra com a senha do backup (a mesma do secret):
+gpg --decrypt --output banco.dump banco.dump.gpg
+# 3. Restaure num banco vazio:
+createdb gx_restaurado
+pg_restore --clean --if-exists --no-owner --dbname=gx_restaurado banco.dump
+```
+
 ## Documentação
 
 - [Especificação](docs/ESCOPO.md): regras do produto, arquitetura, fases e dados a levantar.
