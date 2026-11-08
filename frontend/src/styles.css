@@ -507,7 +507,12 @@ img[hidden] {
 }
 
 .row-name {
-  flex: 1 1 12rem;
+  flex: 1 1 6rem;
+  min-width: 6rem;
+}
+
+.deck-rows button {
+  padding: 0.2rem 0.55rem;
 }
 
 .deck-errors {
@@ -541,4 +546,45 @@ img[hidden] {
 
 .warnings h2 {
   margin-top: 0;
+}
+
+/* Baú ao lado do deck: na tela larga, o deck fica parado enquanto a lista rola; na
+   estreita, o deck vem primeiro e o baú embaixo. */
+.deck-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.deck-side {
+  order: -1;
+}
+
+@media (min-width: 960px) {
+  .deck-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem);
+    align-items: start;
+  }
+
+  .deck-side {
+    order: 0;
+    position: sticky;
+    top: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+}
+
+.chest h2,
+.deck-panel h2 {
+  margin-top: 0;
+}
+
+.chest-item {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.chest-actions {
+  display: flex;
+  gap: 0.5rem;
 }
