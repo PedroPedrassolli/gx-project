@@ -25,6 +25,8 @@ module Accounts
         user.save!
         Decks::StarterDeck.give_to(user)
       end
+      # Se o e-mail falhar, a conta fica criada: dá para pedir de novo depois.
+      Mailing.deliver(AccountMailer.email_verification(user))
       true
     end
 

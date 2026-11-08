@@ -6,6 +6,7 @@ require "active_model/railtie"
 require "active_record/railtie"
 require "action_controller/railtie"
 require "action_view/railtie"
+require "action_mailer/railtie"
 # O Solid Cache traz um job de limpeza (não usado: a limpeza roda numa thread) que precisa
 # do Active Job carregado.
 require "active_job/railtie"
@@ -33,6 +34,8 @@ module Backend
     # Horário de São Paulo (as datas continuam gravadas em UTC) e mensagens em português,
     # com o inglês do Rails para o que não tiver tradução.
     config.time_zone = "Brasilia"
+    # Endereço do site, para os links dos e-mails.
+    config.x.app_url = ENV.fetch("APP_URL", "https://gx-project-two.vercel.app")
     config.i18n.default_locale = :"pt-BR"
     config.i18n.fallbacks = [ :en ]
 

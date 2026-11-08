@@ -44,6 +44,14 @@ limite de tentativas com Rack::Attack (6). O front e a API estão no mesmo domí
    (cadastro, já entra). Erro de validação volta com 422 e as mensagens em português por
    campo. Login errado diz só "e-mail ou senha incorretos", sem contar qual dos dois.
 
+9. **E-mail (GXP-35):** pelo SMTP do Brevo (ADR 0004), com `deliver_now`: a Vercel não
+   tem fila de jobs. Se o envio falhar, a conta não volta atrás; a pessoa pede de novo. O
+   link de confirmação vale 2 dias e deixa de valer se o e-mail mudar
+   (`generates_token_for`); o de troca de senha vale 1 hora e deixa de valer depois da troca
+   (`has_secure_password`). Reenvio da confirmação: 5 por hora por IP. Na Vercel:
+   `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY` e `MAIL_FROM` (o remetente verificado no Brevo); sem
+   a chave, nada sai e o envio só aparece no log.
+
 ## Alternativas consideradas
 
 - **Token no `localStorage` (JWT):** qualquer script na página lê o token; o cookie

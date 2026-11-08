@@ -22,7 +22,7 @@ class Api::SessionsControllerTest < ActionDispatch::IntegrationTest
       log_in
       get api_session_path
 
-      _(response.parsed_body["user"]).must_equal({ "id" => user.id, "email" => "jaden@example.com",
+      _(response.parsed_body["user"]).must_equal({ "id" => user.id, "email" => "jaden@example.com", "email_verified" => false,
                                                    "nickname" => "JadenYuki", "age_group" => "13-17", "role" => "player" })
     end
   end

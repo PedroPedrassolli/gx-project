@@ -29,6 +29,11 @@ Rack::Attack.throttle("cadastro por IP", limit: 10, period: 1.hour) do |request|
   request.ip if sign_up.call(request)
 end
 
+# Reenvio do e-mail de confirmação: 5 por hora por IP (cada um gasta da cota do Brevo).
+Rack::Attack.throttle("reenvio de confirmação por IP", limit: 5, period: 1.hour) do |request|
+  request.ip if request.post? && request.path == "/api/email_verification"
+end
+
 Rack::Attack.throttled_responder = lambda do |_request|
   body = { error: { status: 429, message: "Muitas tentativas. Espere um pouco e tente de novo." } }
   [ 429, { "content-type" => "application/json" }, [ body.to_json ] ]
