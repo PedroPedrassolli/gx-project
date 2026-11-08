@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { mockSession } from "./support.ts";
 
 // A API é simulada: o "vite preview" só serve o front.
 const cards = [
@@ -65,6 +66,7 @@ async function mockImages(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await mockSession(page);
   await mockApi(page);
   await mockImages(page);
 });
