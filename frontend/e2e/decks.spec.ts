@@ -61,9 +61,33 @@ async function mockDeckApi(page: Page) {
   await page.route("**/api/collection", (route) => route.fulfill({ json: collection }));
   await page.route("**/api/decks/7", (route) => {
     if (route.request().method() === "GET") return route.fulfill({ json: { data: deck } });
+    if (route.request().method() === "DELETE") return route.fulfill({ status: 204 });
     const body = route.request().postDataJSON();
     return route.fulfill({ json: { data: { ...deck, name: body.name, cards: body.cards } } });
   });
+  await page.route("**/api/decks", (route) => {
+    if (route.request().method() === "GET") {
+      return route.fulfill({
+        json: {
+          data: [
+            {
+              id: 7,
+              name: "Heróis",
+              updated_at: deck.updated_at,
+              counts: { main: 3, extra: 1, side: 0 },
+            },
+          ],
+        },
+      });
+    }
+    return route.fulfill({ status: 201, json: { data: deck } });
+  });
+  await page.route("**/api/decks/import", (route) =>
+    route.fulfill({
+      status: 201,
+      json: { data: deck, meta: { warnings: ["O código 12345 não está no pool."] } },
+    }),
+  );
   await page.route("**/api/decks/99", (route) =>
     route.fulfill({ status: 404, json: { error: { status: 404, message: "Não encontrado." } } }),
   );
@@ -125,4 +149,45 @@ test("avisa do deck que não existe", async ({ page }) => {
   await page.goto("/decks/99");
 
   await expect(page.getByRole("heading", { level: 1, name: "Deck não encontrado" })).toBeVisible();
+});
+
+test("lista os decks pela barra do topo e cria um novo", async ({ page }) => {
+  await page.goto("/");
+  await page
+    .getByRole("navigation", { name: "Principal" })
+    .getByRole("link", { name: "Decks" })
+    .click();
+
+  await expect(page.getByRole("listitem").filter({ hasText: "Heróis" })).toContainText(
+    "Main 3 · Extra 1 · Side 0",
+  );
+  await page.getByRole("button", { name: "Criar deck novo" }).click();
+  await expect(page).toHaveURL("/decks/7");
+});
+
+test("importa uma lista e mostra o que ficou de fora", async ({ page }) => {
+  await page.goto("/decks");
+  await page.getByLabel("Formato").selectOption("ydk");
+  await page.getByLabel("Lista do deck").fill("#main\n46986414\n12345\n");
+  await page.getByRole("button", { name: "Importar" }).click();
+
+  await expect(page.getByRole("region", { name: "Ficou de fora da importação" })).toContainText(
+    "O código 12345 não está no pool.",
+  );
+});
+
+test("exporta o deck salvo e apaga depois de confirmar", async ({ page }) => {
+  await page.goto("/decks/7");
+  await expect(page.getByRole("link", { name: "Exportar .ydk" })).toHaveAttribute(
+    "href",
+    "/api/decks/7/export.ydk",
+  );
+  await expect(page.getByRole("link", { name: "Exportar texto" })).toHaveAttribute(
+    "href",
+    "/api/decks/7/export.txt",
+  );
+
+  await page.getByRole("button", { name: "Apagar deck" }).click();
+  await page.getByRole("button", { name: "Confirmar: apagar o deck" }).click();
+  await expect(page).toHaveURL("/decks");
 });
