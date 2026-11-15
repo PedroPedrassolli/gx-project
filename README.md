@@ -87,7 +87,7 @@ pg_restore --clean --if-exists --no-owner --dbname=gx_restaurado banco.dump
 
 - [Especificação](docs/ESCOPO.md): regras do produto, arquitetura, fases e dados a levantar.
 - [Decisões (ADRs)](docs/adr/): engine, tempo real, licença, hospedagem e planos gratuitos,
-  economia, dados do jogo, API do catálogo, contas e decks.
+  economia, dados do jogo, API do catálogo, contas, decks e salas.
 
 ## Contribuir
 
