@@ -502,11 +502,12 @@ button {
   gap: 1.5rem;
 }
 
-/* Na tela larga, com uma carta aberta, o detalhe fica ao lado da lista, parado enquanto a
-   lista rola, e rola sozinho quando é mais alto que a tela. Sem carta aberta, a lista ocupa
-   a largura toda (uma coluna vazia à direita deixava a página torta). */
+/* Na tela larga, com uma carta aberta (o detalhe dentro da lista), ele fica ao lado da
+   lista, parado enquanto a lista rola, e rola sozinho quando é mais alto que a tela. Sem
+   carta aberta, a lista ocupa a largura toda (uma coluna vazia à direita deixava a página
+   torta). O :has() decide pelo que está na página, sem classe vinda do JS. */
 @media (width >= 60rem) {
-  .catalog-body.with-detail {
+  .catalog-body:has(> .card-detail) {
     grid-template-columns: minmax(0, 1fr) 24rem;
   }
 
@@ -584,13 +585,16 @@ button {
   text-align: left;
 }
 
-/* Nome comprido ("Transformação") quebra com hífen em vez de sair da moldura. */
+/* Nome comprido ("Transformação") quebra com hífen em vez de sair da moldura. Só palavra
+   de 10 letras ou mais: com menos, a regra do português cortava nome em inglês no lugar
+   errado ("Bre-eding"). O overflow-wrap segura o que ainda não couber. */
 .card-tile strong {
   font-family: var(--font-title);
   font-weight: 600;
   line-height: 1.25;
   overflow-wrap: anywhere;
   hyphens: auto;
+  hyphenate-limit-chars: 10 4 4;
 }
 
 .card-tile[aria-current="true"] {
