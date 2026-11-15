@@ -71,6 +71,10 @@ Descartados na conferência:
    Pedro preferiu o próprio e-mail (08/11/2026), que também é o contato dos textos legais.
    Endereço gratuito (outlook, gmail) não pode ser autenticado, então parte das mensagens
    pode cair no spam. Um domínio próprio melhora a entrega, mas é pago: é decisão do Pedro.
+   Em 15/11/2026 uma conta nova não recebeu a confirmação, com o envio aceito pelo Brevo.
+   O Pedro decidiu manter o remetente, sem Gmail nem domínio próprio: as telas que prometem
+   e-mail dizem para procurar por "GX Project" no spam (GXP-76). A confirmação não trava
+   nada no jogo.
 7. **Erros no Sentry Developer**, com a proteção contra picos ligada e o ruído filtrado
    antes de enviar.
 8. **Medir toda semana.** O resumo semanal mostra o uso de cada serviço e avisa acima de
