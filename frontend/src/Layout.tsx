@@ -45,6 +45,9 @@ export function Layout() {
                 <span className="greeting">Olá, </span>
                 <Link to="/conta">{user.nickname}</Link>
               </span>
+              <span className="wallet">
+                {user.dp.toLocaleString("pt-BR")} DP, nível {user.level}
+              </span>
               <button
                 type="button"
                 className="link-button"

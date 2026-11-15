@@ -324,6 +324,40 @@ test("'sempre perguntar' na corrente fica no navegador e vai para cada duelo", a
   await expect.poll(() => sent).toEqual([{ always_chain: true }, { always_chain: true }]);
 });
 
+test("o resultado mostra o DP do duelo linha por linha, com os cortes e o saldo", async ({
+  page,
+}) => {
+  const match = await mockMatch(page);
+  const line = (key: string, label: string, dp: number) => ({ key, label, dp });
+  const rewards = {
+    lines: [
+      line("level", "Nível 1", 2),
+      line("turns", "6 turnos", 12),
+      line("network_win", "Vitória em rede", 50),
+    ],
+    cuts: [line("same_opponent", "2º duelo contra o mesmo oponente hoje", -32)],
+    level_ups: [line("level_up", "Subiu para o nível 2", 400)],
+    total: 432,
+    level: 2,
+    balance: 1666,
+  };
+  match.set({ ...STATE, status: "finished", winner_team: 0, finish_reason: "surrender", rewards });
+  await page.goto("/duelo/5");
+
+  const table = page.getByRole("table", { name: "DP do duelo" });
+  await expect(table.getByRole("row")).toHaveText([
+    "Nível 1+2 DP",
+    "6 turnos+12 DP",
+    "Vitória em rede+50 DP",
+    "2º duelo contra o mesmo oponente hoje−32 DP",
+    "Subiu para o nível 2+400 DP",
+    "Total+432 DP",
+  ]);
+  await expect(page.getByText("Saldo: 1.666 DP. Nível 2.")).toBeVisible();
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
+});
+
 test("o replay passa lance a lance e turno a turno, e reproduz sozinho", async ({ page }) => {
   await mockMatch(page);
   const frame = (step: number, turn: number, lp: number) => ({

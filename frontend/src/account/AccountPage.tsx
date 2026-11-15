@@ -58,6 +58,10 @@ export function AccountPage() {
         <dd>{user.nickname}</dd>
         <dt>Faixa de idade</dt>
         <dd>{AGE_GROUPS[user.age_group]}</dd>
+        <dt>DP</dt>
+        <dd>{user.dp.toLocaleString("pt-BR")}</dd>
+        <dt>Nível</dt>
+        <dd>{user.level}</dd>
       </dl>
 
       <h2>Seus dados</h2>

@@ -94,7 +94,10 @@ module Matches
       end
       start_clock if @match.dueling?
       @match.save!
-      reopen_room unless @match.dueling?
+      return if @match.dueling?
+
+      reward
+      reopen_room
     end
 
     # A pergunta nova abre agora: o prazo é o da decisão ou o que sobra do banco do turno.
@@ -116,7 +119,14 @@ module Matches
     def close(winner:, reason:)
       @match.update!(status: "finished", winner_team: winner, finish_reason: reason, finished_at: Time.current,
                      prompt: nil, prompt_team: nil, deadline_at: nil)
+      reward
       reopen_room
+    end
+
+    # O DP do fim do duelo (GXP-85; Economy::DuelRewards), com a mesa como acabou.
+    def reward
+      field = @session.with_engine { |engine| engine.query_field }
+      Economy::DuelRewards.new(@match, field).call
     end
 
     # A partida acabou: a sala volta a esperar, com todos "não pronto", para a revanche.
@@ -236,7 +246,7 @@ module Matches
     # 2 é empate: ninguém vence.
     def finish(win)
       @match.assign_attributes(status: "finished", winner_team: (win[:player] unless win[:player] == 2), finish_reason: "duel",
-                               finished_at: Time.current, deadline_at: nil)
+                               win_reason: win[:reason], finished_at: Time.current, deadline_at: nil)
     end
   end
 end

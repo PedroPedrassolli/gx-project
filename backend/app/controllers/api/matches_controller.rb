@@ -127,6 +127,8 @@ class Api::MatchesController < Api::BaseController
       deadline_at: @match.deadline_at&.iso8601, turn_time_left: @match.turn_time_left,
       ends_at: @match.ends_at&.iso8601,
       always_chain: @match.players.find { |player| player.team == team }&.always_chain,
+      # No fim, o DP que o jogador ganhou, linha por linha (GXP-85; Economy::DuelRewards).
+      rewards: @match.players.find { |player| player.team == team }&.rewards,
       players:, view: game.view(team) }
   end
 

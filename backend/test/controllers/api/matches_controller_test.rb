@@ -183,6 +183,16 @@ class Api::MatchesControllerTest < ActionDispatch::IntegrationTest
     assert_equal false, match.players.find_by!(team: 0).always_chain
   end
 
+  it "no fim, a mesa traz o DP do duelo de quem consulta; durante o duelo, nada" do
+    session = session_for(second)
+    session.get api_match_path(match)
+    assert_nil session.response.parsed_body.dig("data", "rewards")
+
+    session.post surrender_api_match_path(match), as: :json
+    rewards = session.response.parsed_body.dig("data", "rewards")
+    assert_equal [ 10, [ "short" ], 10 ], [ rewards["total"], rewards["cuts"].pluck("key"), rewards["balance"] ]
+  end
+
   it "desistir encerra a partida e avisa o outro; depois do fim, não dá mais" do
     session = session_for(first)
     session.post surrender_api_match_path(match), as: :json

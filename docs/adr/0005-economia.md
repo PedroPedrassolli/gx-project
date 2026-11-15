@@ -64,6 +64,29 @@ farm de DP entre contas combinadas.
     com fonte. O que é decisão do projeto (chances, regra de nível, missões) está marcado
     como tal e fica no admin.
 
+## Como ficou na F4 (GXP-85, 15/11/2026)
+
+- **Razão:** `dp_transactions` (`Economy::Ledger`), com o jogador travado em cada lançamento,
+  chave única por jogador (`partida:ID`, `nivel:N`) e débito que deixaria o saldo negativo
+  recusado. O saldo é o `balance_after` da última linha; `users.dp_earned` soma só os créditos.
+- **Bônus do fim do duelo** (`Economy::BonusCalculator`, sem banco nem relógio): nível (2 ×
+  nível), derrota (10), empate (50), turnos (2 por turno na vitória, 1 nos outros casos),
+  vitória em rede (50), duelista (90 × faixa do oponente, 1 a 10, só na vitória, como no jogo)
+  e as formas de vencer que saem da mesa no fim: oponente sem cartas (20), até 5 turnos (10),
+  no turno do oponente (20), PV abaixo de 1.000 (20) e de 100 (100), acima de 20.000 (100),
+  exatamente 5.730 (573), deck com menos de 10 (20) e vazio (100), Exodia (50), Contagem Final
+  (50), Quadro do Destino (100) e Último Turno (50). As formas de vencer só contam quando o
+  duelo acabou na engine: desistência e tempo não valem. Os que precisam das estatísticas do
+  duelo inteiro (dano, destruições, invocações...) vêm no GXP-87.
+- **Anti-farm** (`Economy::AntiFarm`): duelo com menos de 3 turnos ou de 2 minutos paga só 10
+  DP; contra o mesmo oponente no dia (fuso de São Paulo), 100%, 50%, 25% e depois nada; teto de
+  3.000 DP por dia em duelos, 1.500 nas contas com menos de 7 dias. Os valores ficam em
+  constantes até existir o admin (F7).
+- **Nível:** cada nível novo paga 400 DP, que também contam para o próximo nível.
+- **Resultado:** o resumo (linhas, cortes, subida de nível, total, nível e saldo) fica em
+  `match_players.rewards`, com os textos prontos, e a mesa devolve o de quem consulta. O saldo
+  e o nível também vão no usuário da sessão (topo da página no computador e a página da conta).
+
 ## Consequências
 
 - Testes primeiro (F4): um por bônus do Anexo A, o anti-farm em tabela de casos, o sorteio

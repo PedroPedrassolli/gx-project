@@ -62,6 +62,18 @@ export type View = {
   chain?: ChainLink[];
 };
 
+// O DP do fim do duelo (GXP-85): os bônus, os cortes do anti-farm (negativos), a subida de
+// nível, o total, o nível e o saldo depois.
+export type RewardLine = { key: string; label: string; dp: number };
+export type Rewards = {
+  lines: RewardLine[];
+  cuts: RewardLine[];
+  level_ups: RewardLine[];
+  total: number;
+  level: number;
+  balance: number;
+};
+
 export type MatchState = {
   id: number;
   status: "dueling" | "finished";
@@ -74,6 +86,7 @@ export type MatchState = {
   turn_time_left?: number;
   ends_at?: string | null; // null: duelo sem limite de tempo
   always_chain?: boolean; // "sempre perguntar" na corrente, como o servidor guardou
+  rewards?: Rewards | null; // no fim: o DP do duelo, linha por linha
   seq: number;
   you: number;
   players: { team: number; nickname: string; emote?: string; emote_at?: string }[];

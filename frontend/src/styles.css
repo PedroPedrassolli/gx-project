@@ -797,6 +797,16 @@ img[hidden] {
   }
 }
 
+/* O saldo de DP e o nível no topo; no celular, ficam na conta e no resultado do duelo. */
+.wallet {
+  color: var(--color-muted);
+  font-variant-numeric: lining-nums tabular-nums;
+
+  @media (width < 40rem) {
+    display: none;
+  }
+}
+
 .greeting {
   @media (width < 30rem) {
     position: absolute;
@@ -1944,6 +1954,59 @@ button.pile {
 }
 
 /* Ações embaixo da mesa (desistir; no fim, a sala e o replay): lado a lado, no centro. */
+/* O DP do duelo no resultado: o texto à esquerda, os números alinhados à direita. */
+.rewards {
+  width: 100%;
+  max-width: 24rem;
+  margin: 0.75rem auto;
+  border-collapse: collapse;
+  /* A letra do texto, não a da situação do duelo em volta (a dos títulos). */
+  font-family: var(--font-text);
+  font-size: 1rem;
+  font-variant-numeric: lining-nums tabular-nums;
+  text-align: left;
+
+  th,
+  caption {
+    font: inherit;
+  }
+
+  th {
+    padding: 0.2rem 0;
+  }
+
+  td {
+    padding: 0.2rem 0 0.2rem 1rem;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .cut {
+    color: #f2a091;
+  }
+
+  .level-up,
+  tfoot {
+    color: var(--color-accent);
+  }
+
+  tfoot th,
+  tfoot td {
+    border-top: 1px solid var(--color-border);
+    font-weight: 600;
+  }
+
+  caption {
+    margin-bottom: 0.35rem;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+  }
+}
+
+.balance {
+  color: var(--color-muted);
+}
+
 .duel-actions {
   display: flex;
   flex-wrap: wrap;
