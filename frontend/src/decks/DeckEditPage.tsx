@@ -3,7 +3,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { ApiError, request } from "../api.ts";
 import { useSession } from "../account/session.ts";
-import { displayName, type CardSummary, type Language, type Pack } from "../catalog/cards.ts";
+import {
+  displayName,
+  frame,
+  type CardSummary,
+  type Language,
+  type Pack,
+} from "../catalog/cards.ts";
 import { useCardDetail, useCatalog } from "../catalog/data.ts";
 import { Detail } from "../catalog/parts.tsx";
 import { useCardLanguage } from "../catalog/language.ts";
@@ -113,6 +119,11 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
     const card = cards.get(cardId);
     return card ? displayName(card, language) : `Carta ${cardId}`;
   };
+  // A linha do deck leva a cor da moldura da carta, como na lista do baú.
+  const cardFrame = (cardId: number) => {
+    const card = cards.get(cardId);
+    return card ? `frame-${frame(card)}` : undefined;
+  };
 
   return (
     <main className="page deck-page">
@@ -196,6 +207,7 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
                 .map((row) => (
                   <li
                     key={`${row.card_id}-${row.section}`}
+                    className={cardFrame(row.card_id)}
                     draggable
                     onDragStart={(event) => dragRow(event, row.card_id, section)}
                   >

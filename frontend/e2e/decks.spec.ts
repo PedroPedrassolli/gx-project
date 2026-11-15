@@ -167,7 +167,7 @@ test("lista os decks pela barra do topo e cria um novo", async ({ page }) => {
     .click();
 
   await expect(page.getByRole("listitem").filter({ hasText: "Heróis" })).toContainText(
-    "Main 3 · Extra 1 · Side 0",
+    "Main 3 Extra 1 Side 0",
   );
   await page.getByRole("button", { name: "Criar deck novo" }).click();
   await expect(page).toHaveURL("/decks/7");

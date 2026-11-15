@@ -80,8 +80,9 @@ export function DecksPage() {
           {decks.data.map((deck) => (
             <li key={deck.id}>
               <Link to={`/decks/${deck.id}`}>{deck.name}</Link>
-              <span className="muted">
-                Main {deck.counts.main} · Extra {deck.counts.extra} · Side {deck.counts.side}
+              <span className="deck-counts">
+                <span>Main {deck.counts.main}</span> <span>Extra {deck.counts.extra}</span>{" "}
+                <span>Side {deck.counts.side}</span>
               </span>
             </li>
           ))}
