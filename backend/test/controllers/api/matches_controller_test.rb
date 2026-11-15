@@ -75,6 +75,11 @@ class Api::MatchesControllerTest < ActionDispatch::IntegrationTest
     answer(other, { command: "end" })
     assert_equal [ 409, "Não é a sua vez." ], [ other.response.status, other.response.parsed_body.dig("error", "message") ]
 
+    # Quem não joga a partida nem fica sabendo que ela existe.
+    outsider = session_for(player("Chazz"))
+    answer(outsider, { command: "end" })
+    assert_equal 404, outsider.response.status
+
     before = match.reload.responses.count
     [ { command: "summon", index: 59 }, { command: "voar" } ].each do |response|
       answer(session, response)

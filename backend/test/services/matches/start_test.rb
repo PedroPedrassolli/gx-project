@@ -28,6 +28,14 @@ class Matches::StartTest < ActiveSupport::TestCase
     assert_equal [ [], rows.select(&:destiny).map { |row| row.card.engine_code } ], deck.values_at("extra", "destiny")
   end
 
+  it "deck mexido depois do pronto não entra no duelo: o dono dele deixa de estar pronto" do
+    # Depois do pronto, o Main ficou vazio (salvar deck incompleto vale; duelar com ele, não).
+    syrus.decks.sole.deck_cards.where(section: "main").destroy_all
+
+    assert_nil Matches::Start.new(room).call
+    assert_equal [ "waiting", 0, [ true, false ] ], [ room.reload.status, Match.count, room.players.reload.map(&:ready) ]
+  end
+
   it "sem todos prontos, não começa" do
     room.players.last.update!(ready: false)
 
