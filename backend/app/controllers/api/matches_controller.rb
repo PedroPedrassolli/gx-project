@@ -41,6 +41,18 @@ class Api::MatchesController < Api::BaseController
     render json: { data: state(game) }
   end
 
+  # GET /api/matches/:id/replay?turn=N: o replay de um turno, só depois do fim do duelo. A
+  # partida acabada não muda: o navegador guarda a resposta por um dia.
+  def replay
+    return render_error(:conflict, "O replay fica pronto quando o duelo acaba.") if @match.dueling?
+
+    replay = Matches::Replay.new(@match)
+    turn = params[:turn].to_i.clamp(1, [ replay.turns, 1 ].max)
+    expires_in 1.day, public: false
+    render json: { data: { id: @match.id, turn:, turns: replay.turns, you: @player.team, winner_team: @match.winner_team,
+                           finish_reason: @match.finish_reason, players:, frames: replay.frames(@player.team, turn) } }
+  end
+
   # POST /api/matches/:id/surrender: quem desiste perde, e a sala volta a esperar.
   def surrender
     game = Match.transaction do
@@ -79,9 +91,10 @@ class Api::MatchesController < Api::BaseController
       seq: @match.responses.size, you: team, room_code: @match.room&.code,
       deadline_at: @match.deadline_at&.iso8601, turn_time_left: @match.turn_time_left,
       ends_at: (@match.started_at + Matches::Clock::DUEL).iso8601,
-      players: @match.players.map { |player| { team: player.team, nickname: nicknames.fetch(player.user_id, "Duelista") } },
-      view: game.view(team) }
+      players:, view: game.view(team) }
   end
+
+  def players = @match.players.map { |player| { team: player.team, nickname: nicknames.fetch(player.user_id, "Duelista") } }
 
   # Os apelidos numa consulta só; quem apagou a conta vira "Duelista".
   def nicknames

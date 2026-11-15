@@ -54,4 +54,12 @@ class Duel::EngineCacheTest < ActiveSupport::TestCase
       assert_equal [ false, engine ], [ engine.closed, cache.take("duelo-1", "v1") ]
     end
   end
+
+  it "#clear fecha todas e esvazia o cache" do
+    other = FakeEngine.new(false)
+    cache.put("duelo-1", "v1", engine)
+    cache.put("duelo-2", "v1", other)
+    cache.clear
+    assert_equal [ true, true, 0 ], [ engine.closed, other.closed, cache.size ]
+  end
 end
