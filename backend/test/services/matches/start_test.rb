@@ -28,6 +28,13 @@ class Matches::StartTest < ActiveSupport::TestCase
     assert_equal [ [], rows.select(&:destiny).map { |row| row.card.engine_code } ], deck.values_at("extra", "destiny")
   end
 
+  it "a partida leva os tempos da sala; sem limite, fica sem prazo, sem banco e sem fim" do
+    room.update!(decision_seconds: nil, duel_minutes: nil)
+    match = Matches::Start.new(room).call
+
+    assert_equal [ nil, nil, 0, nil, nil ], [ match.decision_seconds, match.duel_minutes, match.turn_time_left, match.deadline_at, match.ends_at ]
+  end
+
   it "deck mexido depois do pronto não entra no duelo: o dono dele deixa de estar pronto" do
     # Depois do pronto, o Main ficou vazio (salvar deck incompleto vale; duelar com ele, não).
     syrus.decks.sole.deck_cards.where(section: "main").destroy_all

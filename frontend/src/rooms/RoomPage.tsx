@@ -9,6 +9,7 @@ import { PageNotice, SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 import { useRealtime } from "../realtime/useRealtime.ts";
 import { roomAction, roomKey, useRoom, type Room, type RoomPlayer } from "./api.ts";
+import { decisionChip, duelChip } from "./times.ts";
 
 // Sala de espera (escopo 4, "Salas"): os lugares frente a frente, quem já está pronto e o
 // deck de cada um. O duelo começa quando todos estão prontos (GXP-48).
@@ -106,6 +107,10 @@ export function RoomPage() {
         <span>{data.public ? "Pública" : "Privada"}</span>
         <span>{data.banlist ? "Banlist do jogo" : "Sem banlist"}</span>
         <span>{data.destiny_draw ? "Destiny Draw ligado" : "Destiny Draw desligado"}</span>
+        <span>{decisionChip(data.decision_seconds)}</span>
+        <span>{duelChip(data.duel_minutes)}</span>
+      </p>
+      <p className="room-copy">
         <button type="button" onClick={copyCode}>
           {copied ? "Código copiado" : "Copiar o código"}
         </button>

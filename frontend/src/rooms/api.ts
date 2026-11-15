@@ -19,6 +19,8 @@ export type Room = {
   best_of: number;
   banlist: boolean;
   destiny_draw: boolean;
+  decision_seconds: number | null; // null: sem limite
+  duel_minutes: number | null;
   status: "waiting" | "dueling";
   owner_id: number;
   seats: number;
@@ -26,7 +28,9 @@ export type Room = {
   match_id?: number; // em duelo: a partida
 };
 
-export type RoomOptions = { public: boolean; banlist: boolean; destiny_draw: boolean };
+export type RoomFlags = { public: boolean; banlist: boolean; destiny_draw: boolean };
+
+export type RoomOptions = RoomFlags & Pick<Room, "decision_seconds" | "duel_minutes">;
 
 export const roomKey = (code: string) => ["room", code];
 

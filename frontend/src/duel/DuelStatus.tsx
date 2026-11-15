@@ -71,6 +71,8 @@ function Timers(props: Props) {
     asked.current = true;
     onTimeUp();
   }, [left, onTimeUp]);
+  // A sala sem limite nos dois tempos (GXP-80): diz isso, em vez de um relógio vazio.
+  if (left === null && !ends) return <p className="duel-timers">Sem limite de tempo</p>;
   return (
     <p className="duel-timers">
       {left !== null && (

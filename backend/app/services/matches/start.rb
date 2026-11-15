@@ -25,6 +25,8 @@ module Matches
         end
 
         match = Match.create!(room: @room, mode: @room.mode, banlist: @room.banlist, destiny_draw: @room.destiny_draw,
+                              decision_seconds: @room.decision_seconds, duel_minutes: @room.duel_minutes,
+                              turn_time_left: Clock.turn_bank(@room.decision_seconds),
                               seed: Array.new(4) { SecureRandom.random_number(2**63) }, started_at: Time.current)
         # Quem começa sai no sorteio: a pedra, papel e tesoura do escopo (3.7) vem depois.
         players.shuffle(random: SecureRandom).each_with_index do |player, team|

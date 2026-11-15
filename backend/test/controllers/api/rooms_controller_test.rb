@@ -34,6 +34,28 @@ class Api::RoomsControllerTest < ActionDispatch::IntegrationTest
     assert_match(/\A[A-HJ-NP-Z2-9]{6}\z/, data["code"])
     assert_equal [ false, false, false, "waiting", 2, jaden.id ], data.values_at("public", "banlist", "destiny_draw", "status", "seats", "owner_id")
     assert_equal [ { "seat" => 0, "user_id" => jaden.id, "nickname" => "Jaden", "ready" => false, "deck_chosen" => false } ], data["players"]
+    assert_equal [ 90, 60 ], data.values_at("decision_seconds", "duel_minutes")
+  end
+
+  it "o dono escolhe o tempo de resposta e o do duelo; sem limite vem nulo" do
+    owner = session_for(jaden)
+    owner.post api_rooms_path, params: { decision_seconds: 30, duel_minutes: nil }, as: :json
+
+    assert_equal 201, owner.response.status
+    assert_equal [ 30, nil ], owner.response.parsed_body["data"].values_at("decision_seconds", "duel_minutes")
+    assert_equal [ 30, nil ], [ Room.sole.decision_seconds, Room.sole.duel_minutes ]
+  end
+
+  it "tempo fora das opções não cria a sala, e quem estava em outra continua nela" do
+    room = room_for(jaden)
+    owner = session_for(jaden)
+    owner.post api_rooms_path, params: { decision_seconds: 45, duel_minutes: 0 }, as: :json
+
+    error = owner.response.parsed_body["error"]
+    assert_equal [ 422, "Confira as opções da sala.", %w[decision_seconds duel_minutes] ],
+                 [ owner.response.status, error["message"], error["fields"].keys.sort ]
+    assert_equal [ room.id ], Room.pluck(:id)
+    assert_equal [ jaden.id ], room.players.reload.map(&:user_id)
   end
 
   it "lista as salas públicas esperando gente, sem as privadas e as paradas há mais de 1 hora" do
@@ -46,7 +68,8 @@ class Api::RoomsControllerTest < ActionDispatch::IntegrationTest
     session.get api_rooms_path
 
     assert_equal [ second.code, first.code ], session.response.parsed_body["data"].pluck("code")
-    assert_equal({ "code" => first.code, "owner" => "Jaden", "players" => 1, "seats" => 2, "banlist" => true, "destiny_draw" => true },
+    assert_equal({ "code" => first.code, "owner" => "Jaden", "players" => 1, "seats" => 2, "banlist" => true, "destiny_draw" => true,
+                   "decision_seconds" => 90, "duel_minutes" => 60 },
                  session.response.parsed_body["data"].last)
   end
 

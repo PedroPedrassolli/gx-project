@@ -72,7 +72,7 @@ export type MatchState = {
   // O relógio (escopo 3.7): até quando a pergunta da vez vale, o banco do turno e o fim.
   deadline_at?: string | null;
   turn_time_left?: number;
-  ends_at?: string;
+  ends_at?: string | null; // null: duelo sem limite de tempo
   seq: number;
   you: number;
   players: { team: number; nickname: string }[];

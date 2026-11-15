@@ -81,6 +81,8 @@ const ROOM = {
   best_of: 1,
   banlist: true,
   destiny_draw: true,
+  decision_seconds: 90,
+  duel_minutes: 60,
   status: "waiting",
   owner_id: 1,
   seats: 2,

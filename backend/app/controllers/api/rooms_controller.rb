@@ -24,8 +24,11 @@ class Api::RoomsController < Api::BaseController
   def create
     return in_duel if in_duel?
 
-    leave_current_room
     room = Room.new(owner: current_user, code: Room.new_code, **room_params)
+    # Tempo fora das opções não cria a sala (e quem estava em outra continua nela).
+    return render_error(:unprocessable_content, "Confira as opções da sala.", room.errors.to_hash) unless room.valid?
+
+    leave_current_room
     Room.transaction do
       room.save!
       room.players.create!(user: current_user, seat: 0)
@@ -100,7 +103,7 @@ class Api::RoomsController < Api::BaseController
     @room = Room.find_by!(code: code_param)
   end
 
-  def room_params = params.permit(:public, :banlist, :destiny_draw).to_h.symbolize_keys
+  def room_params = params.permit(:public, :banlist, :destiny_draw, :decision_seconds, :duel_minutes).to_h.symbolize_keys
 
   # Durante o duelo, o jogador não troca de sala. O duelo com o prazo vencido (os dois saíram
   # da mesa) acaba aqui, por tempo, e não prende ninguém (escopo 3.7: desconexão vira derrota).
@@ -165,7 +168,7 @@ class Api::RoomsController < Api::BaseController
 
   def summary(room, players)
     { code: room.code, owner: room.owner.nickname, players:, seats: room.seats,
-      banlist: room.banlist, destiny_draw: room.destiny_draw }
+      banlist: room.banlist, destiny_draw: room.destiny_draw, decision_seconds: room.decision_seconds, duel_minutes: room.duel_minutes }
   end
 
   # A sala vista por um jogador: o deck escolhido só aparece para o dono dele.
@@ -178,5 +181,6 @@ class Api::RoomsController < Api::BaseController
     match_id = room.matches.where(status: "dueling").pick(:id) unless room.waiting?
     room.slice(:code, :public, :mode, :best_of, :banlist, :destiny_draw, :status, :owner_id)
         .merge(seats: room.seats, players:, match_id:).compact
+        .merge(room.slice(:decision_seconds, :duel_minutes)) # nulo (sem limite) também vai
   end
 end

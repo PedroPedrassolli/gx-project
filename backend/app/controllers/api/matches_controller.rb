@@ -90,7 +90,7 @@ class Api::MatchesController < Api::BaseController
     { id: @match.id, status: @match.status, winner_team: @match.winner_team, finish_reason: @match.finish_reason,
       seq: @match.responses.size, you: team, room_code: @match.room&.code,
       deadline_at: @match.deadline_at&.iso8601, turn_time_left: @match.turn_time_left,
-      ends_at: (@match.started_at + Matches::Clock::DUEL).iso8601,
+      ends_at: @match.ends_at&.iso8601,
       players:, view: game.view(team) }
   end
 

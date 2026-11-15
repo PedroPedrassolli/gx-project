@@ -27,8 +27,8 @@ class Matches::GameTest < ActiveSupport::TestCase
   CHAMBERLAIN = 44_430_454 # monstro normal de nível 3, do deck inicial
 
   # Partida previsível: semente fixa e 40 cópias do mesmo monstro normal nos dois decks.
-  def chamberlain_match
-    match = Match.create!(mode: "1x1", banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current)
+  def chamberlain_match(**times)
+    match = Match.create!(mode: "1x1", banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current, **times)
     2.times { |team| match.players.create!(team:, seat: team, deck: { main: [ CHAMBERLAIN ] * 40, extra: [] }) }
     Matches::Game.new(match).start!
     match.reload
@@ -128,10 +128,28 @@ class Matches::GameTest < ActiveSupport::TestCase
 
   it "passou do limite do duelo: ganha quem tem mais PV, e PV iguais dão empate" do
     match.update!(deadline_at: 2.hours.from_now)
-    travel_to(match.started_at + Matches::Clock::DUEL + 1.second) do
+    travel_to(match.started_at + 60.minutes + 1.second) do
       assert Matches::Game.new(match).expire!
     end
     assert_equal [ "finished", nil, "time_limit" ], [ match.reload.status, match.winner_team, match.finish_reason ]
+  end
+
+  it "o tempo que o dono da sala escolheu vale: 30 s por decisão e banco de 2 min no turno" do
+    travel_to(Time.zone.local(2026, 11, 15, 12)) do
+      match = chamberlain_match(decision_seconds: 30, duel_minutes: 20)
+
+      assert_equal [ Time.current + 30.seconds, 120 ], [ match.deadline_at, match.turn_time_left ]
+      assert_equal Time.current + 20.minutes, match.ends_at
+    end
+  end
+
+  it "sem limite de resposta nem de duelo, ninguém perde pelo relógio" do
+    match = chamberlain_match(decision_seconds: nil, duel_minutes: nil)
+
+    assert_nil match.deadline_at
+    assert_nil match.ends_at
+    travel_to(10.hours.from_now) { assert_not Matches::Game.new(match).expire! }
+    assert match.reload.dueling?
   end
 
   it "quem desiste perde, e a sala volta a esperar" do

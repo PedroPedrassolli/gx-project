@@ -10,4 +10,7 @@ class Match < ApplicationRecord
   def self.current_for(user) = includes(:room).joins(room: :players).find_by(status: "dueling", room_players: { user_id: user.id })
 
   def dueling? = status == "dueling"
+
+  # Quando o duelo acaba pelo relógio; nil quando o dono da sala escolheu sem limite.
+  def ends_at = duel_minutes && started_at + duel_minutes.minutes
 end
