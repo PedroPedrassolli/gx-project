@@ -89,7 +89,8 @@ test("duelo 1x1: sala com código, os dois prontos, jogadas, desistência, resul
   await first.getByLabel("Ir para o turno").selectOption("2");
   await expect(first.getByText(/Turno 2 de 2/)).toBeVisible();
 
-  // A sala voltou a esperar: a revanche é ficar pronto de novo.
-  await second.getByRole("link", { name: "Voltar para a sala" }).click();
-  await expect(second.getByRole("button", { name: "Estou pronto" })).toBeVisible();
+  // A revanche: um clique deixa pronto com o mesmo deck e volta para a sala.
+  await second.getByRole("button", { name: "Revanche" }).click();
+  await expect(second).toHaveURL(new RegExp(`/salas/${code}$`));
+  await expect(second.getByRole("button", { name: "Não estou pronto" })).toBeVisible();
 });

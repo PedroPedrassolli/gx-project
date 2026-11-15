@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate } from "react-router";
+import { ApiError } from "../api.ts";
+import { roomAction, roomKey } from "../rooms/api.ts";
 import type { MatchState } from "./api.ts";
 import { clock } from "./time.ts";
 
@@ -27,7 +30,7 @@ function useNow() {
 const REASONS: Record<string, (loser: string) => string> = {
   surrender: (loser) => `${loser} desistiu.`,
   timeout: (loser) => `${loser} deixou o tempo acabar.`,
-  time_limit: () => "Acabaram os 60 minutos: ganha quem tem mais PV.",
+  time_limit: () => "Acabou o tempo do duelo: ganha quem tem mais PV.",
 };
 
 export function DuelStatus(props: Props) {
@@ -139,17 +142,44 @@ function Result({ state, names }: Props) {
   );
 }
 
-// No fim, o caminho de volta (a sala reabre para a revanche, ou a lista, se a sala sumiu) e
-// o replay, que fica 30 dias.
+// No fim: a revanche com um clique (fica pronto com o mesmo deck e volta para a sala), a
+// sala e o replay, que fica 30 dias. Se a sala sumiu, a lista de salas.
 function BackToRoom({ code, matchId }: { code?: string | null; matchId: number }) {
+  const navigate = useNavigate();
+  const client = useQueryClient();
+  const rematch = useMutation({
+    mutationFn: () => roomAction(code ?? "", "ready", { ready: true }),
+    onSuccess: (room) => {
+      if (room) client.setQueryData(roomKey(room.code), room);
+      navigate(`/salas/${code}`);
+    },
+  });
+  const closed = rematch.error instanceof ApiError && rematch.error.status === 404;
   return (
-    <p className="duel-actions">
-      <Link className="cta" to={code ? `/salas/${code}` : "/salas"}>
-        {code ? "Voltar para a sala" : "Ver as salas"}
-      </Link>
-      <Link className="cta secondary" to={`/duelo/${matchId}/replay`}>
-        Ver o replay
-      </Link>
-    </p>
+    <>
+      <p className="duel-actions">
+        {code && (
+          <button
+            type="button"
+            className="cta"
+            disabled={rematch.isPending}
+            onClick={() => rematch.mutate()}
+          >
+            Revanche
+          </button>
+        )}
+        <Link className={code ? "cta secondary" : "cta"} to={code ? `/salas/${code}` : "/salas"}>
+          {code ? "Voltar para a sala" : "Ver as salas"}
+        </Link>
+        <Link className="cta secondary" to={`/duelo/${matchId}/replay`}>
+          Ver o replay
+        </Link>
+      </p>
+      {rematch.error && (
+        <p role="alert" className="form-error duel-actions-error">
+          {closed ? "A sala fechou: quem criou saiu." : rematch.error.message}
+        </p>
+      )}
+    </>
   );
 }

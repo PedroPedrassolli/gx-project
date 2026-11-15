@@ -74,7 +74,11 @@ class Api::RoomsController < Api::BaseController
     return render_error(:unprocessable_content, "Esta sala já está em duelo.") unless @room.waiting?
 
     if ActiveModel::Type::Boolean.new.cast(params[:ready])
-      deck = current_user.decks.find(params[:deck_id].to_s)
+      # Sem deck no pedido (a revanche do resultado), vale o que o jogador já tinha escolhido.
+      deck_id = params[:deck_id].presence || player.deck_id
+      return render_error(:unprocessable_content, "Escolha um deck.") unless deck_id
+
+      deck = current_user.decks.find(deck_id.to_s)
       validator = Decks::Validator.for(deck, banlist: @room.banlist)
       return render_error(:unprocessable_content, "Este deck não vale nesta sala.", { deck: validator.errors }) unless validator.valid?
 

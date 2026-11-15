@@ -200,6 +200,18 @@ class Api::RoomsControllerTest < ActionDispatch::IntegrationTest
       assert_equal [ 0, false, nil ], [ Match.count, room.players.reload.last.ready, room.reload.chooser_seat ]
     end
 
+    it "a revanche fica pronta com o deck de antes; sem deck nenhum, pede um" do
+      room = room_for(jaden)
+      session = session_for(jaden)
+      session.post ready_api_room_path(room.code), params: { ready: true }, as: :json
+      assert_equal [ 422, "Escolha um deck." ], [ session.response.status, session.response.parsed_body.dig("error", "message") ]
+
+      Decks::StarterDeck.give_to(jaden)
+      room.players.first.update!(deck: jaden.decks.sole)
+      session.post ready_api_room_path(room.code), params: { ready: true }, as: :json
+      assert_equal [ 200, true ], [ session.response.status, room.players.first.reload.ready ]
+    end
+
     it "recusa deck incompleto e deck de outro jogador, e deixa de ficar pronto" do
       room = room_for(jaden)
       session = session_for(jaden)
