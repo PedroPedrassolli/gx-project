@@ -28,6 +28,8 @@ type Props = {
   lpChanges?: Map<number, DuelEvent>;
   // Onde estão as cartas que a pergunta da vez deixa usar (actionablePlaces): brilham.
   actionable?: Set<string>;
+  // A frase que cada time mandou e ainda aparece (emotes).
+  emotes?: Map<number, string>;
 };
 
 // Uma pilha aberta: o título e as cartas, de cima (a última que entrou) para baixo.
@@ -159,6 +161,11 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
   const info = (
     <div className="side-info">
       <strong>{name}</strong>
+      {props.emotes?.has(team) && (
+        <span className="emote" role="status">
+          {props.emotes.get(team)}
+        </span>
+      )}
       <span className="lp" data-lp={team}>
         PV {side.lp}
         <LpChange event={props.lpChanges?.get(team)} />

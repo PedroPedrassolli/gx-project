@@ -143,6 +143,35 @@ class Api::MatchesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 404, outsider.response.status
   end
 
+  it "a frase vai para o outro na hora, aparece na mesa por alguns segundos e tem limite" do
+    session = session_for(first)
+    session.post emotes_api_match_path(match), params: { emote: "nice" }, as: :json
+    assert_equal [ 200, "nice", 0 ], [ session.response.status, *session.response.parsed_body["data"].values_at("emote", "team") ]
+    event = Realtime::Publisher.current.events_for(second.id).sole
+    assert_equal [ "duel.emote", match.id, "nice" ], [ event.name, *event.data.values_at(:id, :emote) ]
+
+    session.post emotes_api_match_path(match), params: { emote: "gg" }, as: :json
+    assert_equal [ 429, "Uma frase a cada 3 segundos." ], [ session.response.status, session.response.parsed_body.dig("error", "message") ]
+
+    other = session_for(second)
+    emote = lambda do
+      other.get api_match_path(match)
+      other.response.parsed_body.dig("data", "players").find { |player| player["team"] == 0 }["emote"]
+    end
+    assert_equal "nice", emote.call
+    travel(10.seconds) { assert_nil emote.call }
+  end
+
+  it "frase que não existe não sai, e sem o Ably no ar a frase vale do mesmo jeito" do
+    session = session_for(first)
+    session.post emotes_api_match_path(match), params: { emote: "palavrão" }, as: :json
+    assert_equal [ 422, "Essa frase não existe." ], [ session.response.status, session.response.parsed_body.dig("error", "message") ]
+
+    Realtime::MemoryPublisher.any_instance.stubs(:publish).raises(Realtime::AblyPublisher::Error, "sem conexão")
+    session.post emotes_api_match_path(match), params: { emote: "hello" }, as: :json
+    assert_equal [ 200, "hello" ], [ session.response.status, match.players.find_by!(team: 0).emote ]
+  end
+
   it "desistir encerra a partida e avisa o outro; depois do fim, não dá mais" do
     session = session_for(first)
     session.post surrender_api_match_path(match), as: :json

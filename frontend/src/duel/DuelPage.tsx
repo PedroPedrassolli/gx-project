@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ApiError } from "../api.ts";
+import { ApiError, request } from "../api.ts";
 import { Link, useParams } from "react-router";
 import { SESSION_KEY, useSession } from "../account/session.ts";
 import { NO_CARDS, NO_PACKS, useCatalog } from "../catalog/data.ts";
@@ -14,6 +14,8 @@ import { Board } from "./Board.tsx";
 import { DuelDetail } from "./DuelDetail.tsx";
 import { ChainStack, DuelLog } from "./DuelSide.tsx";
 import { DuelStatus } from "./DuelStatus.tsx";
+import { EmotePicker, useEmoteBubbles } from "./Emotes.tsx";
+import { withEmote, type EmotePlayer } from "./emotes.ts";
 import {
   DURATION,
   lastId,
@@ -34,9 +36,19 @@ export function DuelPage() {
   const session = useSession();
   const user = session.data?.user;
   const client = useQueryClient();
+  // A frase (GXP-83) entra na mesa guardada: a de quem mandou volta na resposta, a do outro
+  // chega pelo tempo real (ou na próxima consulta).
+  const addEmote = (emote: Required<EmotePlayer>) =>
+    client.setQueryData(
+      matchKey(id),
+      (old: MatchState | undefined) => old && withEmote(old, emote),
+    );
   const mode = useRealtime(user?.id, (event, data) => {
     if (event === "duel.updated" && String((data as MatchState).id) === id) {
       client.setQueryData(matchKey(id), data);
+    }
+    if (event === "duel.emote" && String((data as { id: number }).id) === id) {
+      addEmote(data as Required<EmotePlayer>);
     }
   });
   const match = useMatch(id, mode, Boolean(user));
@@ -73,6 +85,16 @@ export function DuelPage() {
   const [selected, setSelected] = useState<number | null>(null);
   const cards = catalog.data?.byCode ?? NO_CARDS;
   const packs = catalog.data?.packNames ?? NO_PACKS;
+  const emotes = useEmoteBubbles(match.data?.players ?? []);
+  const say = useMutation({
+    mutationFn: async (emote: string) =>
+      (
+        await request<{ data: Required<EmotePlayer> }>("POST", `/api/matches/${id}/emotes`, {
+          emote,
+        })
+      ).data,
+    onSuccess: addEmote,
+  });
   const giveUp = useMutation({
     mutationFn: () => surrender(id),
     onSuccess: (data) => client.setQueryData(matchKey(id), data),
@@ -123,6 +145,7 @@ export function DuelPage() {
         finished={state.status === "finished"}
         lpChanges={motion === "off" ? undefined : lpChanges(fresh)}
         actionable={actionablePlaces(state.view.prompt)}
+        emotes={emotes}
       />
       <DuelStatus
         state={state}
@@ -130,6 +153,11 @@ export function DuelPage() {
         surrendering={giveUp.isPending}
         onSurrender={() => giveUp.mutate()}
         onTimeUp={() => match.refetch()}
+      />
+      <EmotePicker
+        pending={say.isPending}
+        error={say.error?.message}
+        onSend={(emote) => say.mutate(emote)}
       />
       <DuelDetail
         code={selected}

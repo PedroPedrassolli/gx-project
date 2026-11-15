@@ -63,7 +63,34 @@ class Api::MatchesController < Api::BaseController
     render json: { data: state(game) }
   end
 
+  # POST /api/matches/:id/emotes: { emote }. Uma das frases fixas, para o outro ver por alguns
+  # segundos (duel.emote). Também depois do fim: o "bom duelo" vem aí.
+  def emote
+    emote = params[:emote].to_s
+    return render_error(:unprocessable_content, "Essa frase não existe.") unless MatchPlayer::EMOTES.include?(emote)
+    if @player.emote_at && @player.emote_at > MatchPlayer::EMOTE_EVERY.ago
+      return render_error(:too_many_requests, "Uma frase a cada #{MatchPlayer::EMOTE_EVERY.to_i} segundos.")
+    end
+
+    @player.update!(emote:, emote_at: Time.current)
+    data = { id: @match.id }.merge(emote_json(@player))
+    @match.players.reject { |player| player == @player || player.user_id.nil? }.each do |player|
+      Realtime::Publisher.current.publish(user_id: player.user_id, event: "duel.emote", data:)
+    end
+    render json: { data: }
+  rescue Realtime::AblyPublisher::Error => error
+    Rails.logger.warn("duel.emote não saiu: #{error.message}")
+    render json: { data: }
+  end
+
   private
+
+  # A frase recente de um jogador (quem consulta sem tempo real vê por EMOTE_SHOWN).
+  def emote_json(player)
+    return {} unless player.emote_at && player.emote_at > MatchPlayer::EMOTE_SHOWN.ago
+
+    { team: player.team, emote: player.emote, emote_at: player.emote_at.iso8601(3) }
+  end
 
   # Encerra a partida com o prazo vencido, travada, para duas consultas não encerrarem juntas.
   def expire(game)
@@ -94,7 +121,9 @@ class Api::MatchesController < Api::BaseController
       players:, view: game.view(team) }
   end
 
-  def players = @match.players.map { |player| { team: player.team, nickname: nicknames.fetch(player.user_id, "Duelista") } }
+  def players
+    @match.players.map { |player| { team: player.team, nickname: nicknames.fetch(player.user_id, "Duelista") }.merge(emote_json(player)) }
+  end
 
   # Os apelidos numa consulta só; quem apagou a conta vira "Duelista".
   def nicknames
