@@ -47,6 +47,9 @@ const RoomsPage = lazy(() =>
 );
 const RoomPage = lazy(() => import("./rooms/RoomPage.tsx").then((m) => ({ default: m.RoomPage })));
 const DuelPage = lazy(() => import("./duel/DuelPage.tsx").then((m) => ({ default: m.DuelPage })));
+const ReplayPage = lazy(() =>
+  import("./duel/ReplayPage.tsx").then((m) => ({ default: m.ReplayPage })),
+);
 const TermsPage = lazy(() =>
   import("./legal/LegalPages.tsx").then((m) => ({ default: m.TermsPage })),
 );
@@ -77,6 +80,7 @@ createRoot(root).render(
             <Route path="salas" element={<RoomsPage />} />
             <Route path="salas/:code" element={<RoomPage />} />
             <Route path="duelo/:id" element={<DuelPage />} />
+            <Route path="duelo/:id/replay" element={<ReplayPage />} />
             <Route path="entrar" element={<LogInPage />} />
             <Route path="conta" element={<AccountPage />} />
             <Route path="cadastro" element={<SignUpPage />} />
