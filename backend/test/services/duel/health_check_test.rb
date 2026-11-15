@@ -45,4 +45,23 @@ class Duel::HealthCheckTest < ActiveSupport::TestCase
       end
     end
   end
+
+  describe ".runtime" do
+    it "diz se o Ruby roda com o YJIT" do
+      _([ true, false ]).must_include Duel::HealthCheck.runtime[:yjit]
+    end
+
+    it "acha o jemalloc entre as bibliotecas carregadas no processo" do
+      File.stubs(:exist?).with("/proc/self/maps").returns(true)
+      File.stubs(:read).with("/proc/self/maps").returns("7f3c r-xp 00000000 /usr/lib/x86_64-linux-gnu/libjemalloc.so.2\n")
+
+      _(Duel::HealthCheck.runtime[:jemalloc]).must_equal true
+    end
+
+    it "sem o jemalloc, ou fora do Linux, responde false" do
+      File.stubs(:exist?).with("/proc/self/maps").returns(false)
+
+      _(Duel::HealthCheck.runtime[:jemalloc]).must_equal false
+    end
+  end
 end

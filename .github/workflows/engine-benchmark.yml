@@ -6,8 +6,8 @@
 # docs/adr/0001-engine.md.
 #
 # Roda só quando alguém pede (Actions → Medição da engine → Run workflow).
-# Custo: cerca de 1 minuto de runner (repositório público: sem limite) e duas chamadas na
-# Vercel por rodada (/up/engine e /up), bem dentro do plano grátis.
+# Custo: cerca de 1 minuto de runner (repositório público: sem limite) e três chamadas na
+# Vercel por rodada (/up/engine, /up e /up/db), bem dentro do plano grátis.
 name: Medição da engine
 
 on:
@@ -60,6 +60,13 @@ jobs:
               exit 1
             fi
             to_ms "$base" >> base.txt
+            # O /up/db soma uma consulta ao banco (Supabase, em São Paulo): a diferença para o
+            # /up é o tempo de ida e volta ao banco.
+            if ! db=$(curl --silent --fail --max-time 30 --output /dev/null --write-out "%{time_total}" "$SITE/up/db"); then
+              echo "::error::A chamada $call ao /up/db falhou"
+              exit 1
+            fi
+            to_ms "$db" >> db.txt
           done
 
       - name: Resumir
@@ -84,6 +91,7 @@ jobs:
             row "Ação quente: engine no cache, no app" warm.txt
             row "Requisição inteira ao /up/engine, vista do GitHub" total.txt
             row "Só rede, Vercel e Rails (/up), vista do GitHub" base.txt
+            row "Rede, Rails e uma consulta ao banco (/up/db), vista do GitHub" db.txt
             echo
             echo "A 1ª chamada pode cair numa instância fria (container subindo e catálogo vazio)."
           } >> "$GITHUB_STEP_SUMMARY"
@@ -93,6 +101,7 @@ jobs:
           echo "::notice title=Ação quente::p50 $(percentile warm.txt 50) ms, p95 $(percentile warm.txt 95) ms"
           echo "::notice title=Requisição inteira::p50 $(percentile total.txt 50) ms, p95 $(percentile total.txt 95) ms, 1ª chamada $(head -1 total.txt) ms"
           echo "::notice title=Só rede e Rails (/up)::p50 $(percentile base.txt 50) ms, p95 $(percentile base.txt 95) ms"
+          echo "::notice title=Com o banco (/up/db)::p50 $(percentile db.txt 50) ms, p95 $(percentile db.txt 95) ms"
           if awk -v value="$p95" 'BEGIN { exit !(value > 300) }'; then
             echo "::warning::O p95 da ação fria passou da meta de 300 ms: ver o plano B no docs/adr/0001-engine.md"
           fi

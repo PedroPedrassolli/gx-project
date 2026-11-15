@@ -76,6 +76,10 @@ Descartados na conferência:
 8. **Medir toda semana.** O resumo semanal mostra o uso de cada serviço e avisa acima de
    80% (escopo, 5.9). Ele também confere se o `uptime.yml` rodou: se o workflow agendado
    parar, o Supabase pausa em uma semana.
+9. **Ruby com YJIT e jemalloc no container** (GXP-63). O YJIT já vinha ligado pelo Rails
+   (`load_defaults 8.1`), e a imagem oficial do Ruby já vem com ele. O jemalloc entra pelo
+   `LD_PRELOAD` do `Dockerfile.vercel`, como no Dockerfile padrão do Rails 8. O `/up/engine`
+   responde `yjit` e `jemalloc`, e a CI recusa a imagem que não tiver os dois.
 
 ## Região: medição do navegador, em São Paulo
 
@@ -136,6 +140,12 @@ gasta perto do dobro.
   Estados Unidos: o `/up` passou a p50 283 ms. Dentro do app, a engine em `gru1` deu ação
   fria p50 34,1 ms e p95 70,5 ms, e quente p50 2,3 ms e p95 5,9 ms (*Medição da engine*, 50
   chamadas, 07/11/2026). O p95 da fria subiu de 42 para 70 ms, ainda longe dos 300 ms.
+  Em 14/11/2026, antes do jemalloc: fria p50 29,9 ms e p95 47,9 ms, quente p50 1,5 ms e p95
+  4,6 ms.
+- **A primeira chamada depois de um tempo parado leva uns 4 s** (4,2 s em 14/11/2026): é o
+  container subindo. O boot do Rails leva menos de 1 s no teste local, e o resto é da
+  Vercel. Durante o duelo as chamadas seguidas mantêm a instância quente; quem abre o site
+  acorda o container logo na primeira tela, que já chama a API.
 - **Conexão com o Supabase (GXP-23):** o projeto está em `sa-east-1`. Host, porta, usuário e
   banco ficam nas variáveis da Vercel (porta 6543) e do repositório no GitHub (o workflow
   *Banco de produção* usa a porta 5432). A senha fica só em `DATABASE_PASSWORD`: em partes,
