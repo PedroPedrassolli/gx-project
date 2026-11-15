@@ -41,8 +41,8 @@ module Duel
         team:, lp: counts[:lp], deck: counts[:deck], extra: counts[:extra],
         hand: @engine.query_location(team, Query::HAND).map { |card| hand_card(card, mine) },
         monsters: @engine.query_location(team, Query::MONSTERS).first(5).map { |card| field_card(card, mine) },
-        spells: spells.first(5).map { |card| field_card(card, mine) },
-        field_spell: field_card(spells[5], mine),
+        spells: spells.first(5).map { |card| field_card(card, mine, monster: false) },
+        field_spell: field_card(spells[5], mine, monster: false),
         grave: @engine.query_location(team, Query::GRAVE).map { |card| { code: card[:code] } },
         banished: @engine.query_location(team, Query::BANISHED).map { |card| card[:public] || mine ? { code: card[:code] } : { hidden: true } },
         extra_cards: (@engine.query_location(team, Query::EXTRA).map { |card| { code: card[:code] } } if mine)
@@ -57,12 +57,13 @@ module Duel
       { code: card[:code], public: (true if mine && card[:public]) }.compact
     end
 
-    # Carta no campo: virada para baixo e do outro, só a posição (ataque ou defesa).
-    def field_card(card, mine)
+    # Carta no campo: virada para baixo e do outro, só a posição (ataque ou defesa). Magia e
+    # armadilha nunca ficam em defesa: a engine liga os dois bits na posição delas.
+    def field_card(card, mine, monster: true)
       return if card.nil?
 
       face_down = card[:position].anybits?(FACE_DOWN)
-      shown = { face_down:, defense: card[:position].anybits?(DEFENSE) }
+      shown = { face_down:, defense: monster && card[:position].anybits?(DEFENSE) }
       return shown if face_down && !mine
 
       shown.merge(code: card[:code], atk: card[:atk], def: card[:def])
