@@ -18,6 +18,7 @@ test("esqueci a senha: pede o link pelo e-mail, saindo do entrar", async ({ page
   await expect(page.getByRole("status")).toContainText(
     "mandamos um link para criar uma senha nova",
   );
+  await expect(page.getByRole("status")).toContainText("Procure por “GX Project” no spam");
 });
 
 test("senha nova: troca com o token do link", async ({ page }) => {

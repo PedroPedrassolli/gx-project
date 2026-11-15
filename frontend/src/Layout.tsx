@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { request, type User } from "./api.ts";
 import { useLogOut, useSession } from "./account/session.ts";
+import { SPAM_HINT } from "./account/spamHint.ts";
 import { SOURCE_URL } from "./legal/source.ts";
 import { markNavigation, usePageTitle } from "./pageTitle.ts";
 
@@ -154,7 +155,7 @@ function ConfirmEmailNotice({ user }: { user: User }) {
 
   return (
     <p className="notice" role="status">
-      Confirme seu e-mail: mandamos um link para <strong>{user.email}</strong>.{" "}
+      Confirme seu e-mail: mandamos um link para <strong>{user.email}</strong>. {SPAM_HINT}{" "}
       {resend.isSuccess ? (
         "Mandamos de novo."
       ) : (
