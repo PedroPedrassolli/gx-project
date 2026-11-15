@@ -9,9 +9,10 @@ import { useCatalog } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
 import { usePageTitle } from "../pageTitle.ts";
 import { useRealtime } from "../realtime/useRealtime.ts";
-import { matchKey, respond, useMatch, type MatchState } from "./api.ts";
+import { matchKey, respond, surrender, useMatch, type MatchState } from "./api.ts";
 import { Board } from "./Board.tsx";
 import { ChainStack, DuelLog } from "./DuelSide.tsx";
+import { DuelStatus } from "./DuelStatus.tsx";
 import { PromptPanel } from "./PromptPanel.tsx";
 
 // Mesa de duelo (escopo 4): a mesa vista pelo jogador, a vez de quem é e o detalhe da carta
@@ -43,6 +44,10 @@ export function DuelPage() {
     () => new Map(catalog.data?.packs.map((pack) => [pack.id, pack.name])),
     [catalog.data],
   );
+  const giveUp = useMutation({
+    mutationFn: () => surrender(id),
+    onSuccess: (data) => client.setQueryData(matchKey(id), data),
+  });
   // A mesa nova volta na própria resposta. Se a mesa mudou antes (409), busca de novo.
   const answer = useMutation({
     mutationFn: (response: Record<string, unknown>) => respond(id, match.data?.seq ?? 0, response),
@@ -95,10 +100,15 @@ export function DuelPage() {
         cards={cards}
         language={language}
         onCard={setSelected}
+        finished={state.status === "finished"}
       />
-      <p className="duel-status" role="status">
-        {status(state, names)}
-      </p>
+      <DuelStatus
+        state={state}
+        names={names}
+        surrendering={giveUp.isPending}
+        onSurrender={() => giveUp.mutate()}
+        onTimeUp={() => match.refetch()}
+      />
       {selectedCard ? (
         <CardPanel
           cardId={selectedCard.id}
@@ -148,13 +158,4 @@ export function DuelPage() {
       </div>
     </main>
   );
-}
-
-function status(state: MatchState, names: string[]) {
-  if (state.status === "finished") {
-    if (state.winner_team === null) return "Empate.";
-    return state.winner_team === state.you ? "Você venceu!" : `${names[state.winner_team]} venceu.`;
-  }
-  if (state.view.waiting_for === state.you) return "Sua vez.";
-  return `Vez de ${names[state.view.waiting_for ?? state.view.turn_team]}…`;
 }

@@ -115,9 +115,9 @@ test("mostra os dois lados da mesa, escondendo o que é do outro", async ({ page
 
   const mine = page.getByRole("region", { name: "Lado de JadenYuki" });
   await expect(mine.getByText("PV 6500")).toBeVisible();
-  await expect(mine.getByRole("button", { name: "Blue-Eyes White Dragon" })).toContainText(
-    "3000/2500",
-  );
+  await expect(
+    mine.getByRole("button", { name: "Blue-Eyes White Dragon, ATK 3000, DEF 2500" }),
+  ).toBeVisible();
   await expect(
     mine.getByRole("button", { name: "Renascer do Monstro, virada para baixo" }),
   ).toBeVisible();
@@ -147,6 +147,30 @@ test("sem tempo real, o fim do duelo aparece na próxima consulta", async ({ pag
   await expect(page.getByRole("status").filter({ hasText: "Você venceu!" })).toBeVisible({
     timeout: 5000,
   });
+  await expect(page.getByText("Turno 3, duelo encerrado")).toBeVisible();
+  await expect(
+    page.getByRole("list", { name: "Fases do turno" }).locator("[aria-current]"),
+  ).toHaveCount(0);
+});
+
+test("na mesa, o monstro mostra o ATK em ataque e o DEF em defesa", async ({ page }) => {
+  const match = await mockMatch(page);
+  const [mine, theirs] = STATE.view.sides;
+  const guard = { code: 46986414, face_down: false, defense: true, atk: 2500, def: 2100 };
+  const sides = [
+    { ...mine, monsters: [mine?.monsters[0] ?? null, guard, null, null, null] },
+    theirs,
+  ];
+  match.set({ ...STATE, view: { ...STATE.view, sides } });
+  await page.goto("/duelo/5");
+
+  const monsters = page.getByRole("list", { name: "Monstros de JadenYuki" });
+  await expect(
+    monsters.getByRole("button", { name: "Mago Negro, em defesa, ATK 2500, DEF 2100" }),
+  ).toBeVisible();
+  await expect(monsters.getByText("3000", { exact: true })).toBeVisible();
+  await expect(monsters.getByText("2100", { exact: true })).toBeVisible();
+  await expect(monsters.getByText("2500", { exact: true })).toHaveCount(0);
 });
 
 test("as pilhas abrem a lista: cemitério, banidas e o seu Extra", async ({ page }) => {
@@ -217,6 +241,73 @@ test("o histórico conta as jogadas e a corrente mostra os elos abertos", async 
   await expect(stack).toContainText("Special Summon 1 monster");
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
+});
+
+test("mostra quanto falta para responder e para o fim do duelo", async ({ page }) => {
+  const match = await mockMatch(page);
+  const now = Date.now();
+  match.set({
+    ...STATE,
+    deadline_at: new Date(now + 75_000).toISOString(),
+    ends_at: new Date(now + 50 * 60_000).toISOString(),
+  });
+  await page.goto("/duelo/5");
+
+  await expect(page.getByRole("timer").filter({ hasText: "Resposta" })).toHaveText(
+    /Resposta: 1:1\d/,
+  );
+  await expect(page.getByRole("timer").filter({ hasText: "Duelo" })).toHaveText(/Duelo: 49:5\d/);
+});
+
+test("desistir pede confirmação e mostra o resultado com a volta para a sala", async ({ page }) => {
+  await mockMatch(page);
+  const sent: string[] = [];
+  await page.route("**/api/matches/5/surrender", (route) => {
+    sent.push(route.request().method());
+    return route.fulfill({
+      json: {
+        data: {
+          ...STATE,
+          status: "finished",
+          winner_team: 1,
+          finish_reason: "surrender",
+          room_code: "ABC234",
+        },
+      },
+    });
+  });
+  await page.goto("/duelo/5");
+
+  await page.getByRole("button", { name: "Desistir" }).click();
+  const dialog = page.getByRole("dialog", { name: "Desistir do duelo?" });
+  await expect(dialog.getByRole("button", { name: "Continuar jogando" })).toBeFocused();
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
+  await dialog.getByRole("button", { name: "Continuar jogando" }).click();
+  await expect(dialog).toBeHidden();
+  expect(sent).toEqual([]);
+
+  await page.getByRole("button", { name: "Desistir" }).click();
+  await dialog.getByRole("button", { name: "Desistir" }).click();
+  await expect(page.getByRole("heading", { name: "Syrus venceu." })).toBeVisible();
+  await expect(page.getByText("Você desistiu.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Voltar para a sala" })).toHaveAttribute(
+    "href",
+    "/salas/ABC234",
+  );
+  expect(sent).toEqual(["POST"]);
+});
+
+test("com o prazo vencido, a tela consulta e mostra quem venceu por tempo", async ({ page }) => {
+  const match = await mockMatch(page);
+  match.set({ ...STATE, deadline_at: new Date(Date.now() + 1_500).toISOString() });
+  await page.goto("/duelo/5");
+  await expect(page.getByRole("timer").filter({ hasText: "Resposta" })).toBeVisible();
+
+  match.set({ ...STATE, status: "finished", winner_team: 0, finish_reason: "timeout" });
+  await expect(page.getByRole("heading", { name: "Você venceu!" })).toBeVisible({ timeout: 5000 });
+  await expect(page.getByText("Syrus deixou o tempo acabar.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Ver as salas" })).toBeVisible();
 });
 
 // A vez é do jogador: a mesa traz a pergunta e o servidor responde com a mesa nova.

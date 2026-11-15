@@ -66,6 +66,13 @@ export type MatchState = {
   id: number;
   status: "dueling" | "finished";
   winner_team: number | null;
+  // Por que acabou: o próprio duelo, desistência, tempo da resposta ou limite do duelo.
+  finish_reason?: "duel" | "surrender" | "timeout" | "time_limit" | null;
+  room_code?: string | null;
+  // O relógio (escopo 3.7): até quando a pergunta da vez vale, o banco do turno e o fim.
+  deadline_at?: string | null;
+  turn_time_left?: number;
+  ends_at?: string;
   seq: number;
   you: number;
   players: { team: number; nickname: string }[];
@@ -80,11 +87,19 @@ export function useMatch(id: string, mode: RealtimeMode, enabled: boolean) {
   return useQuery({
     queryKey: matchKey(id),
     queryFn: async () => (await request<{ data: MatchState }>("GET", `/api/matches/${id}`)).data,
-    refetchInterval: mode === "live" ? 10_000 : POLL_MS,
+    // Com o prazo vencido, consulta logo: é a consulta que encerra a partida no servidor.
+    refetchInterval: (query) => {
+      const deadline = query.state.data?.deadline_at;
+      if (deadline && Date.parse(deadline) < Date.now()) return POLL_MS;
+      return mode === "live" ? 10_000 : POLL_MS;
+    },
     retry: false,
     enabled,
   });
 }
+
+export const surrender = async (id: string) =>
+  (await request<{ data: MatchState }>("POST", `/api/matches/${id}/surrender`)).data;
 
 export const respond = async (id: string, seq: number, response: Record<string, unknown>) =>
   (await request<{ data: MatchState }>("POST", `/api/matches/${id}/responses`, { seq, response }))

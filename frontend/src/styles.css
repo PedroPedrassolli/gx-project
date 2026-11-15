@@ -1344,7 +1344,7 @@ input[type="file"]::file-selector-button {
     grid-area: board;
   }
 
-  .duel-page > .duel-status {
+  .duel-page > .duel-status-area {
     grid-area: status;
   }
 
@@ -1458,6 +1458,7 @@ input[type="file"]::file-selector-button {
 }
 
 .zone {
+  position: relative;
   display: grid;
   place-items: center;
   width: var(--zone);
@@ -1515,13 +1516,9 @@ button.pile {
   object-fit: cover;
 }
 
-/* Defesa: a carta deitada; o ATK/DEF gira de volta para ficar legível. */
+/* Defesa: a carta deitada. */
 .card.defense {
   transform: rotate(90deg);
-}
-
-.card.defense .card-stats {
-  transform: rotate(-90deg);
 }
 
 /* Virada para baixo, mas sua: aparece escurecida. Do outro: o verso, desenho próprio. */
@@ -1540,14 +1537,23 @@ button.pile {
   background: repeating-linear-gradient(45deg, #1d2d57 0 5px, #121c36 5px 10px);
 }
 
+/* O número da posição numa faixa no pé da zona (a largura toda, a carta deitada não corta). */
 .card-stats {
   position: absolute;
   inset-inline: 0;
   bottom: 0;
+  border-radius: 0 0 6px 6px;
   background: rgb(11 19 36 / 0.85);
   color: var(--color-text);
+  font-size: 0.625rem;
   font-variant-numeric: lining-nums tabular-nums;
+  line-height: 1.4;
   text-align: center;
+  pointer-events: none;
+}
+
+.card-stats.def {
+  color: #9cc3ef;
 }
 
 .card-name {
@@ -1684,8 +1690,70 @@ button.pile {
   color: var(--color-bg);
 }
 
-.duel-status {
+/* A situação embaixo da mesa: a vez, o relógio, o "Desistir" e, no fim, o resultado. */
+.duel-status-area {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: center;
   margin: 1rem 0;
+}
+
+.duel-status-area p {
+  margin: 0;
+}
+
+.duel-timers {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  color: var(--color-muted);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.duel-timers .urgent {
+  color: #f2a091;
+  font-weight: 600;
+}
+
+.duel-result {
+  padding: 1rem;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  text-align: center;
+}
+
+.duel-result h2 {
+  margin: 0;
+}
+
+.duel-result .duel-status p {
+  font-family: var(--font-text);
+  font-size: 1rem;
+  color: var(--color-muted);
+}
+
+button.secondary {
+  border-color: var(--color-border);
+  background: transparent;
+  color: var(--color-muted);
+}
+
+button.danger {
+  border-color: #c96a5c;
+  color: #f2b8ad;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin: 1rem 0 0;
+}
+
+.duel-status {
+  margin: 0;
   font-family: var(--font-title);
   font-size: 1.25rem;
   text-align: center;
@@ -1791,9 +1859,9 @@ button.pile {
   border: 0;
 }
 
+/* Uma coluna só: em grade, um grupo com uma escolha deixava um buraco do lado. */
 .prompt-panel .actions {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
   gap: 0.5rem;
   margin: 0 0 0.5rem;
 }
