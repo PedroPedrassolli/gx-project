@@ -1,32 +1,63 @@
+import type { ReactNode } from "react";
+import { Link } from "react-router";
+import { useSession } from "./account/session.ts";
 import { currentPhase, PHASES } from "./roadmap.ts";
 import { usePageTitle } from "./pageTitle.ts";
 
+// Página inicial: a mesa. Os atalhos têm a forma de uma carta, cada um com a cor de
+// moldura de um tipo de carta, e o andamento do projeto aparece como as fases de um turno.
 export function App() {
   usePageTitle();
+  const session = useSession();
+  const user = session.data?.user;
   const phase = currentPhase(PHASES);
 
   return (
-    <main className="page">
+    <main className="page home">
       <header>
-        <p className="eyebrow">Projeto de fã, sem fins lucrativos</p>
         <h1>GX Project</h1>
-        <p className="lead">
-          Duelos de cartas online, em tempo real, com amigos ou com quem estiver na fila.
-        </p>
+        <p className="lead">Monte seu deck com as cartas da era GX e duele online com os amigos.</p>
+        {session.isSuccess && !user && (
+          <p className="actions">
+            <Link className="cta" to="/cadastro">
+              Criar conta
+            </Link>
+            <Link className="cta secondary" to="/entrar">
+              Entrar
+            </Link>
+          </p>
+        )}
       </header>
 
-      <p>
-        <a className="cta" href="/cartas">
-          Ver o catálogo de cartas
-        </a>
-      </p>
+      <ul className="table-menu" aria-label="Atalhos">
+        <MenuCard title="Duelo" frame="effect" art={<DuelArt />}>
+          Em breve: uma sala com código para chamar um amigo.
+        </MenuCard>
+        {user && (
+          <MenuCard title="Decks" to="/decks" frame="spell" art={<DeckArt />}>
+            Monte, confira e importe os seus decks.
+          </MenuCard>
+        )}
+        <MenuCard title="Cartas" to="/cartas" frame="normal" art={<CardsArt />}>
+          Todas as cartas do jogo, com busca e texto em português.
+        </MenuCard>
+        {user && (
+          <MenuCard title="Coleção" to="/colecao" frame="fusion" art={<CollectionArt />}>
+            Quanto você já tem de cada pacote.
+          </MenuCard>
+        )}
+      </ul>
 
-      <section aria-labelledby="status-title">
-        <h2 id="status-title">Em construção</h2>
+      <section aria-labelledby="status-title" className="roadmap">
+        <h2 id="status-title">Andamento</h2>
         <p>{phase ? `Fase atual: ${phase.code}, ${phase.name}.` : "Todas as fases terminaram."}</p>
         <ol className="phases">
           {PHASES.map((item) => (
-            <li key={item.code} aria-current={item === phase ? "step" : undefined}>
+            <li
+              key={item.code}
+              className={item.done ? "done" : undefined}
+              aria-current={item === phase ? "step" : undefined}
+            >
               <span className="code">{item.code}</span> {item.name}
             </li>
           ))}
@@ -35,3 +66,62 @@ export function App() {
     </main>
   );
 }
+
+// Um atalho em forma de carta: nome em cima, ilustração no meio e o texto embaixo. Sem
+// "to", é algo que ainda não existe (aparece apagado, com "Em breve" no texto).
+function MenuCard(props: {
+  title: string;
+  to?: string;
+  frame: string;
+  art: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <li className={`menu-card frame-${props.frame}${props.to ? "" : " soon"}`}>
+      <h2>{props.to ? <Link to={props.to}>{props.title}</Link> : props.title}</h2>
+      <div className="menu-art">{props.art}</div>
+      <p>{props.children}</p>
+    </li>
+  );
+}
+
+// Ilustrações dos atalhos: traços simples, desenho próprio.
+function Art({ children }: { children: ReactNode }) {
+  return (
+    <svg viewBox="0 0 48 48" aria-hidden="true">
+      {children}
+    </svg>
+  );
+}
+
+const DuelArt = () => (
+  <Art>
+    <rect x="9" y="10" width="15" height="22" rx="2" transform="rotate(-18 16 21)" />
+    <rect x="24" y="10" width="15" height="22" rx="2" transform="rotate(18 31 21)" />
+    <path d="M17 40h14" />
+  </Art>
+);
+
+const DeckArt = () => (
+  <Art>
+    <rect x="13" y="14" width="18" height="26" rx="2" />
+    <path d="M17 10h18v26M21 6h18v26" />
+  </Art>
+);
+
+const CardsArt = () => (
+  <Art>
+    <rect x="8" y="8" width="20" height="29" rx="2" />
+    <circle cx="31" cy="30" r="7" />
+    <path d="m36 35 6 6" />
+  </Art>
+);
+
+const CollectionArt = () => (
+  <Art>
+    <rect x="8" y="7" width="14" height="16" rx="2" />
+    <rect x="26" y="7" width="14" height="16" rx="2" />
+    <rect x="8" y="27" width="14" height="16" rx="2" />
+    <rect x="26" y="27" width="14" height="16" rx="2" />
+  </Art>
+);

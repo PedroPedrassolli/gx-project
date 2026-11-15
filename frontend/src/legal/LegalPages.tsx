@@ -1,12 +1,11 @@
 import { Link } from "react-router";
 import { usePageTitle } from "../pageTitle.ts";
+import { SOURCE_URL } from "./source.ts";
 
 // Termos de uso e política de privacidade (GXP-40), aprovados pelo Pedro em 08/11/2026.
 // Mudou o texto? Troque a data da versão e avise no site, como os próprios textos prometem.
 export const LEGAL_VERSION = "08/11/2026";
 export const CONTACT_EMAIL = "pedropedrassolli@outlook.com";
-// A AGPL pede que quem usa o site pela rede consiga baixar o código-fonte.
-export const SOURCE_URL = "https://github.com/PedroPedrassolli/gx-project";
 
 // O que guardamos de cada jogador e para quê (precisa bater com o Accounts::DataExport).
 const STORED_DATA = [
