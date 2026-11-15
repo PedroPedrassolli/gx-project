@@ -68,6 +68,10 @@ class Api::RoomsController < Api::BaseController
       return render_error(:unprocessable_content, "Este deck não vale nesta sala.", { deck: validator.errors }) unless validator.valid?
 
       player.update!(deck:, ready: true)
+      # O último a ficar pronto começa o duelo: quem estava na sala vai para a partida.
+      if (match = Matches::Start.new(@room).call)
+        publish(match.players.map(&:user_id), "match.started") { { code: @room.code, match_id: match.id } }
+      end
     else
       player.update!(ready: false)
     end
@@ -148,7 +152,9 @@ class Api::RoomsController < Api::BaseController
       { seat: player.seat, user_id: player.user_id, nickname: player.user.nickname, ready: player.ready,
         deck_chosen: player.deck_id.present?, deck_id: (player.deck_id if player.user_id == viewer_id) }.compact
     end
+    # Em duelo, a sala diz qual é a partida (quem recarregar a página vai para ela).
+    match_id = room.matches.where(status: "dueling").pick(:id) unless room.waiting?
     room.slice(:code, :public, :mode, :best_of, :banlist, :destiny_draw, :status, :owner_id)
-        .merge(seats: room.seats, players:)
+        .merge(seats: room.seats, players:, match_id:).compact
   end
 end

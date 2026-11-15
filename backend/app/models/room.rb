@@ -11,6 +11,8 @@ class Room < ApplicationRecord
 
   belongs_to :owner, class_name: "User"
   has_many :players, -> { order(:seat) }, class_name: "RoomPlayer", inverse_of: :room, dependent: :delete_all
+  # A partida fica quando a sala some (o banco tira a sala dela).
+  has_many :matches, dependent: nil
 
   scope :listed, -> { where(public: true, status: "waiting", updated_at: LISTED_FOR.ago..) }
 
