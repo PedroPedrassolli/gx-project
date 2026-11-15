@@ -31,6 +31,25 @@ export type Side = {
 
 export type Prompt = { type: string; player: number } & Record<string, unknown>;
 
+// O que aconteceu no duelo (Duel::Events), numerado, sem o que este lado não vê.
+export type Place = {
+  controller: number;
+  location: number;
+  sequence: number;
+  position: number;
+  code?: number;
+};
+export type DuelEvent = { id: number; type: string } & Record<string, unknown>;
+
+// Um elo da corrente aberta, com o texto do efeito quando a carta tem.
+export type ChainLink = Place & {
+  code: number;
+  link: number;
+  description?: number;
+  text?: string | null;
+  negated?: boolean;
+};
+
 export type View = {
   you: number;
   turn: number;
@@ -39,6 +58,8 @@ export type View = {
   sides: [Side, Side];
   waiting_for?: number;
   prompt?: Prompt;
+  events?: DuelEvent[];
+  chain?: ChainLink[];
 };
 
 export type MatchState = {

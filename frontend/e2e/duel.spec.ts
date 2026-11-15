@@ -89,7 +89,7 @@ async function mockMatch(page: Page) {
     }),
   );
   await page.route("**/api/matches/5", (route) => route.fulfill({ json: { data: current } }));
-  return { set: (next: typeof STATE) => (current = next) };
+  return { set: (next: unknown) => (current = next as typeof STATE) };
 }
 
 test.beforeEach(async ({ page }) => mockSession(page, { loggedIn: true }));
@@ -147,6 +147,43 @@ test("sem tempo real, o fim do duelo aparece na próxima consulta", async ({ pag
   await expect(page.getByRole("status").filter({ hasText: "Você venceu!" })).toBeVisible({
     timeout: 5000,
   });
+});
+
+test("o histórico conta as jogadas e a corrente mostra os elos abertos", async ({ page }) => {
+  const match = await mockMatch(page);
+  const spell = { code: 83764718, controller: 0, location: 8, sequence: 0, position: 1 };
+  const events = [
+    { id: 7, type: "turn", team: 1 },
+    { id: 8, type: "phase", phase: 0x10 },
+    {
+      id: 9,
+      type: "summon",
+      kind: "normal",
+      code: 89631139,
+      controller: 1,
+      location: 4,
+      sequence: 1,
+      position: 1,
+    },
+    { id: 10, type: "chain", ...spell, link: 1, description: 1 },
+  ];
+  const chain = [
+    { ...spell, link: 1, description: 1, text: "Special Summon 1 monster", negated: true },
+  ];
+  match.set({ ...STATE, view: { ...STATE.view, events, chain } });
+  await page.goto("/duelo/5");
+
+  await expect(page.getByRole("region", { name: "Histórico" }).getByRole("listitem")).toHaveText([
+    "Novo turno: vez de Syrus.",
+    "Syrus invocou Blue-Eyes White Dragon.",
+    "Elo 1: você ativou Renascer do Monstro.",
+  ]);
+  const stack = page.getByRole("region", { name: "Corrente" });
+  await expect(stack.getByRole("listitem")).toContainText("Renascer do Monstro, sua");
+  await expect(stack).toContainText("negado");
+  await expect(stack).toContainText("Special Summon 1 monster");
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
 });
 
 // A vez é do jogador: a mesa traz a pergunta e o servidor responde com a mesa nova.
