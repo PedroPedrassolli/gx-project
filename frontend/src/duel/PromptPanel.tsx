@@ -1,54 +1,12 @@
 import type { ReactNode } from "react";
-import { displayName, type CardSummary, type Language } from "../catalog/cards.ts";
 import type { Prompt } from "./api.ts";
+import { CardChoice } from "./CardChoice.tsx";
+import { hintText } from "./hints.ts";
+import { cardLabel, Choice, list, type PromptCard, type PromptProps } from "./promptParts.tsx";
 
 // As perguntas da engine para o jogador (escopo 4, "Prompts do duelo"): cada tipo vira um
 // formulário com botões, que manda a escolha em JSON (o servidor monta os bytes).
-type Answer = (response: Record<string, unknown>) => void;
-
-export type PromptCard = {
-  code: number;
-  controller: number;
-  location: number;
-  sequence: number;
-  description?: number;
-  text?: string | null;
-};
-
-type Props = {
-  prompt: Prompt;
-  you: number;
-  cards: Map<number, CardSummary>;
-  language: Language;
-  pending: boolean;
-  onAnswer: Answer;
-};
-
-const LOCATIONS: Record<number, string> = {
-  1: "deck",
-  2: "mão",
-  4: "campo",
-  8: "campo",
-  16: "cemitério",
-  32: "banidas",
-  64: "Extra",
-};
-
-// "Mago Negro (mão)" ou "Carta escondida (mão do oponente)".
-export function cardLabel(card: PromptCard, props: Pick<Props, "you" | "cards" | "language">) {
-  const data = props.cards.get(card.code);
-  const name =
-    card.code === 0
-      ? "Carta escondida"
-      : data
-        ? displayName(data, props.language)
-        : `Carta ${card.code}`;
-  const place = LOCATIONS[card.location];
-  if (!place) return name;
-  return `${name} (${place}${card.controller === props.you ? "" : " do oponente"})`;
-}
-
-const list = (prompt: Prompt, key: string) => (prompt[key] as PromptCard[] | undefined) ?? [];
+type Props = PromptProps;
 
 const IDLE: [string, string, string][] = [
   ["summonable", "summon", "Invocar"],
@@ -102,9 +60,11 @@ function title(prompt: Prompt, props: Props) {
     case "select_option":
       return "Escolha uma opção";
     case "select_position":
-      return "Em que posição?";
+      return hintText(prompt) ?? "Em que posição?";
+    case "select_card":
+      return hintText(prompt) ?? "Escolha as cartas";
     default:
-      return "Sua vez";
+      return hintText(prompt) ?? "Sua vez";
   }
 }
 
@@ -190,6 +150,8 @@ function body(props: Props): ReactNode {
           )}
         </p>
       );
+    case "select_card":
+      return <CardChoice {...props} />;
     default:
       return <p>Esta pergunta ainda não tem tela.</p>;
   }
@@ -216,14 +178,5 @@ function Commands(props: Props & { groups: [string, string, string][] }) {
         );
       })}
     </>
-  );
-}
-
-function Choice(props: { label: string; detail?: string | null; onClick: () => void }) {
-  return (
-    <button type="button" onClick={props.onClick}>
-      {props.label}
-      {props.detail && <span className="choice-detail">{props.detail}</span>}
-    </button>
   );
 }

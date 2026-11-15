@@ -1478,6 +1478,48 @@ input[type="file"]::file-selector-button {
   font-size: 0.8125rem;
 }
 
+/* Lista de cartas para marcar: a carta marcada ganha a moldura dourada. A caixa continua a
+   nativa (accent-color do :root); o destaque pelo :has() é só enfeite. */
+.picks {
+  display: grid;
+  gap: 0.375rem;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.picks label {
+  --pick-border: var(--color-border);
+  --pick-bg: transparent;
+
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--pick-border);
+  border-radius: var(--radius);
+  background: var(--pick-bg);
+  cursor: pointer;
+}
+
+.picks label:has(input:checked) {
+  --pick-border: var(--color-accent);
+  --pick-bg: rgb(216 184 104 / 0.12);
+}
+
+.picks input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+}
+
+.pick-count {
+  margin: 0 0 0.5rem;
+  color: var(--color-muted);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
 .duel-error {
   text-align: center;
 }
