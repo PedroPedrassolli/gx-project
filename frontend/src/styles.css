@@ -871,6 +871,18 @@ img[hidden] {
   height: 0.4rem;
 }
 
+/* O botão de escolher arquivo (importar deck) no estilo do botão secundário. */
+input[type="file"]::file-selector-button {
+  margin-right: 0.75rem;
+  padding: 0.35rem 0.8rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-accent);
+  font: inherit;
+  cursor: pointer;
+}
+
 /* Lista de decks. */
 .deck-list {
   display: grid;
@@ -887,6 +899,28 @@ img[hidden] {
   padding: 0.75rem 1rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.deck-list a {
+  font-family: var(--font-title);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+/* Quantas cartas em cada seção, em fichas pequenas. */
+.deck-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.deck-counts span {
+  padding: 0 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
 }
 
 /* Deck Edit. */
@@ -900,15 +934,26 @@ img[hidden] {
   align-content: start;
 }
 
+/* Main, Extra e Side: três abas do mesmo tamanho; a aberta fica dourada, como o botão
+   principal. */
 .sections {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.sections button {
+  padding-inline: 0.3rem;
+  font-family: var(--font-title);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.25;
 }
 
 .sections button[aria-pressed="true"] {
   border-color: var(--color-accent);
-  color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-bg);
 }
 
 .deck-rows {
@@ -919,16 +964,21 @@ img[hidden] {
   list-style: none;
 }
 
+/* Cada linha do deck com a cor da moldura da carta na beirada, como a aba de uma capa. */
 .deck-rows li {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
+  padding: 0.3rem 0.4rem 0.3rem 0.6rem;
+  border-left: 4px solid var(--frame, var(--color-field-border));
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--frame, transparent) 9%, var(--color-surface));
 }
 
+/* O nome numa linha e os botões embaixo: o painel do deck é estreito até na tela larga. */
 .row-name {
-  flex: 1 1 6rem;
-  min-width: 6rem;
+  flex: 1 1 100%;
 }
 
 .deck-rows button {
@@ -937,12 +987,19 @@ img[hidden] {
 
 .deck-errors {
   margin: 0;
+  padding: 0.5rem 0.75rem 0.5rem 1.75rem;
+  border: 1px solid #ff9d9d;
+  border-radius: 6px;
   color: #ff9d9d;
 }
 
 .ok {
   margin: 0;
   color: #8fe3b0;
+}
+
+.ok::before {
+  content: "✓ ";
 }
 
 .deck-actions {
