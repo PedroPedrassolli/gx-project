@@ -95,6 +95,51 @@ class Api::RoomsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ "room.closed", { code: room.code } ], [ events(syrus).last.name, events(syrus).last.data ]
   end
 
+  describe "pronto" do
+    include StarterDeckCards
+
+    before { load_starter_deck_cards }
+
+    it "fica pronto com um deck válido, e o outro só vê que escolheu" do
+      room = room_for(jaden)
+      room.players.create!(user: syrus, seat: 1)
+      Decks::StarterDeck.give_to(jaden)
+      deck = jaden.decks.sole
+      session = session_for(jaden)
+      session.post ready_api_room_path(room.code), params: { deck_id: deck.id, ready: true }, as: :json
+
+      assert_equal [ 200, true, deck.id ], [ session.response.status, *session.response.parsed_body.dig("data", "players", 0).values_at("ready", "deck_id") ]
+      assert_equal [ true, true, nil ], events(syrus).last.data[:players].first.values_at(:ready, :deck_chosen, :deck_id)
+    end
+
+    it "recusa deck incompleto e deck de outro jogador, e deixa de ficar pronto" do
+      room = room_for(jaden)
+      session = session_for(jaden)
+      session.post ready_api_room_path(room.code), params: { deck_id: jaden.decks.create!(name: "Vazio").id, ready: true }, as: :json
+      assert_equal [ 422, "Este deck não vale nesta sala." ], [ session.response.status, session.response.parsed_body.dig("error", "message") ]
+      assert_not_empty session.response.parsed_body.dig("error", "fields", "deck")
+
+      session.post ready_api_room_path(room.code), params: { deck_id: syrus.decks.create!(name: "Roid").id, ready: true }, as: :json
+      assert_equal 404, session.response.status
+
+      room.players.first.update!(ready: true)
+      session.post ready_api_room_path(room.code), params: { ready: false }, as: :json
+      assert_equal false, room.players.first.reload.ready
+    end
+  end
+
+  it "o dono tira alguém da sala; os outros não podem" do
+    room = room_for(jaden)
+    room.players.create!(user: syrus, seat: 1)
+    guest = session_for(syrus)
+    guest.post kick_api_room_path(room.code), params: { user_id: jaden.id }, as: :json
+    assert_equal 403, guest.response.status
+
+    session_for(jaden).post kick_api_room_path(room.code), params: { user_id: syrus.id }, as: :json
+    assert_equal [ jaden.id ], room.players.reload.map(&:user_id)
+    assert_equal [ "room.kicked", { code: room.code } ], [ events(syrus).last.name, events(syrus).last.data ]
+  end
+
   it "sala em duelo não aceita entrada, e quem duela não troca de sala" do
     room = room_for(jaden, status: "dueling")
     guest = session_for(syrus)

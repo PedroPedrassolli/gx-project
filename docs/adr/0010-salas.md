@@ -27,8 +27,11 @@ jogadores enquanto a partida não começa.
 5. **A lista mostra as salas públicas que esperam gente e mexeram na última hora**
    (`Room::LISTED_FOR`): entrar, sair ou ficar pronto atualiza a sala (`touch`).
 6. **O deck escolhido só aparece para o dono dele.** Os outros veem se já escolheu e se está
-   pronto.
-7. **Tempo real:** cada mudança manda `room.updated` para cada jogador, com a sala vista por
+   pronto. Para ficar pronto, o deck precisa valer com as regras da sala: a banlist do jogo
+   ou nenhuma (`Decks::Validator.for(deck, banlist:)`), além da coleção do jogador.
+7. **Só o dono tira alguém da sala**, antes de o duelo começar; quem saiu recebe
+   `room.kicked`.
+8. **Tempo real:** cada mudança manda `room.updated` para cada jogador, com a sala vista por
    ele. Se o Ably falhar, o pedido segue: o front também consulta `GET /api/rooms/:code`.
 
 ## Consequências

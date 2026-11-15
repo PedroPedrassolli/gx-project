@@ -3,7 +3,7 @@
 # consulta GET /api/rooms/:code.
 class Api::RoomsController < Api::BaseController
   before_action :require_authentication
-  before_action :set_room, only: %i[join leave]
+  before_action :set_room, only: %i[join leave ready kick]
 
   # GET /api/rooms: as salas públicas esperando gente, as mais novas primeiro.
   def index
@@ -53,6 +53,35 @@ class Api::RoomsController < Api::BaseController
   def leave
     player = @room.players.find_by!(user: current_user)
     remove(player)
+    head :no_content
+  end
+
+  # POST /api/rooms/:code/ready: escolhe o deck e fica pronto (ou deixa de ficar). O deck
+  # precisa valer com as regras da sala.
+  def ready
+    player = @room.players.find_by!(user: current_user)
+    return render_error(:unprocessable_content, "Esta sala já está em duelo.") unless @room.waiting?
+
+    if ActiveModel::Type::Boolean.new.cast(params[:ready])
+      deck = current_user.decks.find(params[:deck_id].to_s)
+      validator = Decks::Validator.for(deck, banlist: @room.banlist)
+      return render_error(:unprocessable_content, "Este deck não vale nesta sala.", { deck: validator.errors }) unless validator.valid?
+
+      player.update!(deck:, ready: true)
+    else
+      player.update!(ready: false)
+    end
+    render json: { data: room_json(broadcast_update(@room.id), current_user.id) }
+  end
+
+  # POST /api/rooms/:code/kick: o dono tira alguém da sala antes de começar.
+  def kick
+    return render_error(:forbidden, "Só quem criou a sala pode tirar alguém.") unless @room.owner_id == current_user.id
+    return render_error(:unprocessable_content, "Esta sala já está em duelo.") unless @room.waiting?
+
+    player = @room.players.where.not(user: current_user).find_by!(user_id: params[:user_id].to_s)
+    remove(player)
+    publish([ player.user_id ], "room.kicked") { { code: @room.code } }
     head :no_content
   end
 
