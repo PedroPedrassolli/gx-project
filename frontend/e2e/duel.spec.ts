@@ -148,3 +148,107 @@ test("sem tempo real, o fim do duelo aparece na próxima consulta", async ({ pag
     timeout: 5000,
   });
 });
+
+// A vez é do jogador: a mesa traz a pergunta e o servidor responde com a mesa nova.
+async function mockPrompt(page: Page, prompt: Record<string, unknown>, reply = { status: 200 }) {
+  const sent: unknown[] = [];
+  const mine = { ...STATE, view: { ...STATE.view, turn_team: 0, waiting_for: 0, prompt } };
+  await mockMatch(page);
+  await page.route("**/api/matches/5", (route) => route.fulfill({ json: { data: mine } }));
+  await page.route("**/api/matches/5/responses", (route) => {
+    sent.push(route.request().postDataJSON());
+    if (reply.status !== 200) {
+      return route.fulfill({
+        status: reply.status,
+        json: { error: { status: reply.status, message: "Essa jogada não vale agora." } },
+      });
+    }
+    return route.fulfill({ json: { data: { ...STATE, seq: 4 } } });
+  });
+  return sent;
+}
+
+const IDLE = {
+  type: "select_idlecmd",
+  player: 0,
+  summonable: [{ code: 46986414, controller: 0, location: 2, sequence: 0 }],
+  spsummonable: [],
+  repositionable: [],
+  msetable: [],
+  ssetable: [],
+  activatable: [
+    {
+      code: 83764718,
+      controller: 0,
+      location: 2,
+      sequence: 1,
+      description: 1,
+      text: "Special Summon 1 monster",
+    },
+  ],
+  to_bp: true,
+  to_ep: true,
+};
+
+test("na fase principal, a escolha vai para o servidor e a mesa nova aparece", async ({ page }) => {
+  const sent = await mockPrompt(page, IDLE);
+  await page.goto("/duelo/5");
+
+  const panel = page.getByRole("region", { name: "Fase principal: o que fazer?" });
+  await expect(
+    panel.getByRole("button", { name: "Ativar Renascer do Monstro (mão)" }),
+  ).toContainText("Special Summon 1 monster");
+  await expect(panel.getByRole("button", { name: "Encerrar o turno" })).toBeVisible();
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
+
+  await panel.getByRole("button", { name: "Invocar Mago Negro (mão)" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Vez de Syrus" })).toBeVisible();
+  expect(sent).toEqual([{ seq: 3, response: { command: "summon", index: 0 } }]);
+});
+
+test("jogada que o servidor recusa mostra o aviso", async ({ page }) => {
+  await mockPrompt(page, IDLE, { status: 422 });
+  await page.goto("/duelo/5");
+  await page.getByRole("button", { name: "Encerrar o turno" }).click();
+
+  await expect(page.getByRole("alert")).toHaveText("Essa jogada não vale agora.");
+});
+
+test("cadeia, sim ou não e posição mandam a escolha certa", async ({ page }) => {
+  const chain = await mockPrompt(page, {
+    type: "select_chain",
+    player: 0,
+    forced: false,
+    chains: [
+      { code: 83764718, controller: 0, location: 8, sequence: 0, description: 1, text: null },
+    ],
+  });
+  await page.goto("/duelo/5");
+  await page.getByRole("button", { name: "Não encadear" }).click();
+  expect(chain).toEqual([{ seq: 3, response: { index: -1 } }]);
+
+  const yesNo = await mockPrompt(page, {
+    type: "select_yesno",
+    player: 0,
+    description: 9,
+    text: "Usar o Destiny Draw?",
+  });
+  await page.goto("/duelo/5");
+  await page
+    .getByRole("region", { name: "Usar o Destiny Draw?" })
+    .getByRole("button", { name: "Sim" })
+    .click();
+  expect(yesNo).toEqual([{ seq: 3, response: { yes: true } }]);
+
+  const position = await mockPrompt(page, {
+    type: "select_position",
+    player: 0,
+    code: 46986414,
+    positions: 0x1 | 0x8,
+  });
+  await page.goto("/duelo/5");
+  await expect(page.getByRole("button", { name: "Ataque, com a face para baixo" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Defesa, com a face para baixo" }).click();
+  expect(position).toEqual([{ seq: 3, response: { position: 8 } }]);
+});
