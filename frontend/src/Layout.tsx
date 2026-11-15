@@ -32,6 +32,7 @@ export function Layout() {
           <NavLink to="/cartas">Cartas</NavLink>
           {user && <NavLink to="/colecao">Coleção</NavLink>}
           {user && <NavLink to="/decks">Decks</NavLink>}
+          {user && <NavLink to="/salas">Duelo</NavLink>}
         </span>
         <span className="account">
           {user && (

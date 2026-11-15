@@ -30,8 +30,8 @@ export function App() {
       </header>
 
       <ul className="table-menu" aria-label="Atalhos">
-        <MenuCard title="Duelo" frame="effect" art={<DuelArt />}>
-          Em breve: uma sala com código para chamar um amigo.
+        <MenuCard title="Duelo" to="/salas" frame="effect" art={<DuelArt />}>
+          Crie uma sala e mande o código para um amigo duelar com você.
         </MenuCard>
         {user && (
           <MenuCard title="Decks" to="/decks" frame="spell" art={<DeckArt />}>

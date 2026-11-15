@@ -704,8 +704,8 @@ img[hidden] {
 
 /* Barra do topo: a marca, o menu (a página atual sublinhada em dourado) e a conta. O fundo
    ocupa a largura toda; o conteúdo fica alinhado com o das páginas largas (72rem). No
-   celular, duas linhas fixas: a marca e a conta em cima, o menu embaixo em colunas iguais;
-   a partir de 48rem, tudo numa linha. */
+   celular, duas linhas fixas: a marca e a conta em cima, o menu embaixo; a partir de 48rem,
+   tudo numa linha. */
 .topbar,
 .notice {
   padding-inline: max(var(--gutter), calc((100% - 72rem) / 2 + var(--gutter)));
@@ -736,16 +736,17 @@ img[hidden] {
   grid-area: brand;
 }
 
+/* No celular, o primeiro item alinha com a marca e o último com a conta, com o mesmo
+   espaço entre todos (em colunas iguais, as distâncias entre as palavras variavam). */
 .topbar-links {
   display: grid;
   grid-area: links;
-  grid-auto-columns: 1fr;
   grid-auto-flow: column;
+  justify-content: space-between;
   gap: 0.5rem;
-  text-align: center;
 
   @media (width >= 48rem) {
-    grid-auto-columns: auto;
+    justify-content: start;
     gap: 1.25rem;
   }
 }
