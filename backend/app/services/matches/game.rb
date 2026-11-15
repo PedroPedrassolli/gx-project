@@ -6,6 +6,8 @@ module Matches
   class Game
     # "Não encadear" (-1), a resposta da cadeia sem opção.
     PASS = [ -1 ].pack("l<")
+    # Quantos eventos a partida guarda para o log da mesa (GXP-65).
+    MAX_EVENTS = 50
 
     def initialize(match)
       @match = match
@@ -34,7 +36,8 @@ module Matches
     # A mesa vista por um time (Duel::View), com o que a partida guardou.
     def view(team)
       state = @match.slice(:turn, :turn_team, :phase, :prompt_team).symbolize_keys
-      @session.with_engine { |engine| Duel::View.new(engine, team).to_h(**state, prompt: @match.prompt&.deep_symbolize_keys) }
+      state.merge!(prompt: @match.prompt&.deep_symbolize_keys, events: events, chain: chain)
+      @session.with_engine { |engine| Duel::View.new(engine, team).to_h(**state) }
     end
 
     private
@@ -57,6 +60,7 @@ module Matches
     end
 
     def record(messages)
+      log(Duel::Events.from(messages))
       messages.each do |message|
         case message.type
         when Duel::MessageParser::NEW_TURN then new_turn(message)
@@ -71,6 +75,46 @@ module Matches
       @match.prompt = prompt
       @match.prompt_team = prompt&.fetch(:player)
       prompt
+    end
+
+    # O jsonb do banco volta com as chaves em texto; aqui elas ficam com símbolos.
+    def events = @match.events.map(&:deep_symbolize_keys)
+    def chain = @match.chain.map(&:deep_symbolize_keys)
+
+    # Os últimos eventos, numerados, para o log da mesa, e a corrente aberta (Duel::Events).
+    def log(new_events)
+      return if new_events.empty?
+
+      first = @match.events_count
+      numbered = new_events.each_with_index.map { |event, index| with_codes(event).merge(id: first + index + 1) }
+      @match.assign_attributes(events: (events + numbered).last(MAX_EVENTS), events_count: first + new_events.size,
+                               chain: new_events.reduce(chain) { |links, event| follow_chain(links, event) })
+    end
+
+    # A mensagem do ataque só tem a posição das cartas. O código sai da mesa na hora, que
+    # ainda é de antes da batalha, e só das cartas com a face para cima (as que todos veem).
+    def with_codes(event)
+      return event unless event[:type] == "attack"
+
+      @session.with_engine do |engine|
+        event.merge(attacker: face_up_code(engine, event[:attacker]), target: (face_up_code(engine, event[:target]) if event[:target]))
+      end
+    end
+
+    def face_up_code(engine, place)
+      card = engine.query_location(place[:controller], Duel::Query::MONSTERS)[place[:sequence]]
+      card && card[:position].anybits?(Duel::Events::FACE_UP) ? place.merge(code: card[:code]) : place
+    end
+
+    # O elo entra na ativação, fica marcado quando é negado e sai quando resolve.
+    def follow_chain(links, event)
+      case event[:type]
+      when "chain" then links + [ event.slice(:code, :controller, :location, :sequence, :position, :description, :link) ]
+      when "chain_negated" then links.map { |link| link[:link] == event[:link] ? link.merge(negated: true) : link }
+      when "chain_solved" then links.reject { |link| link[:link] == event[:link] }
+      when "chain_end" then []
+      else links
+      end
     end
 
     # O turno conta a partir de 1; o primeiro byte diz de quem é a vez.

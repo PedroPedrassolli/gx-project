@@ -122,7 +122,7 @@ class DuelRobot
     selectable = prompt[:selectable]
     unselectable = prompt[:unselectable]
     return { index: -1 } if prompt[:finishable] && (selectable.empty? || @random.rand < 0.5)
-    return { index: @random.rand(selectable.size) } if selectable.any? && @random.rand < 0.9
+    return { index: @random.rand(selectable.size) } if selectable.any? && (unselectable.empty? || @random.rand < 0.9)
     return { index: selectable.size + @random.rand(unselectable.size) } if unselectable.any?
 
     { index: -1 }

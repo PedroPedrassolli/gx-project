@@ -79,6 +79,17 @@ class Duel::ViewTest < ActiveSupport::TestCase
     assert_nil view.call(502)[:hint_text]
   end
 
+  it "os eventos chegam com o que cada lado vê e a corrente com o texto de cada efeito" do
+    painful = 74191942 << 20
+    events = [ { type: "draw", team: 0, codes: [ 11 ] } ]
+    chain = [ { code: 74191942, controller: 0, location: 8, sequence: 0, position: 1, description: painful | 1, link: 1 } ]
+    view = ->(viewer) { Duel::View.new(engine, viewer).to_h(**state, prompt: nil, events:, chain:) }
+
+    assert_equal [ { type: "draw", team: 0, count: 1 } ], view.call(1)[:events]
+    assert_equal events, view.call(0)[:events]
+    assert_equal "Select 1 card to add to your opponent's hand", view.call(1)[:chain].first[:text]
+  end
+
   it "todas as etapas da batalha aparecem como battle" do
     assert_equal %w[battle battle end], [ 0x08, 0x40, 0x200 ].map { |phase| Duel::View.new(engine, 0).to_h(**state, phase:, prompt: nil)[:phase] }
   end

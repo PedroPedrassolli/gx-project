@@ -69,8 +69,25 @@ class Matches::RobotDuelTest < ActiveSupport::TestCase
       assert_not other.key?(:extra_cards), "semente #{seed}: Extra do outro à vista"
       field = (other[:monsters] + other[:spells] + [ other[:field_spell] ]).compact
       assert(field.none? { |card| card[:face_down] && card.key?(:code) }, "semente #{seed}: carta virada do outro à vista")
+      view[:events].each { |event| assert_event_hidden(event, viewer, seed) }
     end
     assert_equal 1, views.count { |view| view.key?(:prompt) }, "semente #{seed}: a pergunta tem de ir para um só"
+  end
+
+  # No log, do outro lado: a compra sem as cartas, a carta baixada sem código e a carta que
+  # muda de lugar ou de posição só com código quando estava ou fica à vista.
+  def assert_event_hidden(event, viewer, seed)
+    public = ->(place) { place[:location] == 0x10 || ([ 0x04, 0x08, 0x20, 0x40 ].include?(place[:location]) && place[:position].anybits?(0x5)) }
+    hidden = case event[:type]
+    when "draw" then event[:team] != viewer && event.key?(:codes)
+    when "set" then event[:controller] != viewer && event[:code].positive?
+    when "move"
+      places = event.values_at(:from, :to)
+      event[:code].positive? && places.none? { |place| place[:controller] == viewer || public.call(place) }
+    when "position" then event[:controller] != viewer && event[:code].positive? && !(event[:from] | event[:to]).anybits?(0x5)
+    when "attack" then event.values_at(:attacker, :target).compact.any? { |place| place[:code] && !place[:position].anybits?(0x5) }
+    end
+    assert_not hidden, "semente #{seed}: o log mostra ao time #{viewer} uma carta escondida: #{event}"
   end
 
   it "joga duelos inteiros com o deck inicial nos dois lados" do
