@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "../api.ts";
 import { Link, useParams } from "react-router";
 import { SESSION_KEY, useSession } from "../account/session.ts";
-import type { CardSummary } from "../catalog/cards.ts";
-import { CardPanel, useMediaQuery } from "../catalog/CardPanel.tsx";
-import { useCatalog } from "../catalog/data.ts";
+import { NO_CARDS, NO_PACKS, useCatalog } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
+import { PageNotice, SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 import { useRealtime } from "../realtime/useRealtime.ts";
 import { matchKey, respond, surrender, useMatch, type MatchState } from "./api.ts";
 import { Board } from "./Board.tsx";
+import { DuelDetail } from "./DuelDetail.tsx";
 import { ChainStack, DuelLog } from "./DuelSide.tsx";
 import { DuelStatus } from "./DuelStatus.tsx";
 import {
@@ -70,18 +70,8 @@ export function DuelPage() {
   const catalog = useCatalog();
   const [language] = useCardLanguage();
   const [selected, setSelected] = useState<number | null>(null);
-  const cards = useMemo(() => {
-    const byCode = new Map<number, CardSummary>();
-    for (const card of catalog.data?.cards ?? [])
-      if (card.code !== undefined) byCode.set(card.code, card);
-    return byCode;
-  }, [catalog.data]);
-  const selectedCard = selected === null ? undefined : cards.get(selected);
-  const wide = useMediaQuery("(width >= 72rem)");
-  const packs = useMemo(
-    () => new Map(catalog.data?.packs.map((pack) => [pack.id, pack.name])),
-    [catalog.data],
-  );
+  const cards = catalog.data?.byCode ?? NO_CARDS;
+  const packs = catalog.data?.packNames ?? NO_PACKS;
   const giveUp = useMutation({
     mutationFn: () => surrender(id),
     onSuccess: (data) => client.setQueryData(matchKey(id), data),
@@ -96,32 +86,23 @@ export function DuelPage() {
   });
 
   if (session.isSuccess && !user) {
-    return (
-      <main className="page narrow">
-        <h1>Duelo</h1>
-        <p>
-          <Link to="/entrar">Entre na sua conta</Link> para jogar.
-        </p>
-      </main>
-    );
+    return <SignInFirst title="Duelo" reason="para jogar" />;
   }
   if (match.error) {
     return (
-      <main className="page narrow">
-        <h1>Duelo</h1>
+      <PageNotice title="Duelo">
         <p role="alert">Não achamos este duelo.</p>
         <p>
           <Link to="/salas">Ver as salas</Link>
         </p>
-      </main>
+      </PageNotice>
     );
   }
   if (!match.data) {
     return (
-      <main className="page narrow">
-        <h1>Duelo</h1>
+      <PageNotice title="Duelo">
         <p role="status">Carregando a mesa…</p>
-      </main>
+      </PageNotice>
     );
   }
 
@@ -148,21 +129,13 @@ export function DuelPage() {
         onSurrender={() => giveUp.mutate()}
         onTimeUp={() => match.refetch()}
       />
-      {selectedCard ? (
-        <CardPanel
-          cardId={selectedCard.id}
-          language={language}
-          packs={packs}
-          wide={wide}
-          onClose={() => setSelected(null)}
-          className="duel-detail"
-        />
-      ) : (
-        <section className="duel-detail duel-detail-empty" aria-labelledby="detail-empty-title">
-          <h2 id="detail-empty-title">Carta</h2>
-          <p>Toque numa carta para ver o detalhe dela.</p>
-        </section>
-      )}
+      <DuelDetail
+        code={selected}
+        cards={cards}
+        packs={packs}
+        language={language}
+        onClose={() => setSelected(null)}
+      />
       {state.status === "dueling" && state.view.prompt && (
         <PromptPanel
           key={state.seq}

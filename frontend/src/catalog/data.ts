@@ -10,6 +10,9 @@ async function data<T>(path: string): Promise<T> {
   return (await request<{ data: T }>("GET", path)).data;
 }
 
+// Os índices saem uma vez por carga, não a cada tela: a carta pelo id (coleção e decks), a
+// carta pelo código da engine (a mesa só sabe o código) e o nome de cada pacote (o detalhe
+// da carta mostra onde ela sai).
 export function useCatalog() {
   return useQuery({
     queryKey: ["catalog"],
@@ -18,11 +21,19 @@ export function useCatalog() {
         data<CardSummary[]>("/api/cards"),
         data<Pack[]>("/api/packs"),
       ]);
-      return { cards, packs };
+      const byId = new Map(cards.map((card) => [card.id, card]));
+      const byCode = new Map<number, CardSummary>();
+      for (const card of cards) if (card.code !== undefined) byCode.set(card.code, card);
+      const packNames = new Map(packs.map((pack) => [pack.id, pack.name]));
+      return { cards, packs, byId, byCode, packNames };
     },
     staleTime: HOUR,
   });
 }
+
+// Enquanto o catálogo carrega: índices vazios, sempre os mesmos.
+export const NO_CARDS = new Map<number, CardSummary>();
+export const NO_PACKS = new Map<number, string>();
 
 // Raridade de cada carta no pacote escolhido ("" = nenhum pacote).
 export function usePackRarities(pack: string) {

@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate } from "react-router";
 import { request } from "../api.ts";
 import { useSession } from "../account/session.ts";
+import { SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 import type { Room, RoomOptions } from "./api.ts";
 
@@ -52,14 +53,7 @@ export function RoomsPage() {
   }
 
   if (session.isSuccess && !user) {
-    return (
-      <main className="page narrow">
-        <h1>Salas</h1>
-        <p>
-          <Link to="/entrar">Entre na sua conta</Link> para jogar.
-        </p>
-      </main>
-    );
+    return <SignInFirst title="Salas" reason="para jogar" />;
   }
 
   return (

@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import { ApiError, request } from "../api.ts";
 import { useSession } from "./session.ts";
 import { TextField } from "./TextField.tsx";
+import { SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 
 const AGE_GROUPS = { "13-17": "13 a 17 anos", "18+": "18 anos ou mais" };
@@ -41,14 +42,7 @@ export function AccountPage() {
     );
   }
   if (session.isSuccess && !user) {
-    return (
-      <main className="page narrow">
-        <h1>Minha conta</h1>
-        <p>
-          <Link to="/entrar">Entre na sua conta</Link> para ver seus dados.
-        </p>
-      </main>
-    );
+    return <SignInFirst title="Minha conta" reason="para ver seus dados" />;
   }
   if (!user) return null;
 

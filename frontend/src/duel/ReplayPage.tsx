@@ -1,15 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router";
 import { request } from "../api.ts";
 import { useSession } from "../account/session.ts";
-import type { CardSummary } from "../catalog/cards.ts";
-import { CardPanel, useMediaQuery } from "../catalog/CardPanel.tsx";
-import { useCatalog } from "../catalog/data.ts";
+import { NO_CARDS, NO_PACKS, useCatalog } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
+import { PageNotice, SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 import type { View } from "./api.ts";
 import { Board } from "./Board.tsx";
+import { DuelDetail } from "./DuelDetail.tsx";
 import { ChainStack, DuelLog } from "./DuelSide.tsx";
 
 // Replay do duelo (escopo 3.7): um turno por vez, a mesa de quem assiste depois de cada lance
@@ -46,17 +46,8 @@ export function ReplayPage() {
   const catalog = useCatalog();
   const [language] = useCardLanguage();
   const [selected, setSelected] = useState<number | null>(null);
-  const cards = useMemo(() => {
-    const byCode = new Map<number, CardSummary>();
-    for (const card of catalog.data?.cards ?? [])
-      if (card.code !== undefined) byCode.set(card.code, card);
-    return byCode;
-  }, [catalog.data]);
-  const packs = useMemo(
-    () => new Map(catalog.data?.packs.map((pack) => [pack.id, pack.name])),
-    [catalog.data],
-  );
-  const wide = useMediaQuery("(width >= 72rem)");
+  const cards = catalog.data?.byCode ?? NO_CARDS;
+  const packs = catalog.data?.packNames ?? NO_PACKS;
 
   const data = replay.data;
   const frames = data?.frames ?? [];
@@ -90,40 +81,30 @@ export function ReplayPage() {
   });
 
   if (session.isSuccess && !user) {
-    return (
-      <main className="page narrow">
-        <h1>Replay</h1>
-        <p>
-          <Link to="/entrar">Entre na sua conta</Link> para ver o replay.
-        </p>
-      </main>
-    );
+    return <SignInFirst title="Replay" reason="para ver o replay" />;
   }
   if (replay.error) {
     return (
-      <main className="page narrow">
-        <h1>Replay</h1>
+      <PageNotice title="Replay">
         <p role="alert">{replay.error.message}</p>
         <p>
           <Link to={`/duelo/${id}`}>Voltar para o duelo</Link>
         </p>
-      </main>
+      </PageNotice>
     );
   }
   const current = frames[index];
   if (!data || !current) {
     return (
-      <main className="page narrow">
-        <h1>Replay</h1>
+      <PageNotice title="Replay">
         <p role="status">Carregando o replay…</p>
-      </main>
+      </PageNotice>
     );
   }
 
   const names = [0, 1].map(
     (team) => data.players.find((player) => player.team === team)?.nickname ?? "Duelista",
   );
-  const selectedCard = selected === null ? undefined : cards.get(selected);
   return (
     <main className="page duel-page">
       <h1 className="visually-hidden">Replay do duelo de {names.join(" contra ")}</h1>
@@ -173,21 +154,13 @@ export function ReplayPage() {
           <Link to={`/duelo/${id}`}>Voltar para o resultado</Link>
         </p>
       </div>
-      {selectedCard ? (
-        <CardPanel
-          cardId={selectedCard.id}
-          language={language}
-          packs={packs}
-          wide={wide}
-          onClose={() => setSelected(null)}
-          className="duel-detail"
-        />
-      ) : (
-        <section className="duel-detail duel-detail-empty" aria-labelledby="detail-empty-title">
-          <h2 id="detail-empty-title">Carta</h2>
-          <p>Toque numa carta para ver o detalhe dela.</p>
-        </section>
-      )}
+      <DuelDetail
+        code={selected}
+        cards={cards}
+        packs={packs}
+        language={language}
+        onClose={() => setSelected(null)}
+      />
       <div className="duel-side">
         <ChainStack
           chain={current.view.chain ?? []}
