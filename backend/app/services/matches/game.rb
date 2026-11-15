@@ -1,7 +1,8 @@
 module Matches
   # O duelo de uma partida na engine (ADR 0011): a Duel::Session com a semente, os decks e as
-  # respostas do banco. Guarda na partida o turno, a fase e a pergunta da vez, e passa
-  # sozinho pela cadeia sem opção (escopo 3.7: só pergunta quem pode responder).
+  # respostas do banco. Guarda na partida o turno, a fase e a pergunta da vez, e responde
+  # sozinho o que não precisa de jogador: a cadeia sem opção (escopo 3.7: só pergunta quem
+  # pode responder) e a zona da carta que vai para o campo (Matches::AutoPlace).
   class Game
     # "Não encadear" (-1), a resposta da cadeia sem opção.
     PASS = [ -1 ].pack("l<")
@@ -41,9 +42,10 @@ module Matches
     def settle(messages)
       loop do
         prompt = record(messages)
-        break unless pass?(prompt)
+        bytes = automatic(prompt)
+        break unless bytes
 
-        messages = answer(prompt[:player], PASS)
+        messages = answer(prompt[:player], bytes)
       end
       @match.save!
     end
@@ -75,7 +77,13 @@ module Matches
       @match.turn_team = message.payload.getbyte(0)
     end
 
-    def pass?(prompt) = prompt && prompt[:type] == :select_chain && prompt[:chains].empty? && !prompt[:forced]
+    # A resposta que o servidor dá sozinho, ou nil quando a pergunta é do jogador.
+    def automatic(prompt)
+      case prompt&.fetch(:type)
+      when :select_chain then PASS if prompt[:chains].empty? && !prompt[:forced]
+      when :select_place then AutoPlace.pick(prompt)
+      end
+    end
 
     # 2 é empate: ninguém vence.
     def finish(win)

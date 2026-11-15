@@ -24,6 +24,19 @@ class Matches::GameTest < ActiveSupport::TestCase
     assert(match.responses.all? { |response| response.bytes == Matches::Game::PASS })
   end
 
+  it "põe a carta sozinha na zona livre do centro, sem perguntar a zona" do
+    chamberlain = 44_430_454 # monstro normal de nível 3, do deck inicial
+    match = Match.create!(mode: "1x1", banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current)
+    2.times { |team| match.players.create!(team:, seat: team, deck: { main: [ chamberlain ] * 40, extra: [] }) }
+    Matches::Game.new(match).start!
+    game = Matches::Game.new(match.reload)
+    game.respond!(0, { command: "summon", index: 0 })
+
+    assert_equal "select_idlecmd", match.reload.prompt["type"]
+    assert_equal chamberlain, game.view(0)[:sides][0][:monsters][2][:code]
+    assert_includes match.responses.map(&:bytes), [ 0, 0x04, 2 ].pack("C*")
+  end
+
   it "a mensagem de vitória encerra a partida; empate fica sem vencedor" do
     [ [ 1, 1 ], [ 2, nil ] ].each do |player, winner|
       match = Match.create!(mode: "1x1", banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current)

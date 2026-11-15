@@ -59,6 +59,14 @@ class Duel::ViewTest < ActiveSupport::TestCase
     assert_nil view.call({ type: :select_yesno, player: 0, description: 30 })[:text]
   end
 
+  it "esconde também as cartas obrigatórias da soma; o número anunciado não vira texto" do
+    hidden = { code: 11, controller: 1, location: Duel::Query::HAND, sequence: 0, sum: 4 }
+    view = ->(prompt) { Duel::View.new(engine, 0).to_h(**state, prompt:)[:prompt] }
+
+    assert_equal [ 0 ], view.call({ type: :select_sum, player: 0, must: [ hidden ], cards: [] })[:must].pluck(:code)
+    assert_not view.call({ type: :announce_number, player: 0, options: [ 1 << 20 ] }).key?(:options_text)
+  end
+
   it "todas as etapas da batalha aparecem como battle" do
     assert_equal %w[battle battle end], [ 0x08, 0x40, 0x200 ].map { |phase| Duel::View.new(engine, 0).to_h(**state, phase:, prompt: nil)[:phase] }
   end

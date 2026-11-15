@@ -46,6 +46,11 @@ semente, os decks e a lista de respostas: a engine refaz o resto (ADR 0001).
     não) é (código da carta << 20) | número do texto, e o servidor põe ao lado o texto
     `strN` da carta no BabelCDB, em inglês, que é o que existe. O Destiny Draw tem o próprio
     texto em português. As perguntas do próprio jogo (sem carta) a tela descreve.
+12. **A zona da carta que vai para o campo o servidor escolhe sozinho** (`Matches::AutoPlace`),
+    do centro para as pontas, a mesma ordem que a engine usa quando joga sozinha. Assim a
+    invocação não para numa pergunta a mais e o duelo anda rápido. No MR1 a zona quase nunca
+    muda o jogo; a zona que um efeito manda escolher para desativar (`select_disfield`)
+    continua com o jogador.
 
 ## Consequências
 
