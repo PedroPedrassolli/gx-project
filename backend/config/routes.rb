@@ -22,6 +22,9 @@ Rails.application.routes.draw do
       get :export
     end
     resource :collection, only: :show
+    resource :shop, only: :show, controller: "shop" do
+      post :purchases, action: :purchase
+    end
     post "realtime/token" => "realtime_tokens#create", as: :realtime_token
     resources :matches, only: :show do
       post :responses, on: :member, action: :respond
