@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "../api.ts";
 import { Link, useParams } from "react-router";
-import { useSession } from "../account/session.ts";
+import { SESSION_KEY, useSession } from "../account/session.ts";
 import type { CardSummary } from "../catalog/cards.ts";
 import { CardPanel, useMediaQuery } from "../catalog/CardPanel.tsx";
 import { useCatalog } from "../catalog/data.ts";
@@ -29,6 +29,12 @@ export function DuelPage() {
     }
   });
   const match = useMatch(id, mode, Boolean(user));
+  // A sessão diz se há duelo em andamento (o aviso de volta à mesa): ela muda quando o duelo
+  // começa e quando acaba.
+  const status = match.data?.status;
+  useEffect(() => {
+    if (status) void client.invalidateQueries({ queryKey: SESSION_KEY });
+  }, [client, status]);
   const catalog = useCatalog();
   const [language] = useCardLanguage();
   const [selected, setSelected] = useState<number | null>(null);

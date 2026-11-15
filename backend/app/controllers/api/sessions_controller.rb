@@ -1,9 +1,10 @@
 # Quem está logado, entrar e sair (ADR 0008).
 class Api::SessionsController < Api::BaseController
-  # GET /api/session: o usuário (ou null) e o token CSRF, que o front manda no cabeçalho
-  # X-CSRF-Token em todo pedido que muda algo.
+  # GET /api/session: o usuário (ou null), o token CSRF, que o front manda no cabeçalho
+  # X-CSRF-Token em todo pedido que muda algo, e o duelo em andamento, para a volta à mesa
+  # de qualquer página (escopo 3.7, reconexão).
   def show
-    render json: { user: current_user, csrf_token: form_authenticity_token }
+    render json: { user: current_user, csrf_token: form_authenticity_token, duel: current_duel }
   end
 
   # POST /api/session. A resposta não conta se o erro foi no e-mail ou na senha.
@@ -19,5 +20,12 @@ class Api::SessionsController < Api::BaseController
   def destroy
     terminate_session if current_user
     head :no_content
+  end
+
+  private
+
+  def current_duel
+    match = current_user && Match.current_for(current_user)
+    { match_id: match.id, room_code: match.room.code } if match
   end
 end

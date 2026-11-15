@@ -1,6 +1,8 @@
 require "test_helper"
 
 class Api::RoomsControllerTest < ActionDispatch::IntegrationTest
+  include StarterDeckCards
+
   def player(name) = User.create!(email: "#{name.downcase}@example.com", password: "duelista123", nickname: name, age_group: "18+")
 
   # Cada jogador numa sessão própria do navegador.
@@ -96,8 +98,6 @@ class Api::RoomsControllerTest < ActionDispatch::IntegrationTest
   end
 
   describe "pronto" do
-    include StarterDeckCards
-
     before { load_starter_deck_cards }
 
     it "fica pronto com um deck válido, e o outro só vê que escolheu" do
@@ -167,6 +167,25 @@ class Api::RoomsControllerTest < ActionDispatch::IntegrationTest
     owner.post leave_api_room_path(room.code), as: :json
     assert_equal [ 422, "Desista do duelo antes de sair da sala." ], [ owner.response.status, owner.response.parsed_body.dig("error", "message") ]
     assert room.reload.players.exists?(user: jaden)
+  end
+
+  it "duelo com o prazo vencido não prende ninguém: acaba por tempo e o jogador cria outra sala" do
+    load_starter_deck_cards
+    room = room_for(jaden)
+    room.players.create!(user: syrus, seat: 1)
+    [ jaden, syrus ].each { |user| Decks::StarterDeck.give_to(user) }
+    room.players.each { |player| player.update!(deck: player.user.decks.sole, ready: true) }
+    match = Matches::Start.new(room).call
+    owner = session_for(jaden)
+
+    owner.post api_rooms_path, as: :json
+    assert_equal 422, owner.response.status
+
+    travel_to(match.reload.deadline_at + 1.second) do
+      owner.post api_rooms_path, as: :json
+      assert_equal 201, owner.response.status
+    end
+    assert_equal [ "finished", "timeout", 1 - match.prompt_team ], match.reload.values_at(:status, :finish_reason, :winner_team)
   end
 
   it "mostra a sala pelo código, em maiúsculas ou minúsculas" do

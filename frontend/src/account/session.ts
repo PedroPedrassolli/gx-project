@@ -3,7 +3,7 @@ import { getSession, request, type User } from "../api.ts";
 
 // A sessão (quem está logado e o token CSRF) fica guardada pelo TanStack Query: todas as
 // telas leem dela, e entrar ou sair manda buscar de novo.
-const SESSION_KEY = ["session"];
+export const SESSION_KEY = ["session"];
 
 export function useSession() {
   return useQuery({ queryKey: SESSION_KEY, queryFn: getSession, staleTime: 5 * 60 * 1000 });

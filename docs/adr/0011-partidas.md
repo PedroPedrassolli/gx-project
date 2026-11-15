@@ -72,6 +72,11 @@ semente, os decks e a lista de respostas: a engine refaz o resto (ADR 0001).
 15. **Desistir** (`POST /api/matches/:id/surrender`) encerra a partida com a vitória do
     outro. Sair da sala no meio do duelo não vale: primeiro se desiste. Em qualquer fim, a
     sala volta a esperar, com todos "não pronto": a revanche é ficar pronto de novo.
+16. **Reconexão:** a mesa inteira vem em todo GET, então voltar é só abrir a partida. O
+    `GET /api/session` diz o duelo em andamento (`duel: { match_id, room_code }`), e todas as
+    páginas mostram o aviso com o link para a mesa. Quem some deixa o prazo vencer e perde por
+    tempo; se os dois somem, a partida acaba na próxima consulta, inclusive quando um deles
+    tenta criar ou entrar noutra sala (ninguém fica preso em "Você está num duelo").
 
 ## Consequências
 

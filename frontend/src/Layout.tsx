@@ -6,13 +6,16 @@ import { useLogOut, useSession } from "./account/session.ts";
 import { SOURCE_URL } from "./legal/source.ts";
 import { markNavigation, usePageTitle } from "./pageTitle.ts";
 
-// Moldura de todas as páginas: a barra do topo (o nome do site, o menu e a conta) e o
-// rodapé. No celular, a barra tem duas linhas fixas: a marca e a conta em cima, o menu
-// embaixo, em colunas iguais.
+// Moldura de todas as páginas: a barra do topo (o nome do site, o menu e a conta), os avisos
+// (e-mail por confirmar, duelo em andamento) e o rodapé. No celular, a barra tem duas linhas
+// fixas: a marca e a conta em cima, o menu embaixo.
 export function Layout() {
   const session = useSession();
   const logOut = useLogOut();
   const user = session.data?.user;
+  // Fechou a aba ou o celular apagou no meio do duelo: de qualquer página, um toque volta
+  // para a mesa (o prazo da resposta continua correndo no servidor).
+  const duel = user ? session.data?.duel : null;
   const { pathname } = useLocation();
   const [firstPath] = useState(pathname);
   // Avisa antes de a página nova montar: é ela que leva o foco para o próprio título.
@@ -60,6 +63,12 @@ export function Layout() {
         </span>
       </nav>
       {user && !user.email_verified && <ConfirmEmailNotice user={user} />}
+      {duel && pathname !== `/duelo/${duel.match_id}` && (
+        <p className="notice" role="status">
+          Você tem um duelo em andamento.{" "}
+          <Link to={`/duelo/${duel.match_id}`}>Voltar para a mesa</Link>
+        </p>
+      )}
       <div id="conteudo" tabIndex={-1}>
         <Suspense fallback={<Loading />}>
           <Outlet />

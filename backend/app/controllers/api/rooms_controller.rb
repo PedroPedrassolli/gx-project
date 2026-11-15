@@ -102,10 +102,29 @@ class Api::RoomsController < Api::BaseController
 
   def room_params = params.permit(:public, :banlist, :destiny_draw).to_h.symbolize_keys
 
-  # Durante o duelo (a partida começa no GXP-48), o jogador não troca de sala.
+  # Durante o duelo, o jogador não troca de sala. O duelo com o prazo vencido (os dois saíram
+  # da mesa) acaba aqui, por tempo, e não prende ninguém (escopo 3.7: desconexão vira derrota).
   def in_duel?
     room = current_user.room_player&.room
-    room.present? && !room.waiting?
+    return false if room.nil? || room.waiting?
+
+    match = room.matches.find_by(status: "dueling")
+    return true unless match
+
+    !finish_if_expired(match)
+  end
+
+  # Travada, para duas consultas não encerrarem a mesma partida. true se encerrou.
+  def finish_if_expired(match)
+    game = Matches::Game.new(match)
+    return false unless game.expired?
+
+    Match.transaction do
+      match.lock!
+      game.expire!
+    end
+    current_user.reload_room_player
+    true
   end
 
   def in_duel = render_error(:unprocessable_content, "Você está num duelo.")

@@ -24,6 +24,20 @@ class Api::SessionsControllerTest < ActionDispatch::IntegrationTest
 
       _(response.parsed_body["user"]).must_equal({ "id" => user.id, "email" => "jaden@example.com", "email_verified" => false,
                                                    "nickname" => "JadenYuki", "age_group" => "13-17", "role" => "player" })
+      _(response.parsed_body["duel"]).must_be_nil
+    end
+
+    it "no meio de um duelo, diz qual é a partida e a sala: o front oferece a volta à mesa" do
+      room = Room.create!(owner: user, code: "ABC234", status: "dueling")
+      room.players.create!(user:, seat: 0)
+      match = Match.create!(room:, banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current)
+      log_in
+      get api_session_path
+
+      _(response.parsed_body["duel"]).must_equal({ "match_id" => match.id, "room_code" => "ABC234" })
+      match.update!(status: "finished")
+      get api_session_path
+      _(response.parsed_body["duel"]).must_be_nil
     end
   end
 

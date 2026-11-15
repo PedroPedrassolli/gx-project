@@ -11,7 +11,12 @@ export type User = {
   role: string;
 };
 
-export type Session = { user: User | null; csrf_token: string };
+// duel: o duelo em andamento (para a volta à mesa de qualquer página), ou null.
+export type Session = {
+  user: User | null;
+  csrf_token: string;
+  duel?: { match_id: number; room_code: string } | null;
+};
 
 // Erro da API: a mensagem para mostrar e, em formulário, as mensagens de cada campo.
 export class ApiError extends Error {
