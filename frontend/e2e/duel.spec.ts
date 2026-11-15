@@ -186,6 +186,42 @@ test("na mesa, o monstro mostra o ATK em ataque e o DEF em defesa", async ({ pag
   await expect(monsters.getByText("2500", { exact: true })).toHaveCount(0);
 });
 
+test("do resultado, volta para a sala reaberta sem cair de novo na mesa", async ({ page }) => {
+  const match = await mockMatch(page);
+  const seat = { ready: true, deck_chosen: true };
+  let room: Record<string, unknown> = {
+    code: "ABC234",
+    public: false,
+    mode: "1x1",
+    best_of: 1,
+    banlist: true,
+    destiny_draw: false,
+    status: "dueling",
+    owner_id: 1,
+    seats: 2,
+    match_id: 5,
+    players: [
+      { ...seat, seat: 0, user_id: 1, nickname: "JadenYuki", deck_id: 7 },
+      { ...seat, seat: 1, user_id: 2, nickname: "Syrus" },
+    ],
+  };
+  await page.route("**/api/rooms/ABC234", (route) => route.fulfill({ json: { data: room } }));
+  await page.route("**/api/decks", (route) =>
+    route.fulfill({
+      json: { data: [{ id: 7, name: "Heróis", updated_at: "2026-11-14T12:00:00Z" }] },
+    }),
+  );
+  // Sala em duelo leva à mesa.
+  await page.goto("/salas/ABC234");
+  await expect(page).toHaveURL(/\/duelo\/5$/);
+
+  match.set({ ...STATE, status: "finished", winner_team: 0, room_code: "ABC234" });
+  room = { ...room, status: "waiting", match_id: null };
+  await page.getByRole("link", { name: "Voltar para a sala" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Sala ABC234" })).toBeVisible();
+  await expect(page).toHaveURL(/\/salas\/ABC234$/);
+});
+
 test("o replay passa lance a lance e turno a turno, e reproduz sozinho", async ({ page }) => {
   await mockMatch(page);
   const frame = (step: number, turn: number, lp: number) => ({

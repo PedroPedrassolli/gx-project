@@ -38,6 +38,7 @@ mudar o projeto sem quebrar nada.
 | `backend` | `bin/rails catalogo:importar` | Grava no banco o catálogo dos YAML (cartas, pacotes, banlist e conversor); pode rodar de novo |
 | `frontend` | `npm test` / `npm run lint` / `npm run typecheck` / `npm run format:check` | Unitários, ESLint, tipos e Prettier |
 | `frontend` | `npm run test:e2e` | Playwright + axe contra o build de produção |
+| `backend` + `frontend` | `DATABASE_URL=postgres:///gx_e2e RAILS_ENV=test bin/rails db:prepare e2e:preparar`, depois `DATABASE_URL=postgres:///gx_e2e npm run test:e2e:full` | Duelo de ponta a ponta com dois navegadores e o Rails de verdade, num banco só dele (a porta 3000 precisa estar livre) |
 
 ## Planos gratuitos (não estourar é obrigatório)
 
