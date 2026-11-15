@@ -127,10 +127,12 @@ gasta perto do dobro.
   ocupa uns 50 KB por duelo. Na F3, medir; se passar de 20 KB por duelo, juntar as
   respostas da partida numa coluna só (por volta de 4 KB por duelo) e limpar os replays
   depois de 30 dias, como o escopo pede.
-- **Publicar no Ably custa uns 130 ms por chamada.** Na F3: uma chamada só por ação (a
-  publicação em lote do Ably manda a visão de cada jogador num pedido só), e o jogador que
-  agiu recebe a própria visão na resposta HTTP. Medir se dá para publicar depois de
-  responder.
+- **Publicar no Ably custa uns 130 ms por chamada.** Na F3: o jogador que agiu recebe a
+  própria mesa na resposta HTTP, e só os outros recebem pelo Ably. O Ably não tem
+  datacenter na América do Sul (o mais perto fica nos Estados Unidos), então cada conexão
+  HTTPS nova custa mais duas idas e voltas: o `AblyPublisher` abre uma por thread do Puma e
+  reaproveita nos avisos seguintes (GXP-50), abrindo outra se ela caiu parada. A
+  publicação em lote fica para o Tag (F6), que avisa três jogadores por ação.
 - **O polling de reserva custa caro:** uma chamada a cada 2 s por jogador gasta mais
   invocações que o duelo inteiro. Ele só liga quando o Ably recusa.
 - **Na Vercel, passar do limite derruba a API por até 30 dias.** O aviso dos 80% no resumo

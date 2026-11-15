@@ -4,16 +4,30 @@ require "net/http"
 class Realtime::AblyPublisherTest < ActiveSupport::TestCase
   subject { Realtime::AblyPublisher.new("app.chave:segredo") }
 
-  let(:http) { mock("http") }
+  let(:http) { connection_mock("http") }
+
+  # Conexão falsa, já configurada e aberta como o publicador faz.
+  def connection_mock(name)
+    mock(name).tap do |connection|
+      connection.stubs(:use_ssl=)
+      connection.stubs(:open_timeout=)
+      connection.stubs(:read_timeout=)
+      connection.stubs(:keep_alive_timeout=)
+      connection.stubs(:start)
+    end
+  end
 
   # Captura a requisição que iria para o Ably e responde com o status pedido.
   def answer_with(response)
     sent = []
     http.expects(:request).with { |request| sent << request }.returns(response)
-    Net::HTTP.expects(:start).with("main.realtime.ably.net", 443, use_ssl: true, open_timeout: 2, read_timeout: 5)
-             .yields(http).returns(response)
+    Net::HTTP.expects(:new).with("main.realtime.ably.net", 443).returns(http)
     sent
   end
+
+  # Cada teste começa sem conexão guardada na thread.
+  before { Thread.current[Realtime::AblyPublisher::CONNECTION] = nil }
+  after { Thread.current[Realtime::AblyPublisher::CONNECTION] = nil }
 
   describe "#publish" do
     it "manda um POST no canal do jogador, com a chave em Basic auth" do
@@ -44,8 +58,24 @@ class Realtime::AblyPublisherTest < ActiveSupport::TestCase
       assert_equal "o Ably respondeu 401 (40160: Action not permitted)", error.message
     end
 
+    it "reaproveita a conexão aberta nos avisos seguintes" do
+      created = Net::HTTPCreated.new("1.1", "201", "Created")
+      Net::HTTP.expects(:new).once.returns(http)
+      http.expects(:request).twice.returns(created)
+      2.times { subject.publish(user_id: 7, event: "duel.updated", data: {}) }
+    end
+
+    it "se a conexão caiu parada, abre outra e tenta mais uma vez" do
+      fresh = connection_mock("nova")
+      Net::HTTP.expects(:new).twice.returns(http, fresh)
+      http.expects(:request).raises(EOFError)
+      fresh.expects(:request).returns(Net::HTTPCreated.new("1.1", "201", "Created"))
+      subject.publish(user_id: 7, event: "duel.updated", data: {})
+    end
+
     it "transforma erro de rede (sem conexão, tempo esgotado) no erro do publicador" do
-      Net::HTTP.expects(:start).raises(Net::OpenTimeout)
+      Net::HTTP.expects(:new).returns(http)
+      http.expects(:start).raises(Net::OpenTimeout)
       error = assert_raises(Realtime::AblyPublisher::Error) { subject.publish(user_id: 7, event: "duel.delta", data: {}) }
       assert_equal "sem conexão com o Ably (Net::OpenTimeout)", error.message
     end
