@@ -27,6 +27,17 @@ class Duel::QueryTest < ActiveSupport::TestCase
     end
   end
 
+  describe ".field" do
+    # PV, 15 zonas vazias e as contagens (deck, mão, cemitério, banidas, Extra e mais uma).
+    def side(lp) = [ lp ].pack("l<") + ("\x00" * 15) + [ 30, 5, 2, 0, 0, 0 ].pack("L<*")
+
+    it "PV abaixo de zero aparece como 0, não como 4294967096 (GXP-78)" do
+      bytes = [ 0 ].pack("L<") + side(-200) + side(8000)
+
+      assert_equal [ 0, 8000 ], Duel::Query.field(bytes).pluck(:lp)
+    end
+  end
+
   describe ".cards" do
     def field(flag, value) = [ 4 + value.bytesize, flag ].pack("S<L<") + value
     def last = [ 4, Duel::Query::LAST ].pack("S<L<")
