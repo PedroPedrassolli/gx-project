@@ -149,6 +149,39 @@ test("sem tempo real, o fim do duelo aparece na próxima consulta", async ({ pag
   });
 });
 
+test("as pilhas abrem a lista: cemitério, banidas e o seu Extra", async ({ page }) => {
+  const match = await mockMatch(page);
+  const [mine, theirs] = STATE.view.sides;
+  const sides = [
+    { ...mine, extra: 1, extra_cards: [{ code: 89631139 }] },
+    { ...theirs, banished: [{ code: 83764718 }, { hidden: true }] },
+  ];
+  match.set({ ...STATE, view: { ...STATE.view, sides } });
+  await page.goto("/duelo/5");
+
+  await page.getByRole("button", { name: "Banidas 2" }).click();
+  const banished = page.getByRole("dialog", { name: "Cartas banidas de Syrus (2)" });
+  await expect(banished.getByText("Carta virada para baixo")).toBeVisible();
+  await expect(banished.getByRole("button", { name: "Renascer do Monstro" })).toBeVisible();
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
+  await page.keyboard.press("Escape");
+  await expect(banished).toBeHidden();
+
+  await page.getByRole("button", { name: "Seu Extra, 1 carta" }).click();
+  const extra = page.getByRole("dialog", { name: "Seu Extra (1)" });
+  await expect(extra.getByRole("button", { name: "Blue-Eyes White Dragon" })).toBeVisible();
+  await extra.getByRole("button", { name: "Fechar" }).click();
+  await expect(extra).toBeHidden();
+
+  await page.getByRole("button", { name: "Seu cemitério, 1 carta" }).click();
+  await page
+    .getByRole("dialog", { name: "Seu cemitério (1)" })
+    .getByRole("button", { name: "Mago Negro" })
+    .click();
+  await expect(page.getByText("O mago supremo.")).toBeVisible();
+});
+
 test("o histórico conta as jogadas e a corrente mostra os elos abertos", async ({ page }) => {
   const match = await mockMatch(page);
   const spell = { code: 83764718, controller: 0, location: 8, sequence: 0, position: 1 };

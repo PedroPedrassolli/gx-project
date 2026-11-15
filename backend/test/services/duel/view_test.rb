@@ -36,6 +36,7 @@ class Duel::ViewTest < ActiveSupport::TestCase
       [ 1, Duel::Query::MONSTERS ] => [ nil, { code: 6, position: 0x8, atk: 1200, def: 1100 }, { code: 7, position: 0x1, atk: 800, def: 600 } ],
       [ 1, Duel::Query::GRAVE ] => [ { code: 8, position: 0x1 } ],
       [ 1, Duel::Query::BANISHED ] => [ { code: 9, position: 0x1, public: true }, { code: 10, position: 0xA, public: false } ],
+      [ 0, Duel::Query::SPELLS ] => [ { code: 15, position: 0xA }, { code: 16, position: 0x5 } ],
       [ 0, Duel::Query::HAND ] => [ { code: 11, public: true }, { code: 12, public: false } ],
       [ 1, Duel::Query::HAND ] => [ { code: 13, public: true }, { code: 14, public: false } ]
     }
@@ -47,6 +48,8 @@ class Duel::ViewTest < ActiveSupport::TestCase
     assert_equal({ face_down: true, defense: true, code: 5, atk: 1000, def: 900 }, mine[:monsters].first)
     assert_equal [ nil, { face_down: true, defense: true }, { face_down: false, defense: false, code: 7, atk: 800, def: 600 } ], theirs[:monsters]
     assert_equal [ [ { code: 8 } ], [ { code: 9 }, { hidden: true } ] ], theirs.values_at(:grave, :banished)
+    # Magia e armadilha não ficam "em defesa", mesmo com o bit de defesa na posição.
+    assert_equal [ [ true, false ], [ false, false ] ], mine[:spells].first(2).map { |card| card.values_at(:face_down, :defense) }
     # Na mão, o outro só vê a carta revelada; o dono vê todas e sabe quais estão à vista.
     assert_equal [ { code: 11, public: true }, { code: 12 } ], mine[:hand]
     assert_equal [ { code: 13 }, { hidden: true } ], theirs[:hand]
