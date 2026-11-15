@@ -5,7 +5,15 @@ import { request } from "../api.ts";
 import { useSession } from "../account/session.ts";
 import { SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
-import type { Room, RoomOptions } from "./api.ts";
+import type { Room, RoomFlags, RoomOptions } from "./api.ts";
+import {
+  DECISION_SECONDS,
+  DUEL_MINUTES,
+  decisionChip,
+  decisionText,
+  duelChip,
+  fromSelect,
+} from "./times.ts";
 
 type RoomSummary = {
   code: string;
@@ -14,9 +22,11 @@ type RoomSummary = {
   seats: number;
   banlist: boolean;
   destiny_draw: boolean;
+  decision_seconds: number | null;
+  duel_minutes: number | null;
 };
 
-const OPTIONS: { key: keyof RoomOptions; label: string }[] = [
+const OPTIONS: { key: keyof RoomFlags; label: string }[] = [
   { key: "public", label: "Pública" },
   { key: "banlist", label: "Banlist" },
   { key: "destiny_draw", label: "Destiny Draw" },
@@ -34,6 +44,8 @@ export function RoomsPage() {
     public: true,
     banlist: true,
     destiny_draw: true,
+    decision_seconds: 90,
+    duel_minutes: 60,
   });
   const [code, setCode] = useState("");
   const rooms = useQuery({
@@ -76,9 +88,46 @@ export function RoomsPage() {
             </label>
           ))}
         </fieldset>
+        <div className="room-times">
+          <div className="field">
+            <label htmlFor="room-decision">Tempo de resposta</label>
+            <select
+              id="room-decision"
+              value={options.decision_seconds ?? ""}
+              onChange={(event) =>
+                setOptions({ ...options, decision_seconds: fromSelect(event.target.value) })
+              }
+            >
+              {DECISION_SECONDS.map((seconds) => (
+                <option key={seconds} value={seconds}>
+                  {decisionText(seconds)}
+                </option>
+              ))}
+              <option value="">Sem limite</option>
+            </select>
+          </div>
+          <div className="field">
+            <label htmlFor="room-duel">Tempo do duelo</label>
+            <select
+              id="room-duel"
+              value={options.duel_minutes ?? ""}
+              onChange={(event) =>
+                setOptions({ ...options, duel_minutes: fromSelect(event.target.value) })
+              }
+            >
+              {DUEL_MINUTES.map((minutes) => (
+                <option key={minutes} value={minutes}>
+                  {minutes} min
+                </option>
+              ))}
+              <option value="">Sem limite</option>
+            </select>
+          </div>
+        </div>
         <p className="hint">
           A pública aparece em “Salas abertas” para qualquer um entrar; a privada, só com o código.
-          A banlist é a do jogo.
+          A banlist é a do jogo. Quem deixa o tempo de resposta passar perde o duelo; quando o tempo
+          do duelo acaba, ganha quem tem mais PV.
         </p>
         <p className="actions">
           <button
@@ -131,7 +180,9 @@ export function RoomsPage() {
                   {room.players} de {room.seats}
                 </span>{" "}
                 <span>{room.banlist ? "Banlist do jogo" : "Sem banlist"}</span>{" "}
-                <span>{room.destiny_draw ? "Com Destiny Draw" : "Sem Destiny Draw"}</span>
+                <span>{room.destiny_draw ? "Com Destiny Draw" : "Sem Destiny Draw"}</span>{" "}
+                <span>{decisionChip(room.decision_seconds)}</span>{" "}
+                <span>{duelChip(room.duel_minutes)}</span>
               </span>
             </li>
           ))}

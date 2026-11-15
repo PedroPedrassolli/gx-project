@@ -68,7 +68,8 @@ semente, os decks e a lista de respostas: a engine refaz o resto (ADR 0001).
     PV (iguais, empate). Quem deixa o prazo passar perde, e isso cobre também quem cai e não
     volta ("desconexão vira derrota depois do prazo"). Não há processo esperando o relógio:
     a partida vencida se encerra na próxima consulta ou resposta (a tela de quem espera
-    consulta quando o tempo zera). Os números são o padrão do projeto e mudam num lugar só.
+    consulta quando o tempo zera). Esses números são o padrão; o dono da sala pode mudar
+    (item 18).
 15. **Desistir** (`POST /api/matches/:id/surrender`) encerra a partida com a vitória do
     outro. Sair da sala no meio do duelo não vale: primeiro se desiste. Em qualquer fim, a
     sala volta a esperar, com todos "não pronto": a revanche é ficar pronto de novo.
@@ -82,6 +83,13 @@ semente, os decks e a lista de respostas: a engine refaz o resto (ADR 0001).
     que muda sobe e some; o ataque e a pilha do cemitério usam o Web Animations API. A
     velocidade (normais, rápidas, desligadas) fica no navegador; com "reduzir movimento" no
     aparelho, nada se desloca.
+18. **O dono da sala escolhe os tempos** (GXP-80): resposta de 30 s, 1 min, 1 min 30 s
+    (padrão), 3 min ou sem limite, e duelo de 20, 40, 60 (padrão), 90 min ou sem limite. A
+    partida copia a escolha da sala ao começar (`decision_seconds` e `duel_minutes`; nulo é
+    sem limite). O banco do turno acompanha a resposta, perto de 3 a 4 decisões: 2, 4, 5 e
+    10 min. Sem limite de resposta não há prazo nem banco; sem limite de duelo, ninguém ganha
+    pelo relógio. As opções ficam em `Matches::Clock` (o front repete a lista em
+    `rooms/times.ts`), e o modelo recusa outro valor (422 na API).
 
 ## Consequências
 

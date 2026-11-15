@@ -13,7 +13,8 @@ jogadores enquanto a partida não começa.
 ## Decisão
 
 1. **Duas tabelas:** `rooms` (código, dono, pública, modo, `best_of`, banlist, Destiny
-   Draw, situação) e `room_players` (lugar, jogador, deck escolhido, pronto). As opções são
+   Draw, tempo de resposta e do duelo, situação) e `room_players` (lugar, jogador, deck
+   escolhido, pronto). Os tempos e o que vale em cada um estão na ADR 0011, item 18. As opções são
    colunas, não jsonb: cada uma tem tipo e valor padrão, e o banco recusa o que não existe.
    O formato virou `best_of` (1 agora, 3 na F5) porque `format` esconderia o
    `Kernel#format` no modelo.

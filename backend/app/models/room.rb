@@ -20,6 +20,9 @@ class Room < ApplicationRecord
   validates :mode, inclusion: { in: SEATS.keys }
   validates :best_of, inclusion: { in: [ 1 ] }
   validates :status, inclusion: { in: %w[waiting dueling] }
+  # Tempo de resposta e do duelo (GXP-80); nulo é sem limite.
+  validates :decision_seconds, inclusion: { in: Matches::Clock::DECISIONS.keys }, allow_nil: true
+  validates :duel_minutes, inclusion: { in: Matches::Clock::DUELS }, allow_nil: true
 
   def self.new_code = Array.new(CODE_LENGTH) { CODE_CHARS.sample(random: SecureRandom) }.join
 

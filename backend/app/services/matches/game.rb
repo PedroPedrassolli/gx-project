@@ -37,7 +37,7 @@ module Matches
 
     # O prazo da pergunta venceu ou o duelo passou do limite.
     def expired?(now = Time.current)
-      @match.dueling? && ((@match.deadline_at && now > @match.deadline_at) || now > @match.started_at + Clock::DUEL)
+      @match.dueling? && ((@match.deadline_at && now > @match.deadline_at) || (@match.ends_at && now > @match.ends_at))
     end
 
     # Prazo vencido: quem devia responder perde. Passou do limite do duelo: ganha quem tem
@@ -100,7 +100,8 @@ module Matches
     def start_clock
       now = Time.current
       @match.prompt_at = now
-      @match.deadline_at = Clock.deadline(now, turn_player: @match.prompt_team == @match.turn_team, bank: @match.turn_time_left)
+      @match.deadline_at = Clock.deadline(now, turn_player: @match.prompt_team == @match.turn_team, bank: @match.turn_time_left,
+                                                decision: @match.decision_seconds)
     end
 
     # O jogador da vez gasta do banco do turno o tempo que levou para responder.
@@ -216,7 +217,7 @@ module Matches
     def new_turn(message)
       @match.turn += 1
       @match.turn_team = message.payload.getbyte(0)
-      @match.turn_time_left = Clock::TURN.to_i
+      @match.turn_time_left = Clock.turn_bank(@match.decision_seconds)
     end
 
     # A resposta que o servidor dá sozinho, ou nil quando a pergunta é do jogador.

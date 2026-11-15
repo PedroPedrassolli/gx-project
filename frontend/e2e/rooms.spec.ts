@@ -9,6 +9,8 @@ type Room = {
   best_of: number;
   banlist: boolean;
   destiny_draw: boolean;
+  decision_seconds: number | null;
+  duel_minutes: number | null;
   status: string;
   owner_id: number;
   seats: number;
@@ -23,6 +25,8 @@ const ROOM: Room = {
   best_of: 1,
   banlist: true,
   destiny_draw: true,
+  decision_seconds: 90,
+  duel_minutes: 60,
   status: "waiting",
   owner_id: PLAYER.id,
   seats: 2,
@@ -99,6 +103,8 @@ test("mostra os lugares e as opções, e fica pronto com um deck", async ({ page
   await expect(seats.getByRole("listitem").first()).toContainText("Criou a sala");
   await expect(seats.getByRole("listitem").nth(1)).toHaveText("Vaga livre");
   await expect(page.getByText("Banlist do jogo")).toBeVisible();
+  await expect(page.getByText("1 min 30 s por resposta")).toBeVisible();
+  await expect(page.getByText("Duelo de 60 min")).toBeVisible();
   await expect(page.getByRole("status").filter({ hasText: "a cada 2 segundos" })).toBeVisible();
 
   await page.getByLabel("Deck", { exact: true }).selectOption("Heróis");
@@ -174,9 +180,17 @@ test("cria a sala com as opções escolhidas e abre a sala de espera", async ({ 
   await expect(page.getByText("Nenhuma sala aberta agora.")).toBeVisible();
 
   await page.getByLabel("Destiny Draw").uncheck();
+  await page.getByLabel("Tempo de resposta").selectOption("30 s");
+  await page.getByLabel("Tempo do duelo").selectOption("Sem limite");
   await page.getByRole("button", { name: "Criar sala" }).click();
   await expect(page).toHaveURL("/salas/ABC234");
-  expect(sent).toEqual({ public: true, banlist: true, destiny_draw: false });
+  expect(sent).toEqual({
+    public: true,
+    banlist: true,
+    destiny_draw: false,
+    decision_seconds: 30,
+    duel_minutes: null,
+  });
 });
 
 test("lista as salas abertas e vai para uma pelo código", async ({ page }) => {
@@ -192,6 +206,8 @@ test("lista as salas abertas e vai para uma pelo código", async ({ page }) => {
             seats: 2,
             banlist: true,
             destiny_draw: true,
+            decision_seconds: null,
+            duel_minutes: 40,
           },
         ],
       },
@@ -202,6 +218,8 @@ test("lista as salas abertas e vai para uma pelo código", async ({ page }) => {
     "href",
     "/salas/ABC234",
   );
+  await expect(page.getByText("Resposta sem limite")).toBeVisible();
+  await expect(page.getByText("Duelo de 40 min")).toBeVisible();
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
 

@@ -196,6 +196,8 @@ test("do resultado, volta para a sala reaberta sem cair de novo na mesa", async 
     best_of: 1,
     banlist: true,
     destiny_draw: false,
+    decision_seconds: 90,
+    duel_minutes: 60,
     status: "dueling",
     owner_id: 1,
     seats: 2,
@@ -432,6 +434,15 @@ test("mostra quanto falta para responder e para o fim do duelo", async ({ page }
     /Resposta: 1:1\d/,
   );
   await expect(page.getByRole("timer").filter({ hasText: "Duelo" })).toHaveText(/Duelo: 49:5\d/);
+});
+
+test("sala sem limite de tempo: a mesa não mostra relógio", async ({ page }) => {
+  const match = await mockMatch(page);
+  match.set({ ...STATE, deadline_at: null, ends_at: null });
+  await page.goto("/duelo/5");
+
+  await expect(page.getByText("Sem limite de tempo")).toBeVisible();
+  await expect(page.getByRole("timer")).toHaveCount(0);
 });
 
 test("desistir pede confirmação e mostra o resultado com a volta para a sala", async ({ page }) => {

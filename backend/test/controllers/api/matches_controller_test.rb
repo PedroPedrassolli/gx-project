@@ -97,6 +97,14 @@ class Api::MatchesControllerTest < ActionDispatch::IntegrationTest
                  data.values_at("deadline_at", "turn_time_left", "ends_at", "room_code")
   end
 
+  it "sala sem limite: a mesa vem sem prazo e sem fim do duelo" do
+    match.update!(decision_seconds: nil, duel_minutes: nil, deadline_at: nil, turn_time_left: 0)
+    session = session_for(first)
+    session.get api_match_path(match)
+
+    assert_equal [ nil, 0, nil ], session.response.parsed_body["data"].values_at("deadline_at", "turn_time_left", "ends_at")
+  end
+
   it "prazo vencido: a próxima consulta encerra a partida e o outro fica sabendo" do
     travel_to(match.deadline_at + 1.second) do
       session = session_for(second)

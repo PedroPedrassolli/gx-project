@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_040000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -148,6 +148,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_040000) do
     t.datetime "deadline_at"
     t.integer "turn_time_left", default: 300, null: false
     t.string "finish_reason"
+    t.integer "decision_seconds", default: 90
+    t.integer "duel_minutes", default: 60
     t.index ["room_id"], name: "index_matches_on_room_id"
   end
 
@@ -197,6 +199,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_040000) do
     t.string "status", default: "waiting", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "decision_seconds", default: 90
+    t.integer "duel_minutes", default: 60
     t.index ["code"], name: "index_rooms_on_code", unique: true
     t.index ["owner_id"], name: "index_rooms_on_owner_id"
     t.index ["status", "public", "updated_at"], name: "index_rooms_on_status_and_public_and_updated_at"
