@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -101,6 +101,42 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_000000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_decks_on_user_id"
+  end
+
+  create_table "match_players", force: :cascade do |t|
+    t.bigint "match_id", null: false
+    t.bigint "user_id"
+    t.integer "team", null: false
+    t.integer "seat", null: false
+    t.jsonb "deck", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["match_id", "team"], name: "index_match_players_on_match_id_and_team", unique: true
+    t.index ["user_id"], name: "index_match_players_on_user_id"
+  end
+
+  create_table "match_responses", force: :cascade do |t|
+    t.bigint "match_id", null: false
+    t.integer "seq", null: false
+    t.integer "team", null: false
+    t.binary "bytes", null: false
+    t.datetime "created_at", null: false
+    t.index ["match_id", "seq"], name: "index_match_responses_on_match_id_and_seq", unique: true
+  end
+
+  create_table "matches", force: :cascade do |t|
+    t.bigint "room_id"
+    t.string "mode", default: "1x1", null: false
+    t.boolean "banlist", null: false
+    t.boolean "destiny_draw", null: false
+    t.bigint "seed", null: false, array: true
+    t.string "status", default: "dueling", null: false
+    t.integer "winner_team"
+    t.datetime "started_at", null: false
+    t.datetime "finished_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["room_id"], name: "index_matches_on_room_id"
   end
 
   create_table "pack_cards", force: :cascade do |t|
@@ -195,6 +231,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_000000) do
   add_foreign_key "deck_cards", "cards"
   add_foreign_key "deck_cards", "decks"
   add_foreign_key "decks", "users"
+  add_foreign_key "match_players", "matches"
+  add_foreign_key "match_players", "users", on_delete: :nullify
+  add_foreign_key "match_responses", "matches"
+  add_foreign_key "matches", "rooms", on_delete: :nullify
   add_foreign_key "pack_cards", "cards"
   add_foreign_key "pack_cards", "packs"
   add_foreign_key "room_players", "decks", on_delete: :nullify

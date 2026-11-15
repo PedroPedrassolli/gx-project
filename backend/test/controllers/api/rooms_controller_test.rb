@@ -112,6 +112,20 @@ class Api::RoomsControllerTest < ActionDispatch::IntegrationTest
       assert_equal [ true, true, nil ], events(syrus).last.data[:players].first.values_at(:ready, :deck_chosen, :deck_id)
     end
 
+    it "o último a ficar pronto começa o duelo e os dois vão para a partida" do
+      room = room_for(jaden)
+      room.players.create!(user: syrus, seat: 1, deck: Decks::StarterDeck.give_to(syrus) && syrus.decks.sole, ready: true)
+      Decks::StarterDeck.give_to(jaden)
+      session = session_for(jaden)
+      session.post ready_api_room_path(room.code), params: { deck_id: jaden.decks.sole.id, ready: true }, as: :json
+
+      match = Match.sole
+      assert_equal [ "dueling", match.id ], session.response.parsed_body["data"].values_at("status", "match_id")
+      [ jaden, syrus ].each do |user|
+        assert_includes events(user).map { |event| [ event.name, event.data ] }, [ "match.started", { code: room.code, match_id: match.id } ]
+      end
+    end
+
     it "recusa deck incompleto e deck de outro jogador, e deixa de ficar pronto" do
       room = room_for(jaden)
       session = session_for(jaden)
