@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { freeZones } from "./announce.ts";
+import { displayName } from "../catalog/cards.ts";
+import { announceOptions, freeZones, searchCards } from "./announce.ts";
 import { cardLabel, Choice, list, type PromptCard, type PromptProps } from "./promptParts.tsx";
 
-// Os anúncios da engine: zona, marcadores, número e pedra, papel e tesoura. Quando é uma
-// escolha só, o toque já responde.
+// Os anúncios da engine: zona, marcadores, tipo, atributo, nome de carta, número e pedra,
+// papel e tesoura. Quando é uma escolha só, o toque já responde.
 
 // Zona para escolher (select_disfield): a resposta é jogador, local e sequência de cada uma.
 export function ZoneChoice(props: PromptProps) {
@@ -126,5 +127,77 @@ export function HandChoice(props: PromptProps) {
         <Choice key={hand} label={label} onClick={() => props.onAnswer({ hand })} />
       ))}
     </p>
+  );
+}
+
+// Tipo ou atributo para declarar (announce_race, announce_attrib): a resposta é a máscara
+// com os bits escolhidos, exatamente "count" deles.
+export function BitsChoice(props: PromptProps) {
+  const { prompt, onAnswer } = props;
+  const options = announceOptions(prompt);
+  const count = Number(prompt.count);
+  const [mask, setMask] = useState(0);
+  if (count === 1) {
+    return (
+      <p className="actions">
+        {options.map(({ bit, label }) => (
+          <Choice key={bit} label={label} onClick={() => onAnswer({ mask: bit })} />
+        ))}
+      </p>
+    );
+  }
+  const chosen = options.filter(({ bit }) => (mask & bit) !== 0).length;
+  return (
+    <>
+      <ul className="picks">
+        {options.map(({ bit, label }) => (
+          <li key={bit}>
+            <label>
+              <input
+                type="checkbox"
+                checked={(mask & bit) !== 0}
+                onChange={() => setMask((current) => current ^ bit)}
+              />
+              {label}
+            </label>
+          </li>
+        ))}
+      </ul>
+      <p className="pick-count" aria-live="polite">
+        Escolhidos: {chosen} de {count}
+      </p>
+      <p className="actions">
+        <Choice label="Confirmar" disabled={chosen !== count} onClick={() => onAnswer({ mask })} />
+      </p>
+    </>
+  );
+}
+
+// Nome de carta para declarar (announce_card): busca no catálogo e manda o código. Quem
+// confere se a carta vale (os opcodes da pergunta) é a engine.
+export function CardNameChoice(props: PromptProps) {
+  const [query, setQuery] = useState("");
+  const found = searchCards(props.cards.values(), query, props.language);
+  return (
+    <>
+      <p>
+        <label>
+          Nome da carta{" "}
+          <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} />
+        </label>
+      </p>
+      <p className="actions">
+        {found.map((card) => (
+          <Choice
+            key={card.id}
+            label={displayName(card, props.language)}
+            onClick={() => props.onAnswer({ code: card.code })}
+          />
+        ))}
+      </p>
+      {query.trim().length >= 2 && found.length === 0 && (
+        <p className="pick-count">Nenhuma carta com esse nome.</p>
+      )}
+    </>
   );
 }

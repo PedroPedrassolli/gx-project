@@ -173,7 +173,10 @@ module Duel
 
       def sort_chain(reader) = sort_card(reader)
       def rock_paper_scissors(_reader) = {}
-      def announce_race(reader) = { count: reader.u8, available: reader.u64 }
+      # Só os tipos oficiais (RACE_ALL do constant.lua). Os bits de cima, do Rush, passam de
+      # 2^53, e o navegador perderia os de baixo ao ler o número.
+      OFFICIAL_RACES = 0x3FFFFFF
+      def announce_race(reader) = { count: reader.u8, available: reader.u64 & OFFICIAL_RACES }
       def announce_attrib(reader) = { count: reader.u8, available: reader.u32 }
       def announce_card(reader) = { opcodes: Array.new(reader.u8) { reader.u64 } }
       def announce_number(reader) = { options: Array.new(reader.u8) { reader.u64 } }

@@ -425,3 +425,43 @@ test("zona, marcadores, número e pedra, papel e tesoura mandam a escolha certa"
   await page.getByRole("button", { name: "Papel" }).click();
   await expect.poll(() => hand).toEqual([{ seq: 3, response: { hand: 3 } }]);
 });
+
+test("tipo, atributo e nome de carta mandam a escolha certa", async ({ page }) => {
+  const race = await mockPrompt(page, {
+    type: "announce_race",
+    player: 0,
+    count: 1,
+    available: 0x1 | 0x2000,
+  });
+  await page.goto("/duelo/5");
+  await expect(page.getByRole("button", { name: "Guerreiro" })).toBeVisible();
+  await page.getByRole("button", { name: "Dragão" }).click();
+  await expect.poll(() => race).toEqual([{ seq: 3, response: { mask: 0x2000 } }]);
+
+  const attributes = await mockPrompt(page, {
+    type: "announce_attrib",
+    player: 0,
+    count: 2,
+    available: 0x1 | 0x10 | 0x20,
+  });
+  await page.goto("/duelo/5");
+  await page.getByRole("checkbox", { name: "TREVAS" }).check();
+  await expect(page.getByRole("button", { name: "Confirmar" })).toBeDisabled();
+  await page.getByRole("checkbox", { name: "LUZ" }).check();
+  await page.getByRole("button", { name: "Confirmar" }).click();
+  await expect.poll(() => attributes).toEqual([{ seq: 3, response: { mask: 0x30 } }]);
+
+  const name = await mockPrompt(page, {
+    type: "announce_card",
+    player: 0,
+    opcodes: [],
+    hint: 564,
+  });
+  await page.goto("/duelo/5");
+  const panel = page.getByRole("region", { name: "Declare o nome de uma carta" });
+  await panel.getByLabel("Nome da carta").fill("zzz");
+  await expect(panel.getByText("Nenhuma carta com esse nome.")).toBeVisible();
+  await panel.getByLabel("Nome da carta").fill("mago");
+  await panel.getByRole("button", { name: "Mago Negro" }).click();
+  await expect.poll(() => name).toEqual([{ seq: 3, response: { code: 46986414 } }]);
+});
