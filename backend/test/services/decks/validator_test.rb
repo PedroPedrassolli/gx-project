@@ -45,8 +45,9 @@ class Decks::ValidatorTest < ActiveSupport::TestCase
   end
 
   it "segue a banlist, somando as seções" do
-    banlist = { 1 => "forbidden", 2 => "limited", 3 => "semi_limited", 4 => "semi_limited" }
-    deck = main_deck + [ entry(4, "side", 1) ]
+    # A 3 (semi-limitada, 2 cópias) e a 21 (limitada, 1 cópia) estão dentro do limite.
+    banlist = { 1 => "forbidden", 2 => "limited", 3 => "semi_limited", 4 => "semi_limited", 21 => "limited" }
+    deck = main_deck + [ entry(4, "side", 1), entry(21, "side", 1) ]
 
     _(errors(deck, banlist:)).must_equal [ "Monstro 1 está proibida.", "Monstro 2 é limitada: no máximo 1 cópia (tem 2).",
                                           "Monstro 4 é semi-limitada: no máximo 2 cópias (tem 3)." ]

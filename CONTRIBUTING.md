@@ -64,6 +64,10 @@ mudar o projeto sem quebrar nada.
   isso, o replay não sai igual.
 - **`aux.Stringid(código, n)` é `código << 20 | n`** (utility.lua): é o número que chega na
   descrição das perguntas, como a do Destiny Draw.
+- **Bullet nos testes de API**: uma consulta por item da lista (N+1) ou um `includes` que
+  ninguém usa derruba a requisição no teste. Ele só enxerga o N+1 quando a lista tem pelo
+  menos dois itens, então teste de rota que lista coisas precisa de dois ou mais. Nos testes
+  de serviço ele não roda: o que vale é o teste da rota que usa o serviço.
 - **Marcador de pular a CI** (colchetes + `skip ci`) em **qualquer** mensagem de commit pula a
   CI de push e de pull request. Nunca cite o marcador em commits nem no corpo do PR.
 - **Merge pelo `GITHUB_TOKEN` não dispara workflows**: por isso o `auto-merge.yml` move o
