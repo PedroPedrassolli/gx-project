@@ -617,9 +617,32 @@ test("cadeia, sim ou não e posição mandam a escolha certa", async ({ page }) 
   await expect.poll(() => position).toEqual([{ seq: 3, response: { position: 8 } }]);
 });
 
-test("escolher cartas: um toque basta para uma carta; várias pedem o Confirmar", async ({
-  page,
-}) => {
+test("escolher cartas: tocar mostra a carta e só o Confirmar responde", async ({ page }) => {
+  // Buscar no deck (GXP-79): marcar mostra o detalhe da carta; a resposta vai no Confirmar.
+  const search = await mockPrompt(page, {
+    type: "select_card",
+    player: 0,
+    cancelable: true,
+    min: 1,
+    max: 1,
+    hint: 506,
+    cards: [
+      { code: 89631139, controller: 0, location: 1, sequence: 7 },
+      { code: 46986414, controller: 0, location: 1, sequence: 3 },
+    ],
+  });
+  await page.goto("/duelo/5");
+  const pick = page.getByRole("region", { name: "Escolha a carta para adicionar à mão" });
+  await expect(pick.getByRole("button", { name: "Confirmar" })).toBeDisabled();
+  await pick.getByRole("radio", { name: "Mago Negro (deck)" }).check();
+  await expect(page.getByText("O mago supremo.")).toBeVisible();
+  await pick.getByRole("radio", { name: "Blue-Eyes White Dragon (deck)" }).check();
+  await expect(pick.getByRole("radio", { name: "Mago Negro (deck)" })).not.toBeChecked();
+  await pick.getByRole("radio", { name: "Mago Negro (deck)" }).check();
+  expect(search).toEqual([]);
+  await pick.getByRole("button", { name: "Confirmar" }).click();
+  await expect.poll(() => search).toEqual([{ seq: 3, response: { indexes: [1] } }]);
+
   const target = await mockPrompt(page, {
     type: "select_card",
     player: 0,
@@ -633,10 +656,11 @@ test("escolher cartas: um toque basta para uma carta; várias pedem o Confirmar"
   const attack = page.getByRole("region", { name: "Escolha o alvo do ataque" });
   await expect(attack.getByRole("button", { name: "Cancelar" })).toBeVisible();
   await attack
-    .getByRole("button", {
+    .getByRole("radio", {
       name: "Blue-Eyes White Dragon (zona de monstro do oponente, 5ª da esquerda)",
     })
-    .click();
+    .check();
+  await attack.getByRole("button", { name: "Confirmar" }).click();
   await expect.poll(() => target).toEqual([{ seq: 3, response: { indexes: [0] } }]);
 
   const destroy = await mockPrompt(page, {
@@ -735,8 +759,9 @@ test("uma carta por vez e a ordem mandam a escolha certa", async ({ page }) => {
   await page.goto("/duelo/5");
   await expect(page.getByRole("button", { name: "Concluir" })).toBeVisible();
   await page
-    .getByRole("button", { name: "Tirar Mago Negro (sua zona de monstro, 2ª da esquerda)" })
-    .click();
+    .getByRole("radio", { name: "Mago Negro (sua zona de monstro, 2ª da esquerda)" })
+    .check();
+  await page.getByRole("button", { name: "Tirar" }).click();
   await expect.poll(() => unselect).toEqual([{ seq: 3, response: { index: 1 } }]);
 
   const deckTop = [

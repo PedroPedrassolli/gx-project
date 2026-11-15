@@ -1,4 +1,4 @@
-import { displayName, type CardSummary, type Language } from "../catalog/cards.ts";
+import { displayName, imageUrl, type CardSummary, type Language } from "../catalog/cards.ts";
 import type { Prompt } from "./api.ts";
 import { onField, placeLabel } from "./zones.ts";
 
@@ -24,6 +24,8 @@ export type PromptProps = {
   language: Language;
   pending: boolean;
   onAnswer: Answer;
+  // Mostra o detalhe da carta (o painel da esquerda no computador, a janela no celular).
+  onCard?: (code: number) => void;
 };
 
 // "Mago Negro (mão)", "Carta escondida (mão do oponente)" ou "Carta virada (zona de monstro
@@ -42,6 +44,24 @@ export function cardName(card: PromptCard, props: Pick<PromptProps, "cards" | "l
   if (card.code === 0) return onField(card) ? "Carta virada" : "Carta escondida";
   const data = props.cards.get(card.code);
   return data ? displayName(data, props.language) : `Carta ${card.code}`;
+}
+
+// A miniatura da carta na lista de escolha (o verso, quando o jogador não a vê).
+export function CardThumb(props: { card: PromptCard; cards: Map<number, CardSummary> }) {
+  const image = props.cards.get(props.card.code)?.image;
+  if (props.card.code === 0 || image === undefined) {
+    return <span className="pick-thumb back" aria-hidden="true" />;
+  }
+  return (
+    <img
+      className="pick-thumb"
+      src={imageUrl(image, "p")}
+      alt=""
+      width={28}
+      height={41}
+      decoding="async"
+    />
+  );
 }
 
 export const list = (prompt: Prompt, key: string) =>
