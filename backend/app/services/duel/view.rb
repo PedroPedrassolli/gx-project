@@ -18,9 +18,11 @@ module Duel
     end
 
     # A mesa inteira. A pergunta só vai para quem responde; o outro vê de quem é a vez.
-    def to_h(turn:, turn_team:, phase:, prompt:, prompt_team:)
+    # events e chain: o log da mesa e a corrente aberta (Duel::Events), guardados na partida.
+    def to_h(turn:, turn_team:, phase:, prompt:, prompt_team:, events: [], chain: [])
       { you: @viewer, turn:, turn_team:, phase: phase_name(phase), sides:, waiting_for: prompt_team,
-        prompt: (mask(prompt) if prompt && prompt_team == @viewer) }.compact
+        prompt: (mask(prompt) if prompt && prompt_team == @viewer),
+        events: events.map { |event| Events.mask(event, @viewer) }, chain: chain.map { |link| with_text(link) } }.compact
     end
 
     def sides

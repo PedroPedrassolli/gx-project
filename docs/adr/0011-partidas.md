@@ -53,6 +53,15 @@ semente, os decks e a lista de respostas: a engine refaz o resto (ADR 0001).
     invocação não para numa pergunta a mais e o duelo anda rápido. No MR1 a zona quase nunca
     muda o jogo; a zona que um efeito manda escolher para desativar (`select_disfield`)
     continua com o jogador.
+13. **O log e a corrente da mesa vêm dos eventos** (`Duel::Events`): cada ação lê das
+    mensagens da engine a compra, a invocação, a carta baixada, a carta que muda de lugar ou
+    de posição, a corrente (ativação, negação, resolução), o ataque, os PV, os sorteios e o
+    fim. A partida guarda os últimos 50 eventos, numerados (o que cada lado ainda não viu
+    sai pelo número, também nas consultas sem tempo real), e os elos da corrente aberta. Os
+    eventos ficam com os códigos no banco; cada lado recebe só o que vê, com as regras da
+    mesa: a compra do outro sem as cartas, a carta baixada sem código e a carta que muda de
+    lugar só aparece se estava ou fica à vista. O ataque leva o código das cartas com a face
+    para cima, lido da mesa logo depois da declaração (antes da batalha).
 
 ## Consequências
 
