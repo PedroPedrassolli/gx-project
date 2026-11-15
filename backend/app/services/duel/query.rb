@@ -60,7 +60,9 @@ module Duel
       reader = ByteReader.new(bytes)
       reader.u32 # opções do duelo
       Array.new(2) do
-        lp = reader.u32
+        # A engine guarda o PV com sinal e manda sem: um dano maior que o PV que sobra virava
+        # 4294967096 (GXP-78). No jogo o PV não fica abaixo de zero.
+        lp = [ reader.i32, 0 ].max
         # 7 zonas de monstro e 8 de magia/armadilha: 1 byte (ocupada ou não) e, se ocupada,
         # posição (u8) e matérias Xyz (u32).
         (7 + 8).times { reader.bytes(5) if reader.u8 == 1 }
