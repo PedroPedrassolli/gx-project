@@ -276,6 +276,32 @@ test("revanche: um clique deixa pronto com o mesmo deck e volta para a sala", as
   expect(sent).toEqual([{ ready: true }, { ready: true }]);
 });
 
+test("as frases: a sua aparece no seu nome, e a do outro chega na consulta", async ({ page }) => {
+  const match = await mockMatch(page);
+  const sent: unknown[] = [];
+  await page.route("**/api/matches/5/emotes", (route) => {
+    sent.push(route.request().postDataJSON());
+    const emote_at = new Date().toISOString();
+    return route.fulfill({ json: { data: { id: 5, team: 0, emote: "nice", emote_at } } });
+  });
+  await page.goto("/duelo/5");
+
+  await page.getByText("Mensagens").click();
+  await page.getByRole("button", { name: "Boa jogada!" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Boa jogada!" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Bom duelo!" })).toBeHidden();
+  expect(sent).toEqual([{ emote: "nice" }]);
+
+  const emote_at = new Date().toISOString();
+  const players = STATE.players.map((player) =>
+    player.team === 1 ? { ...player, emote: "gg", emote_at } : player,
+  );
+  match.set({ ...STATE, players });
+  await expect(page.getByRole("status").filter({ hasText: "Bom duelo!" })).toBeVisible();
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
+});
+
 test("o replay passa lance a lance e turno a turno, e reproduz sozinho", async ({ page }) => {
   await mockMatch(page);
   const frame = (step: number, turn: number, lp: number) => ({

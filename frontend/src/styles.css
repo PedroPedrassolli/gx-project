@@ -1723,6 +1723,61 @@ button.pile {
   font-family: var(--font-title);
 }
 
+/* A frase (emote) aparece em cima do nome, sem empurrar nada da mesa, e some sozinha. */
+.side-info {
+  position: relative;
+}
+
+.emote {
+  position: absolute;
+  bottom: calc(100% + 0.35rem);
+  left: 50%;
+  z-index: 2;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text);
+  white-space: nowrap;
+  translate: -50% 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+/* O nome do oponente fica no alto da mesa: a frase dele aparece embaixo, dentro da mesa. */
+.side.opponent .emote {
+  top: calc(100% + 0.35rem);
+  bottom: auto;
+}
+
+/* As frases fixas num menu pequeno, embaixo da situação do duelo: seis botões em 3 × 2. */
+.emotes {
+  margin: 0 0 1rem;
+  text-align: center;
+}
+
+.emotes summary {
+  display: inline-block;
+  padding: 0.25rem 0.85rem;
+  border: 1px solid var(--color-field-border);
+  border-radius: 999px;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+/* Duas colunas no celular (3 × 2 no computador): cada frase cabe numa linha só. */
+.emote-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.5rem;
+  max-width: 30rem;
+  margin: 0.5rem auto 0;
+}
+
 .pile-banished {
   padding: 0 0.5rem;
   border: 1px solid var(--color-border);

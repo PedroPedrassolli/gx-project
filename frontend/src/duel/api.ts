@@ -75,7 +75,7 @@ export type MatchState = {
   ends_at?: string | null; // null: duelo sem limite de tempo
   seq: number;
   you: number;
-  players: { team: number; nickname: string }[];
+  players: { team: number; nickname: string; emote?: string; emote_at?: string }[];
   view: View;
 };
 

@@ -91,6 +91,11 @@ semente, os decks e a lista de respostas: a engine refaz o resto (ADR 0001).
     10 min. Sem limite de resposta não há prazo nem banco; sem limite de duelo, ninguém ganha
     pelo relógio. As opções ficam em `Matches::Clock` (o front repete a lista em
     `rooms/times.ts`), e o modelo recusa outro valor (422 na API).
+19. **Emotes** (escopo 3.7: sem chat livre; GXP-83): seis frases fixas (`MatchPlayer::EMOTES`,
+    o texto fica no front). `POST /api/matches/:id/emotes` guarda a última frase de cada
+    jogador e manda `duel.emote` para o outro; a mesa traz a frase dos últimos 8 s, então quem
+    está sem tempo real também vê. Uma frase a cada 3 s (429). Vale também depois do fim, para
+    o "bom duelo".
 
 ## Consequências
 
