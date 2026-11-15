@@ -1256,17 +1256,68 @@ input[type="file"]::file-selector-button {
   white-space: nowrap;
 }
 
-/* Mesa de duelo: o tapete com as zonas em pontilhado dourado, o lado do outro em cima.
-   --zone cresce com a tela, até 4,5rem. */
+/* Mesa de duelo: o tapete com as zonas em pontilhado dourado, o lado do outro em cima. */
+/* Duelo: no celular, uma coluna (mesa, situação, detalhe, pergunta, corrente e histórico).
+   No computador, três: o detalhe da carta à esquerda, a mesa e a pergunta no meio, a
+   corrente e o histórico à direita, os lados parados enquanto a página rola. */
 .duel-page {
-  max-width: 64rem;
+  max-width: 44rem;
+}
+
+@media (width >= 72rem) {
+  .duel-page {
+    display: grid;
+    grid-template-areas:
+      "detail board side"
+      "detail status side"
+      "detail prompt side"
+      "detail error side"
+      "detail . side";
+    grid-template-columns: 17rem minmax(0, 1fr) 17rem;
+    grid-template-rows: auto auto auto auto 1fr;
+    gap: 0 1.5rem;
+    align-items: start;
+    max-width: 72rem;
+  }
+
+  .duel-page > .board {
+    grid-area: board;
+  }
+
+  .duel-page > .duel-status {
+    grid-area: status;
+  }
+
+  .duel-page > .prompt-panel {
+    grid-area: prompt;
+    width: 100%;
+  }
+
+  .duel-page > .duel-error {
+    grid-area: error;
+  }
+
+  .duel-page > .duel-side,
+  .duel-page > .duel-detail {
+    position: sticky;
+    top: 1rem;
+    margin: 0;
+  }
+
+  .duel-page > .duel-side {
+    grid-area: side;
+  }
+
+  .duel-page > .duel-detail {
+    grid-area: detail;
+  }
 }
 
 .board {
-  --zone: clamp(2.5rem, 10.5vw, 4.5rem);
   --gap: clamp(0.2rem, 1vw, 0.4rem);
 
   display: grid;
+  container-type: inline-size;
   gap: 0.75rem;
   padding: clamp(0.5rem, 2vw, 1rem);
   border: 1px solid var(--color-border);
@@ -1274,7 +1325,10 @@ input[type="file"]::file-selector-button {
   background: radial-gradient(ellipse at 50% 50%, #18264a, var(--color-bg) 75%);
 }
 
+/* 7 zonas e 6 vãos na largura da mesa, entre 2rem e 4,5rem cada. */
 .side {
+  --zone: clamp(2rem, (100cqi - 6 * var(--gap)) / 7, 4.5rem);
+
   display: grid;
   gap: 0.5rem;
   justify-items: center;
@@ -1533,19 +1587,29 @@ button.pile {
   margin: 0;
 }
 
+.phase-track {
+  container-type: inline-size;
+}
+
 .phase-track ol {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.25rem;
-  justify-content: center;
+  width: min(100%, 36rem);
   margin: 0;
   padding: 0;
   list-style: none;
   font-size: 0.8125rem;
+
+  @container (width >= 30rem) {
+    grid-template-columns: repeat(6, 1fr);
+  }
 }
 
 .phase-track li {
   padding: 0 0.5rem;
+  text-align: center;
+  white-space: nowrap;
   border: 1px solid var(--color-border);
   border-radius: 999px;
   color: var(--color-muted);
@@ -1566,19 +1630,37 @@ button.pile {
 
 .duel-detail {
   max-width: 24rem;
-  margin: 1rem auto 0;
+  margin: 0 auto 1rem;
+}
+
+/* Sem carta escolhida, o aviso só aparece no computador (no celular ocuparia a tela). */
+.duel-detail-empty {
+  display: none;
+  color: var(--color-muted);
+
+  @media (width >= 72rem) {
+    display: block;
+  }
+}
+
+.duel-detail-empty p {
+  margin: 0;
+}
+
+.duel-detail-close {
+  margin-top: 0.75rem;
 }
 
 /* A corrente aberta e o histórico, embaixo da pergunta. */
 .duel-side {
   display: grid;
   gap: 1rem;
-  max-width: 40rem;
-  margin: 1rem auto 0;
+  margin: 1rem 0 0;
 }
 
 .chain-stack,
-.duel-log {
+.duel-log,
+.duel-detail-empty {
   padding: 0.75rem 1rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
@@ -1586,7 +1668,8 @@ button.pile {
 }
 
 .chain-stack h2,
-.duel-log h2 {
+.duel-log h2,
+.duel-detail-empty h2 {
   margin: 0 0 0.5rem;
   font-size: 1rem;
 }
@@ -1611,12 +1694,19 @@ button.pile {
   font-size: 0.8125rem;
 }
 
+/* No computador, o histórico cresce até perto da altura da tela antes de rolar. */
 .duel-log ol {
   max-height: 12rem;
+
+  @media (width >= 72rem) {
+    max-height: calc(100dvh - 10rem);
+  }
+
   margin: 0;
-  padding: 0 0.25rem 0 1.25rem;
+  padding: 0 0.25rem 0 0;
   overflow-y: auto;
   font-size: 0.9375rem;
+  list-style: none;
 }
 
 .duel-log li + li {
@@ -1625,8 +1715,6 @@ button.pile {
 
 /* A pergunta da vez embaixo da mesa: um botão por escolha, com o texto do efeito menor. */
 .prompt-panel {
-  max-width: 40rem;
-  margin: 0 auto;
   padding: 1rem;
   border: 2px solid var(--color-accent);
   border-radius: var(--radius);
@@ -1645,7 +1733,18 @@ button.pile {
 }
 
 .prompt-panel .actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+  gap: 0.5rem;
   margin: 0 0 0.5rem;
+}
+
+.prompt-panel .actions:empty {
+  display: none;
+}
+
+.prompt-panel .actions > button {
+  text-align: start;
 }
 
 .choice-detail {

@@ -2,8 +2,8 @@ import { displayName, type CardSummary, type Language } from "../catalog/cards.t
 import type { DuelEvent, Place } from "./api.ts";
 
 // Uma linha do log da mesa para cada evento do duelo (Duel::Events). Nil quando o evento não
-// vale uma linha (a etapa da batalha, a corrente que terminou, a carta que entra no campo
-// pela invocação, que já tem linha própria).
+// vale uma linha (as fases que a trilha da mesa já mostra, a corrente que terminou, a carta
+// que entra no campo pela invocação, que já tem linha própria).
 
 type Context = {
   you: number;
@@ -27,14 +27,7 @@ const RELEASE = 0x2;
 const BATTLE = 0x20;
 const DISCARD = 0x4000;
 
-const PHASES: Record<number, string> = {
-  0x01: "Compra",
-  0x02: "Apoio",
-  0x04: "Principal 1",
-  0x08: "Batalha",
-  0x100: "Principal 2",
-  0x200: "Final",
-};
+const BATTLE_PHASE = 0x08;
 const HANDS: Record<number, string> = { 1: "tesoura", 2: "pedra", 3: "papel" };
 
 function who(team: number, ctx: Context, start = true) {
@@ -117,10 +110,9 @@ export function describe(event: DuelEvent, ctx: Context): string | null {
       return team === ctx.you
         ? "Novo turno: é a sua vez."
         : `Novo turno: vez de ${who(team, ctx)}.`;
-    case "phase": {
-      const phase = PHASES[Number(event.phase)];
-      return phase ? `Fase: ${phase}.` : null;
-    }
+    case "phase":
+      // As outras fases a trilha do meio da mesa já mostra; a Batalha vale a linha.
+      return Number(event.phase) === BATTLE_PHASE ? "Fase de Batalha." : null;
     case "draw": {
       const codes = event.codes as number[] | undefined;
       const count = codes?.length ?? Number(event.count);

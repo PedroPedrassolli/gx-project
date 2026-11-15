@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import { displayName, type CardSummary, type Language } from "../catalog/cards.ts";
 import type { ChainLink, DuelEvent } from "./api.ts";
 import { describe } from "./log.ts";
@@ -38,32 +37,22 @@ export function ChainStack(props: Props & { chain: ChainLink[] }) {
   );
 }
 
-// Uma linha por evento, a mais nova embaixo. A lista avisa o leitor de tela das linhas
-// novas (aria-live) e rola sozinha até o fim.
+// Uma linha por evento, a mais nova em cima. A lista avisa o leitor de tela das linhas
+// novas (aria-live).
 export function DuelLog(props: Props & { events: DuelEvent[] }) {
+  // O nome da carta pode terminar em ponto ("Guerreiro D.D."): um ponto só no fim da linha.
   const lines = props.events.flatMap((event) => {
     const text = describe(event, props);
-    return text ? [{ id: event.id, text }] : [];
+    return text ? [{ id: event.id, text: text.replace(/\.\.$/, ".") }] : [];
   });
-  const list = useRef<HTMLOListElement>(null);
-  const last = lines.at(-1)?.id;
-  useEffect(() => {
-    if (list.current) list.current.scrollTop = list.current.scrollHeight;
-  }, [last]);
   return (
     <section className="duel-log" aria-labelledby="log-title">
       <h2 id="log-title">Histórico</h2>
       {lines.length === 0 ? (
         <p className="pick-count">Nada aconteceu ainda.</p>
       ) : (
-        <ol
-          ref={list}
-          tabIndex={0}
-          aria-labelledby="log-title"
-          aria-live="polite"
-          aria-relevant="additions"
-        >
-          {lines.map((line) => (
+        <ol tabIndex={0} aria-labelledby="log-title" aria-live="polite" aria-relevant="additions">
+          {lines.reverse().map((line) => (
             <li key={line.id}>{line.text}</li>
           ))}
         </ol>

@@ -207,9 +207,9 @@ test("o histórico conta as jogadas e a corrente mostra os elos abertos", async 
   await page.goto("/duelo/5");
 
   await expect(page.getByRole("region", { name: "Histórico" }).getByRole("listitem")).toHaveText([
-    "Novo turno: vez de Syrus.",
-    "Syrus invocou Blue-Eyes White Dragon.",
     "Elo 1: você ativou Renascer do Monstro.",
+    "Syrus invocou Blue-Eyes White Dragon.",
+    "Novo turno: vez de Syrus.",
   ]);
   const stack = page.getByRole("region", { name: "Corrente" });
   await expect(stack.getByRole("listitem")).toContainText("Renascer do Monstro, sua");
