@@ -26,6 +26,8 @@ type Props = {
   // A última mudança de PV de cada time (animação), sem nada quando as animações estão
   // desligadas.
   lpChanges?: Map<number, DuelEvent>;
+  // Onde estão as cartas que a pergunta da vez deixa usar (actionablePlaces): brilham.
+  actionable?: Set<string>;
 };
 
 // Uma pilha aberta: o título e as cartas, de cima (a última que entrou) para baixo.
@@ -63,23 +65,40 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
   const name = props.names[side.team] ?? "Duelista";
   const team = side.team;
   const label = (pile: string, own: string) => (props.opponent ? `${pile} de ${name}` : own);
+  // data-actionable só onde há carta para usar (o atributo some quando é falso).
+  const lit = (place: string) => props.actionable?.has(`${team}-${place}`) || undefined;
   const open = (title: string, cards: HandCard[]) => () =>
     props.onPile({ title, cards: [...cards].reverse() });
   const field = (
     <div className="field-grid">
-      <div className="zone field-zone pile-field" role="group" aria-label={`Campo de ${name}`}>
+      <div
+        className="zone field-zone pile-field"
+        role="group"
+        aria-label={`Campo de ${name}`}
+        data-actionable={lit("8-5")}
+      >
         {side.field_spell && <CardView {...props} card={side.field_spell} place={`${team}-8-5`} />}
       </div>
       <ol className="zones monster-row" aria-label={`Monstros de ${name}`}>
         {side.monsters.map((card, index) => (
-          <li key={index} className="zone" data-place={`${team}-4-${index}`}>
+          <li
+            key={index}
+            className="zone"
+            data-place={`${team}-4-${index}`}
+            data-actionable={lit(`4-${index}`)}
+          >
             {card && <CardView {...props} card={card} />}
           </li>
         ))}
       </ol>
       <ol className="zones spell-row" aria-label={`Magias e armadilhas de ${name}`}>
         {side.spells.map((card, index) => (
-          <li key={index} className="zone" data-place={`${team}-8-${index}`}>
+          <li
+            key={index}
+            className="zone"
+            data-place={`${team}-8-${index}`}
+            data-actionable={lit(`8-${index}`)}
+          >
             {card && <CardView {...props} card={card} />}
           </li>
         ))}
@@ -88,6 +107,7 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
         {...props}
         className="pile-grave"
         place={`${team}-16`}
+        lit={lit("16")}
         label={label("Cemitério", "Seu cemitério")}
         pile={side.grave}
         onOpen={open(label("Cemitério", "Seu cemitério"), side.grave)}
@@ -95,6 +115,7 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
       <div
         className="zone pile pile-deck"
         role="group"
+        data-actionable={lit("1")}
         aria-label={`${label("Deck", "Seu deck")}, ${count(side.deck)}`}
       >
         {side.deck > 0 && <span className="card back" aria-hidden="true" />}
@@ -106,6 +127,7 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
         <PileButton
           {...props}
           className="pile-extra"
+          lit={lit("64")}
           label="Seu Extra"
           pile={side.extra_cards}
           hideTop
@@ -128,7 +150,7 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
   const hand = (
     <ol className="hand" aria-label={props.opponent ? `Mão de ${name}` : "Sua mão"}>
       {side.hand.map((card, index) => (
-        <li key={index}>
+        <li key={index} data-actionable={lit(`2-${index}`)}>
           <CardView {...props} card={card} />
         </li>
       ))}
@@ -144,6 +166,7 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
       <button
         type="button"
         className="pile-banished"
+        data-actionable={lit("32")}
         onClick={open(label("Cartas banidas", "Suas cartas banidas"), side.banished)}
       >
         Banidas {side.banished.length}
@@ -180,6 +203,8 @@ function PileButton(
     pile: HandCard[];
     hideTop?: boolean;
     place?: string;
+    // Tem carta para usar nesta pilha (brilha).
+    lit?: boolean;
     onOpen: () => void;
   },
 ) {
@@ -189,6 +214,7 @@ function PileButton(
       type="button"
       className={`zone pile ${props.className}`}
       data-place={props.place}
+      data-actionable={props.lit}
       aria-label={`${props.label}, ${count(props.pile.length)}`}
       onClick={props.onOpen}
     >

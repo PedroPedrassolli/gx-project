@@ -536,6 +536,12 @@ test("na fase principal, a escolha vai para o servidor e a mesa nova aparece", a
     panel.getByRole("button", { name: "Ativar Renascer do Monstro (mão)" }),
   ).toContainText("Special Summon 1 monster");
   await expect(panel.getByRole("button", { name: "Encerrar o turno" })).toBeVisible();
+  // A carta que dá para usar brilha na mão; a mão do outro, não.
+  await expect(page.getByRole("list", { name: "Sua mão" }).getByRole("listitem")).toHaveAttribute(
+    "data-actionable",
+    "true",
+  );
+  await expect(page.locator(".side.opponent [data-actionable]")).toHaveCount(0);
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
 
