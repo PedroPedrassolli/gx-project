@@ -48,6 +48,15 @@ module Duel
              :enable_unsafe_libraries, :uint8
     end
 
+    # O que perguntar à engine sobre as cartas de um lugar (OCG_QueryInfo).
+    class QueryInfo < FFI::Struct
+      layout :flags, :uint32,
+             :con, :uint8,
+             :loc, :uint32,
+             :seq, :uint32,
+             :overlay_seq, :uint32
+    end
+
     class NewCardInfo < FFI::Struct
       layout :team, :uint8,
              :duelist, :uint8,
@@ -66,5 +75,7 @@ module Duel
     attach_function :get_message, :OCG_DuelGetMessage, [ :pointer, :pointer ], :pointer
     attach_function :set_response, :OCG_DuelSetResponse, [ :pointer, :buffer_in, :uint32 ], :void
     attach_function :load_script, :OCG_LoadScript, [ :pointer, :buffer_in, :uint32, :string ], :int
+    attach_function :query_location, :OCG_DuelQueryLocation, [ :pointer, :pointer, QueryInfo.by_ref ], :pointer
+    attach_function :query_field, :OCG_DuelQueryField, [ :pointer, :pointer ], :pointer
   end
 end

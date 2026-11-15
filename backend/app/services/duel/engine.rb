@@ -109,6 +109,19 @@ module Duel
 
     def finished? = @status == STATUS_END
 
+    # As cartas de um lugar de um lado (Duel::Query::HAND, MONSTERS...), com código,
+    # posição, ATK/DEF e se estão à vista. A tela de cada jogador sai daqui (Duel::View).
+    def query_location(team, location)
+      info = Native::QueryInfo.new
+      info[:flags] = Query::CARD_FLAGS
+      info[:con] = team
+      info[:loc] = location
+      Query.cards(read_query { |length| Native.query_location(@handle, length, info) })
+    end
+
+    # PV e quantas cartas há em cada lugar, dos dois lados.
+    def query_field = Query.field(read_query { |length| Native.query_field(@handle, length) })
+
     def close
       return unless @handle
 
@@ -199,6 +212,14 @@ module Duel
       info[:seq] = 0
       info[:pos] = POS_FACEDOWN_DEFENSE
       Native.new_card(@handle, info)
+    end
+
+    # A engine devolve um ponteiro para o buffer dela e o tamanho em length: copia logo,
+    # porque a próxima consulta reaproveita o buffer.
+    def read_query
+      length = FFI::MemoryPointer.new(:uint32)
+      pointer = as_current { yield length }
+      pointer.read_bytes(length.read_uint32)
     end
 
     def take_messages
