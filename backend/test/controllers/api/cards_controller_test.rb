@@ -87,7 +87,8 @@ class Api::CardsControllerTest < ActionDispatch::IntegrationTest
       etag = response.headers["ETag"]
 
       _(response.headers["Cache-Control"].split(", ")).must_include "s-maxage=3600"
-      _(response.headers["Cache-Control"]).must_include "stale-while-revalidate=86400"
+      # A cópia velha vale 30 dias: quem volta depois de muito tempo não espera o servidor acordar.
+      _(response.headers["Cache-Control"]).must_include "stale-while-revalidate=2592000"
       _(response.headers["Cache-Control"]).must_include "public"
       get api_cards_path, params: { q: "trap" }, headers: { "If-None-Match" => etag }
       assert_response :not_modified
