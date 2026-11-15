@@ -194,9 +194,11 @@ module Matches
       end
     end
 
+    # A carta como está no fim da jogada: virada para cima, com o código e a posição de agora
+    # (a batalha pode ter virado o alvo na mesma jogada); virada para baixo, sem código.
     def face_up_code(engine, place)
       card = engine.query_location(place[:controller], Duel::Query::MONSTERS)[place[:sequence]]
-      card && card[:position].anybits?(Duel::Events::FACE_UP) ? place.merge(code: card[:code]) : place
+      card && card[:position].anybits?(Duel::Events::FACE_UP) ? place.merge(card.slice(:code, :position)) : place
     end
 
     # O elo entra na ativação, fica marcado quando é negado e sai quando resolve.
