@@ -1,9 +1,9 @@
 import { Suspense, useState, type MouseEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Link, Outlet, useLocation } from "react-router";
+import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { request, type User } from "./api.ts";
 import { useLogOut, useSession } from "./account/session.ts";
-import { SOURCE_URL } from "./legal/LegalPages.tsx";
+import { SOURCE_URL } from "./legal/source.ts";
 import { markNavigation, usePageTitle } from "./pageTitle.ts";
 
 // Moldura de todas as páginas: a barra do topo (o nome do site, as cartas e a conta) e o
@@ -24,11 +24,12 @@ export function Layout() {
       </a>
       <nav className="topbar" aria-label="Principal">
         <Link to="/" className="brand">
+          <BrandMark />
           GX Project
         </Link>
-        <Link to="/cartas">Cartas</Link>
-        {user && <Link to="/colecao">Coleção</Link>}
-        {user && <Link to="/decks">Decks</Link>}
+        <NavLink to="/cartas">Cartas</NavLink>
+        {user && <NavLink to="/colecao">Coleção</NavLink>}
+        {user && <NavLink to="/decks">Decks</NavLink>}
         <span className="account">
           {user && (
             <>
@@ -61,6 +62,33 @@ export function Layout() {
       </div>
       <SiteFooter />
     </>
+  );
+}
+
+// A marca do site: três cartas em leque, nas cores dos três dormitórios (desenho próprio).
+function BrandMark() {
+  return (
+    <svg className="brand-mark" viewBox="0 0 34 28" aria-hidden="true">
+      <rect
+        className="red"
+        x="10"
+        y="3"
+        width="14"
+        height="20"
+        rx="2"
+        transform="rotate(-20 17 25)"
+      />
+      <rect className="yellow" x="10" y="3" width="14" height="20" rx="2" />
+      <rect
+        className="blue"
+        x="10"
+        y="3"
+        width="14"
+        height="20"
+        rx="2"
+        transform="rotate(20 17 25)"
+      />
+    </svg>
   );
 }
 

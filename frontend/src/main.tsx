@@ -4,6 +4,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router";
 import { App } from "./App.tsx";
 import { Layout, NotFound } from "./Layout.tsx";
+// Fontes do tema, servidas pelo próprio site (a CSP só aceita fontes daqui): Spectral no
+// texto e Spectral SC, em versaletes como o nome das cartas, nos títulos. Só o alfabeto
+// latino, que cobre o português.
+import "@fontsource/spectral/latin-400.css";
+import "@fontsource/spectral/latin-600.css";
+import "@fontsource/spectral-sc/latin-600.css";
 import "./styles.css";
 
 // Cada página vira um arquivo JS baixado só quando a pessoa abre: a página inicial não
