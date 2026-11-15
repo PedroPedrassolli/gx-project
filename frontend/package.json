@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test \"src/**/*.test.ts\"",
     "test:e2e": "playwright test",
+    "test:e2e:full": "playwright test -c playwright.full.config.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

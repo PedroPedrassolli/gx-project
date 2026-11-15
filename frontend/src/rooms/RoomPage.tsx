@@ -77,9 +77,20 @@ export function RoomPage() {
   }
 
   const data = room.data;
-  // Em duelo (o aviso pode não ter chegado, sem tempo real): vai para a mesa.
-  if (data.status === "dueling" && data.match_id)
+  // Em duelo (o aviso pode não ter chegado, sem tempo real): vai para a mesa. Só com a sala
+  // lida agora: a guardada de antes do duelo levaria de volta à mesa quem acabou de sair do
+  // resultado para a revanche.
+  if (data.status === "dueling" && data.match_id) {
+    if (!room.isFetchedAfterMount) {
+      return (
+        <main className="page narrow">
+          <h1>Sala {code}</h1>
+          <p role="status">Carregando a sala…</p>
+        </main>
+      );
+    }
     return <Navigate to={`/duelo/${data.match_id}`} replace />;
+  }
   const me = data.players.find((player) => player.user_id === user.id);
   const owner = data.owner_id === user.id;
   const chosenDeck = deckId || String(me?.deck_id ?? "");
