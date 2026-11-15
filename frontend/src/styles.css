@@ -272,9 +272,8 @@ h2 {
 
 /* Rodapé de todas as páginas: aviso de fã, créditos e textos legais. */
 .site-footer {
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: 1.25rem var(--gutter) 2rem;
+  padding-block: 1.25rem 2rem;
+  padding-inline: max(var(--gutter), calc((100% - 72rem) / 2 + var(--gutter)));
   border-top: 1px solid var(--color-border);
   color: var(--color-muted);
   font-size: 0.875rem;
@@ -479,8 +478,9 @@ button {
   gap: 1.5rem;
 }
 
-/* Na tela larga, o detalhe fica ao lado da lista; na estreita, em cima dela. */
-@media (min-width: 960px) {
+/* Na tela larga, o detalhe fica ao lado da lista, parado enquanto a lista rola, e rola
+   sozinho quando é mais alto que a tela; na estreita, em cima da lista. */
+@media (width >= 60rem) {
   .catalog-body {
     grid-template-columns: minmax(0, 1fr) 24rem;
   }
@@ -490,12 +490,15 @@ button {
     grid-column: 1;
   }
 
-  .card-detail {
+  .catalog-body > .card-detail {
     position: sticky;
     top: 1rem;
     grid-row: 1;
     grid-column: 2;
     align-self: start;
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 }
 
@@ -700,22 +703,75 @@ img[hidden] {
 }
 
 /* Barra do topo: a marca, o menu (a página atual sublinhada em dourado) e a conta. O fundo
-   ocupa a largura toda; o conteúdo fica alinhado com o das páginas. */
+   ocupa a largura toda; o conteúdo fica alinhado com o das páginas largas (72rem). No
+   celular, duas linhas fixas: a marca e a conta em cima, o menu embaixo em colunas iguais;
+   a partir de 48rem, tudo numa linha. */
 .topbar,
 .notice {
-  padding-inline: max(var(--gutter), calc((100% - 72rem) / 2));
+  padding-inline: max(var(--gutter), calc((100% - 72rem) / 2 + var(--gutter)));
   border-bottom: 1px solid var(--color-border);
 }
 
 .topbar {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-areas:
+    "brand account"
+    "links links";
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 0.5rem 1.25rem;
+  gap: 0.5rem 1rem;
   padding-block: 0.6rem;
   background: var(--color-surface);
   font-family: var(--font-title);
   font-weight: 600;
+
+  @media (width >= 48rem) {
+    grid-template-areas: "brand links account";
+    grid-template-columns: auto auto minmax(0, 1fr);
+    gap: 0.5rem 1.25rem;
+  }
+}
+
+.topbar .brand {
+  grid-area: brand;
+}
+
+.topbar-links {
+  display: grid;
+  grid-area: links;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  gap: 0.5rem;
+  text-align: center;
+
+  @media (width >= 48rem) {
+    grid-auto-columns: auto;
+    gap: 1.25rem;
+  }
+}
+
+/* No celular estreito, o "Olá," some da tela, e no mais estreito (até 22rem) o nome do site
+   fica só na marca: o leitor de tela ainda lê os dois. */
+.brand-name {
+  @media (width < 22rem) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+.greeting {
+  @media (width < 30rem) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 .topbar a {
@@ -731,6 +787,7 @@ img[hidden] {
 
 .topbar .brand {
   display: inline-flex;
+  white-space: nowrap;
   gap: 0.5rem;
   align-items: center;
   font-size: 1.25rem;
@@ -760,9 +817,11 @@ img[hidden] {
 
 .topbar .account {
   display: flex;
+  grid-area: account;
   gap: 1rem;
   align-items: center;
-  margin-left: auto;
+  justify-self: end;
+  white-space: nowrap;
   color: var(--color-muted);
   font-family: var(--font-text);
   font-weight: 400;
@@ -1036,7 +1095,7 @@ input[type="file"]::file-selector-button {
   order: -1;
 }
 
-@media (min-width: 960px) {
+@media (width >= 60rem) {
   .deck-layout {
     grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem);
     align-items: start;
@@ -1046,8 +1105,9 @@ input[type="file"]::file-selector-button {
     order: 0;
     position: sticky;
     top: 1rem;
-    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
 }
 
@@ -1301,7 +1361,10 @@ input[type="file"]::file-selector-button {
   .duel-page > .duel-detail {
     position: sticky;
     top: 1rem;
+    max-height: calc(100dvh - 2rem);
     margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .duel-page > .duel-side {
@@ -1647,10 +1710,6 @@ button.pile {
   margin: 0;
 }
 
-.duel-detail-close {
-  margin-top: 0.75rem;
-}
-
 /* A corrente aberta e o histórico, embaixo da pergunta. */
 .duel-side {
   display: grid;
@@ -1804,8 +1863,8 @@ button.pile {
   text-align: center;
 }
 
-/* A lista de uma pilha (cemitério, banidas, Extra): o <dialog> nativo, com o fundo escuro e
-   sem rolar a página por trás. */
+/* Os diálogos (a lista de uma pilha e o detalhe da carta no celular): o <dialog> nativo,
+   com o fundo escuro e sem rolar a página por trás. */
 .pile-dialog {
   width: min(28rem, 92vw);
   padding: 1rem 1.25rem;
@@ -1815,15 +1874,35 @@ button.pile {
   color: var(--color-text);
 }
 
-.pile-dialog:modal {
-  max-height: 80vh;
+.pile-dialog:modal,
+.card-dialog:modal {
+  max-height: 85dvh;
   overscroll-behavior: contain;
 }
 
-.pile-dialog::backdrop {
+.pile-dialog::backdrop,
+.card-dialog::backdrop {
   overflow: hidden;
   overscroll-behavior: contain;
   background: rgb(5 9 18 / 0.7);
+}
+
+/* O detalhe da carta no celular: a própria moldura da carta, sem caixa em volta, e o
+   "Fechar" embaixo na largura toda. */
+.card-dialog {
+  width: min(26rem, 94vw);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+}
+
+.card-dialog form {
+  margin-top: 0.75rem;
+}
+
+.card-dialog form button {
+  width: 100%;
 }
 
 .pile-dialog h2 {

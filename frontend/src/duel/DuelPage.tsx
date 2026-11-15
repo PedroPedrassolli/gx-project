@@ -4,9 +4,9 @@ import { ApiError } from "../api.ts";
 import { Link, useParams } from "react-router";
 import { useSession } from "../account/session.ts";
 import type { CardSummary } from "../catalog/cards.ts";
-import { useCardDetail, useCatalog } from "../catalog/data.ts";
+import { CardPanel, useMediaQuery } from "../catalog/CardPanel.tsx";
+import { useCatalog } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
-import { Detail } from "../catalog/parts.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 import { useRealtime } from "../realtime/useRealtime.ts";
 import { matchKey, respond, useMatch, type MatchState } from "./api.ts";
@@ -38,7 +38,7 @@ export function DuelPage() {
     return byCode;
   }, [catalog.data]);
   const selectedCard = selected === null ? undefined : cards.get(selected);
-  const detail = useCardDetail(selectedCard?.id ?? 0);
+  const wide = useMediaQuery("(width >= 72rem)");
   const packs = useMemo(
     () => new Map(catalog.data?.packs.map((pack) => [pack.id, pack.name])),
     [catalog.data],
@@ -99,13 +99,15 @@ export function DuelPage() {
       <p className="duel-status" role="status">
         {status(state, names)}
       </p>
-      {selectedCard && detail.data ? (
-        <section className="card-detail duel-detail" aria-labelledby="detail-title">
-          <Detail card={detail.data} language={language} packs={packs} />
-          <button type="button" className="duel-detail-close" onClick={() => setSelected(null)}>
-            Fechar o detalhe
-          </button>
-        </section>
+      {selectedCard ? (
+        <CardPanel
+          cardId={selectedCard.id}
+          language={language}
+          packs={packs}
+          wide={wide}
+          onClose={() => setSelected(null)}
+          className="duel-detail"
+        />
       ) : (
         <section className="duel-detail duel-detail-empty" aria-labelledby="detail-empty-title">
           <h2 id="detail-empty-title">Carta</h2>

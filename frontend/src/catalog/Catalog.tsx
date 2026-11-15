@@ -1,10 +1,11 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { EMPTY_FILTERS, matches, sortCards, type Filters } from "./cards.ts";
-import { useCardDetail, useCatalog, usePackRarities } from "./data.ts";
+import { CardPanel, WIDE, useMediaQuery } from "./CardPanel.tsx";
+import { useCatalog, usePackRarities } from "./data.ts";
 import { CatalogFilters } from "./Filters.tsx";
 import { RARITIES, label } from "./labels.ts";
 import { useCardLanguage } from "./language.ts";
-import { CardTile, Detail } from "./parts.tsx";
+import { CardTile } from "./parts.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 
 const PAGE = 60; // cartas por vez na lista; "Mostrar mais" traz as próximas
@@ -19,9 +20,8 @@ export function Catalog() {
   const [selected, setSelected] = useState(
     () => Number(new URLSearchParams(location.search).get("carta")) || 0,
   );
-  const detail = useCardDetail(selected);
   const rarities = usePackRarities(pack).data ?? null;
-  const panel = useRef<HTMLElement>(null);
+  const wide = useMediaQuery(WIDE);
 
   const results = useMemo(() => {
     if (!catalog.data || (pack !== "" && !rarities)) return [];
@@ -40,12 +40,13 @@ export function Catalog() {
     setShown(PAGE);
   }
 
+  // A carta escolhida fica no endereço (?carta=), para voltar a ela ou mandar o link.
   function select(id: number) {
     setSelected(id);
     const url = new URL(location.href);
-    url.searchParams.set("carta", String(id));
+    if (id > 0) url.searchParams.set("carta", String(id));
+    else url.searchParams.delete("carta");
     history.replaceState(null, "", url);
-    if (matchMedia("(max-width: 959px)").matches) panel.current?.scrollIntoView({ block: "start" });
   }
 
   if (catalog.isError) {
@@ -87,15 +88,13 @@ export function Catalog() {
 
       <div className="catalog-body">
         {selected > 0 && (
-          <section className="card-detail" aria-labelledby="detail-title" ref={panel}>
-            {detail.data ? (
-              <Detail card={detail.data} language={language} packs={packNames} />
-            ) : (
-              <h2 id="detail-title">
-                {detail.isError ? "Carta não encontrada." : "Carregando a carta…"}
-              </h2>
-            )}
-          </section>
+          <CardPanel
+            cardId={selected}
+            language={language}
+            packs={packNames}
+            wide={wide}
+            onClose={() => select(0)}
+          />
         )}
         <section className="results" aria-label="Cartas">
           <p role="status">

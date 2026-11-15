@@ -2,10 +2,11 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import { useSession } from "../account/session.ts";
 import { EMPTY_FILTERS, matches, sortCards, type Filters } from "../catalog/cards.ts";
-import { useCardDetail, useCatalog, usePackRarities } from "../catalog/data.ts";
+import { CardPanel, WIDE, useMediaQuery } from "../catalog/CardPanel.tsx";
+import { useCatalog, usePackRarities } from "../catalog/data.ts";
 import { CatalogFilters } from "../catalog/Filters.tsx";
 import { useCardLanguage } from "../catalog/language.ts";
-import { CardTile, Detail } from "../catalog/parts.tsx";
+import { CardTile } from "../catalog/parts.tsx";
 import { useCollection, type Progress } from "./api.ts";
 import { usePageTitle } from "../pageTitle.ts";
 
@@ -29,7 +30,7 @@ export function CollectionPage() {
   const [language, setLanguage] = useCardLanguage();
   const [shown, setShown] = useState(PAGE);
   const [selected, setSelected] = useState(0);
-  const detail = useCardDetail(selected);
+  const wide = useMediaQuery(WIDE);
   const rarities = usePackRarities(pack).data ?? null;
 
   const owned = useMemo(
@@ -114,13 +115,13 @@ export function CollectionPage() {
 
       <div className="catalog-body">
         {selected > 0 && (
-          <section className="card-detail" aria-labelledby="detail-title">
-            {detail.data ? (
-              <Detail card={detail.data} language={language} packs={packNames} />
-            ) : (
-              <h2 id="detail-title">Carregando a carta…</h2>
-            )}
-          </section>
+          <CardPanel
+            cardId={selected}
+            language={language}
+            packs={packNames}
+            wide={wide}
+            onClose={() => setSelected(0)}
+          />
         )}
         <section className="results" aria-label="Cartas da coleção">
           <p role="status">
