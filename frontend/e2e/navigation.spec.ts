@@ -31,6 +31,8 @@ test("ao navegar, o foco vai para o título da página nova", async ({ page }) =
 
 test("o primeiro Tab mostra o link para pular a barra do topo", async ({ page }) => {
   await page.goto("/");
+  // Espera a página montar: o Tab antes disso às vezes ia para o nada (teste instável).
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.keyboard.press("Tab");
 
   const skip = page.getByRole("link", { name: "Pular para o conteúdo" });
