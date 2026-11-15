@@ -1,6 +1,7 @@
 import { displayName, plain, type CardSummary, type Language } from "../catalog/cards.ts";
 import { ATTRIBUTES, RACES } from "../catalog/labels.ts";
 import type { Prompt } from "./api.ts";
+import { zoneName } from "./zones.ts";
 
 // O que os anúncios da engine precisam: as zonas livres, os bits de tipo e de atributo e a
 // busca do nome de uma carta.
@@ -10,14 +11,10 @@ export type Zone = { player: number; location: number; sequence: number; label: 
 const MZONE = 0x04;
 const SZONE = 0x08;
 
+// O mesmo nome que a zona tem nas escolhas de carta (zones.ts), com letra maiúscula.
 function zoneLabel(location: number, sequence: number, mine: boolean) {
-  const name =
-    location === MZONE
-      ? `zona de monstro ${sequence + 1}`
-      : sequence === 5
-        ? "zona de campo"
-        : `zona de magia e armadilha ${sequence + 1}`;
-  return mine ? `Sua ${name}` : `${name[0]?.toUpperCase()}${name.slice(1)} do oponente`;
+  const name = zoneName(location, sequence, mine);
+  return `${name[0]?.toUpperCase()}${name.slice(1)}`;
 }
 
 // No "flag", bit ligado é zona que não vale. Do lado de quem escolhe: monstros nos bits 0 a

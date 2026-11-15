@@ -1,5 +1,6 @@
 import { displayName, type CardSummary, type Language } from "../catalog/cards.ts";
 import type { Prompt } from "./api.ts";
+import { onField, placeLabel } from "./zones.ts";
 
 // O que todas as telas de pergunta usam: a carta da pergunta, o nome dela e o botão.
 
@@ -10,6 +11,8 @@ export type PromptCard = {
   controller: number;
   location: number;
   sequence: number;
+  // Só nas perguntas que trazem a posição (escolha de cartas, corrente...).
+  position?: number;
   description?: number;
   text?: string | null;
 };
@@ -23,31 +26,22 @@ export type PromptProps = {
   onAnswer: Answer;
 };
 
-const LOCATIONS: Record<number, string> = {
-  1: "deck",
-  2: "mão",
-  4: "campo",
-  8: "campo",
-  16: "cemitério",
-  32: "banidas",
-  64: "Extra",
-};
-
-// "Mago Negro (mão)" ou "Carta escondida (mão do oponente)".
+// "Mago Negro (mão)", "Carta escondida (mão do oponente)" ou "Carta virada (zona de monstro
+// do oponente, 2ª da esquerda)": no campo vai a zona, para não haver duas escolhas iguais.
 export function cardLabel(
   card: PromptCard,
   props: Pick<PromptProps, "you" | "cards" | "language">,
 ) {
+  const name = cardName(card, props);
+  const place = placeLabel(card, props.you);
+  return place ? `${name} (${place})` : name;
+}
+
+// Só o nome: o da carta, ou "Carta virada" e "Carta escondida" quando o jogador não a vê.
+export function cardName(card: PromptCard, props: Pick<PromptProps, "cards" | "language">) {
+  if (card.code === 0) return onField(card) ? "Carta virada" : "Carta escondida";
   const data = props.cards.get(card.code);
-  const name =
-    card.code === 0
-      ? "Carta escondida"
-      : data
-        ? displayName(data, props.language)
-        : `Carta ${card.code}`;
-  const place = LOCATIONS[card.location];
-  if (!place) return name;
-  return `${name} (${place}${card.controller === props.you ? "" : " do oponente"})`;
+  return data ? displayName(data, props.language) : `Carta ${card.code}`;
 }
 
 export const list = (prompt: Prompt, key: string) =>

@@ -66,3 +66,47 @@ const HINTS: Record<number, string> = {
 // A dica da pergunta: o texto da carta (vem do servidor, em inglês) ou o texto do jogo.
 export const hintText = (prompt: Prompt) =>
   (prompt.hint_text as string | null | undefined) ?? HINTS[Number(prompt.hint)];
+
+// Os textos do próprio jogo (strings.conf da engine) que a engine e os scripts do pool usam
+// nas perguntas de sim ou não e nas opções. Sem eles a tela mostrava "Confirmar?" ou "Opção
+// 1", e quem jogava não sabia o que estava aceitando. "%ls" é o nome da carta; o segundo,
+// onde ela está.
+const SYSTEM: Record<number, string> = {
+  30: "Houve um replay. Continuar o ataque?",
+  31: "Atacar diretamente?",
+  32: "Fazer outra Fase de Batalha?",
+  65: "Usar o efeito",
+  70: "Cartas de Monstro",
+  71: "Cartas de Magia",
+  72: "Cartas de Armadilha",
+  90: "Fazer a Invocação-Normal sem Tributo?",
+  91: "Usar a Invocação-Normal a mais?",
+  92: "Usar um monstro do oponente?",
+  93: "Continuar escolhendo as Matérias?",
+  94: "Ativar o efeito desta carta agora?",
+  95: "Usar o efeito de “%ls”?",
+  96: "Usar o efeito de “%ls” para não ser destruída?",
+  97: "Colocar “%ls” na Zona de Magias e Armadilhas?",
+  98: "Usar um efeito no lugar do custo?",
+  200: "Usar o efeito de “%ls” (%ls)?",
+  210: "Continuar escolhendo cartas?",
+  221: "Ativar o efeito de gatilho de “%ls” (%ls)?",
+  222: "Ativar um efeito de gatilho?",
+  573: "Adicionar à mão",
+  1068: "Equipar",
+  1150: "Ativar",
+  1151: "Invocação-Normal",
+  1152: "Invocação-Especial",
+  1153: "Baixar",
+  1213: "Sim",
+  1214: "Não",
+};
+
+// Texto do jogo de uma descrição sem carta (o número do texto, abaixo de 2^20), com o nome
+// e o lugar da carta no lugar do "%ls". As descrições de carta vêm prontas do servidor.
+export function systemText(description: unknown, name = "esta carta", place?: string) {
+  const text = SYSTEM[Number(description)];
+  if (!text) return undefined;
+  const filled = text.replace("%ls", name);
+  return place ? filled.replace("%ls", place) : filled.replace(" (%ls)", "");
+}

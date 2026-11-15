@@ -584,6 +584,27 @@ test("cadeia, sim ou não e posição mandam a escolha certa", async ({ page }) 
     .click();
   await expect.poll(() => yesNo).toEqual([{ seq: 3, response: { yes: true } }]);
 
+  // Sem texto de carta, vale o texto do próprio jogo (antes aparecia "Confirmar?").
+  const direct = await mockPrompt(page, { type: "select_yesno", player: 0, description: 31 });
+  await page.goto("/duelo/5");
+  await page
+    .getByRole("region", { name: "Atacar diretamente?" })
+    .getByRole("button", { name: "Não" })
+    .click();
+  await expect.poll(() => direct).toEqual([{ seq: 3, response: { yes: false } }]);
+
+  // Opções que são textos do jogo: "Sim" e "Não", não "Opção 1" e "Opção 2".
+  const option = await mockPrompt(page, {
+    type: "select_option",
+    player: 0,
+    options: [1213, 1214],
+    options_text: [null, null],
+  });
+  await page.goto("/duelo/5");
+  await expect(page.getByRole("button", { name: "Opção 1" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Não" }).click();
+  await expect.poll(() => option).toEqual([{ seq: 3, response: { index: 1 } }]);
+
   const position = await mockPrompt(page, {
     type: "select_position",
     player: 0,
@@ -611,7 +632,11 @@ test("escolher cartas: um toque basta para uma carta; várias pedem o Confirmar"
   await page.goto("/duelo/5");
   const attack = page.getByRole("region", { name: "Escolha o alvo do ataque" });
   await expect(attack.getByRole("button", { name: "Cancelar" })).toBeVisible();
-  await attack.getByRole("button", { name: "Blue-Eyes White Dragon (campo do oponente)" }).click();
+  await attack
+    .getByRole("button", {
+      name: "Blue-Eyes White Dragon (zona de monstro do oponente, 5ª da esquerda)",
+    })
+    .click();
   await expect.poll(() => target).toEqual([{ seq: 3, response: { indexes: [0] } }]);
 
   const destroy = await mockPrompt(page, {
@@ -657,9 +682,13 @@ test("tributo e soma mandam a escolha certa", async ({ page }) => {
     cards: [field(89631139, 0, { release_param: 1 }), field(46986414, 1, { release_param: 1 })],
   });
   await page.goto("/duelo/5");
-  await page.getByRole("checkbox", { name: "Blue-Eyes White Dragon (campo)" }).check();
+  await page
+    .getByRole("checkbox", { name: "Blue-Eyes White Dragon (sua zona de monstro, 1ª da esquerda)" })
+    .check();
   await expect(page.getByText("Tributos: 1 de 2")).toBeVisible();
-  await page.getByRole("checkbox", { name: "Mago Negro (campo)" }).check();
+  await page
+    .getByRole("checkbox", { name: "Mago Negro (sua zona de monstro, 2ª da esquerda)" })
+    .check();
   await page.getByRole("button", { name: "Confirmar" }).click();
   await expect.poll(() => tribute).toEqual([{ seq: 3, response: { indexes: [0, 1] } }]);
 
@@ -674,10 +703,14 @@ test("tributo e soma mandam a escolha certa", async ({ page }) => {
     cards: [field(89631139, 0, { sum: 4 }), field(46986414, 1, { sum: 4 })],
   });
   await page.goto("/duelo/5");
-  await page.getByRole("checkbox", { name: "Blue-Eyes White Dragon (campo)" }).check();
+  await page
+    .getByRole("checkbox", { name: "Blue-Eyes White Dragon (sua zona de monstro, 1ª da esquerda)" })
+    .check();
   await expect(page.getByText("Total: 4 de pelo menos 8")).toBeVisible();
   await expect(page.getByRole("button", { name: "Confirmar" })).toBeDisabled();
-  await page.getByRole("checkbox", { name: "Mago Negro (campo)" }).check();
+  await page
+    .getByRole("checkbox", { name: "Mago Negro (sua zona de monstro, 2ª da esquerda)" })
+    .check();
   await page.getByRole("button", { name: "Confirmar" }).click();
   await expect.poll(() => sum).toEqual([{ seq: 3, response: { indexes: [0, 1] } }]);
 });
@@ -701,7 +734,9 @@ test("uma carta por vez e a ordem mandam a escolha certa", async ({ page }) => {
   });
   await page.goto("/duelo/5");
   await expect(page.getByRole("button", { name: "Concluir" })).toBeVisible();
-  await page.getByRole("button", { name: "Tirar Mago Negro (campo)" }).click();
+  await page
+    .getByRole("button", { name: "Tirar Mago Negro (sua zona de monstro, 2ª da esquerda)" })
+    .click();
   await expect.poll(() => unselect).toEqual([{ seq: 3, response: { index: 1 } }]);
 
   const deckTop = [
@@ -732,7 +767,9 @@ test("zona, marcadores, número e pedra, papel e tesoura mandam a escolha certa"
     flag: 0xffffffff & ~(1 << 2) & ~(1 << 29),
   });
   await page.goto("/duelo/5");
-  await expect(page.getByRole("button", { name: "Sua zona de monstro 3" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Sua zona de monstro, 3ª da esquerda" }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Zona de campo do oponente" }).click();
   await expect.poll(() => zone).toEqual([{ seq: 3, response: { places: [1, 8, 5] } }]);
 
@@ -748,9 +785,15 @@ test("zona, marcadores, número e pedra, papel e tesoura mandam a escolha certa"
   });
   await page.goto("/duelo/5");
   const panel = page.getByRole("region", { name: "Tire 2 marcadores" });
-  await panel.getByRole("spinbutton", { name: "Mago Negro (campo), com 2" }).fill("1");
+  await panel
+    .getByRole("spinbutton", { name: "Mago Negro (sua zona de monstro, 1ª da esquerda), com 2" })
+    .fill("1");
   await expect(panel.getByRole("button", { name: "Confirmar" })).toBeDisabled();
-  await panel.getByRole("spinbutton", { name: "Renascer do Monstro (campo), com 1" }).fill("1");
+  await panel
+    .getByRole("spinbutton", {
+      name: "Renascer do Monstro (sua zona de magia e armadilha, 1ª da esquerda), com 1",
+    })
+    .fill("1");
   await expect(panel.getByText("Marcadores: 2 de 2")).toBeVisible();
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);

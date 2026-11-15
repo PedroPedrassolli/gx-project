@@ -9,8 +9,16 @@ import {
   ZoneChoice,
 } from "./Announcements.tsx";
 import { CardChoice, SortChoice, UnselectChoice } from "./CardChoice.tsx";
-import { hintText } from "./hints.ts";
-import { cardLabel, Choice, list, type PromptCard, type PromptProps } from "./promptParts.tsx";
+import { hintText, systemText } from "./hints.ts";
+import {
+  cardLabel,
+  cardName,
+  Choice,
+  list,
+  type PromptCard,
+  type PromptProps,
+} from "./promptParts.tsx";
+import { placeLabel } from "./zones.ts";
 
 // As perguntas da engine para o jogador (escopo 4, "Prompts do duelo"): cada tipo vira um
 // formulário com botões, que manda a escolha em JSON (o servidor monta os bytes).
@@ -58,13 +66,16 @@ function title(prompt: Prompt, props: Props) {
       return "Batalha: o que fazer?";
     case "select_chain":
       return "Encadear?";
-    case "select_effectyn":
+    case "select_effectyn": {
+      const card = prompt as unknown as PromptCard;
       return (
         (prompt.text as string) ??
-        `Ativar o efeito de ${cardLabel(prompt as unknown as PromptCard, props)}?`
+        systemText(prompt.description, cardName(card, props), placeLabel(card, props.you)) ??
+        `Ativar o efeito de ${cardLabel(card, props)}?`
       );
+    }
     case "select_yesno":
-      return (prompt.text as string) ?? "Confirmar?";
+      return (prompt.text as string) ?? systemText(prompt.description) ?? "Confirmar?";
     case "select_option":
       return "Escolha uma opção";
     case "select_position":
@@ -161,10 +172,10 @@ function body(props: Props): ReactNode {
       const texts = (prompt.options_text as (string | null)[] | undefined) ?? [];
       return (
         <p className="actions">
-          {((prompt.options as number[] | undefined) ?? []).map((_, index) => (
+          {((prompt.options as number[] | undefined) ?? []).map((option, index) => (
             <Choice
               key={index}
-              label={texts[index] ?? `Opção ${index + 1}`}
+              label={texts[index] ?? systemText(option) ?? `Opção ${index + 1}`}
               onClick={() => onAnswer({ index })}
             />
           ))}

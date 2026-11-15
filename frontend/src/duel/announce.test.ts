@@ -7,7 +7,7 @@ test("as zonas livres saem do flag, dos dois lados, com o nome de cada uma", () 
   const flag = 0xffffffff & ~(1 << 2) & ~(1 << 29);
   const zones = freeZones({ type: "select_disfield", player: 1, count: 1, flag });
   assert.deepEqual(zones, [
-    { player: 1, location: 4, sequence: 2, label: "Sua zona de monstro 3" },
+    { player: 1, location: 4, sequence: 2, label: "Sua zona de monstro, 3ª da esquerda" },
     { player: 0, location: 8, sequence: 5, label: "Zona de campo do oponente" },
   ]);
 });
