@@ -51,4 +51,6 @@ group :test do
   gem "simplecov", require: false
   # Dublês nos testes (stubs/expects); o Minitest 6 não traz mais o minitest/mock.
   gem "mocha", require: false
+  # Consulta N+1 ou eager loading sem uso faz o teste falhar (config/environments/test.rb).
+  gem "bullet", "~> 8.3"
 end

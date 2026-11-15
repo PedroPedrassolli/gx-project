@@ -263,6 +263,7 @@ saiu na conferência: pede cartão para ativar e cobra o excedente (ADR 0004).
 
 ## 6. Qualidade
 - **Testes:** backend com Minitest (POROs, requests e transações de DP/loja); **contrato da engine** (duelos roteirizados com semente fixa → estado esperado, com um teste por mecânica: MR1, Fusão, Ritual, Sincro, Tag, Destiny Draw, Match/Side); um teste por bônus do Anexo A e por desafio; front com funções puras (reducer do duelo, filtros, validação) e Playwright + axe com 2 navegadores (1x1) e 4 (Tag).
+- **Consultas:** Bullet nos testes de API (N+1 e `includes` sem uso derrubam o teste).
 - **Segurança:** Brakeman e bundler-audit; Rack::Attack; cookie `SameSite` + token CSRF; sorteios e informação oculta só no servidor; segredos só nos painéis.
 - **Desempenho:** p95 de ação < 300 ms; uma mensagem por jogador por ação; replay de 30 dias.
 - **Backup:** `pg_dump` semanal, criptografado, guardado como artefato do GitHub Actions por 30 dias (ADR 0004).

@@ -26,11 +26,16 @@ class Api::DecksControllerTest < ActionDispatch::IntegrationTest
   it "lista os decks do jogador, com quantas cartas há em cada seção" do
     other = User.create!(email: "syrus@example.com", password: "duelista123", nickname: "Syrus", age_group: "13-17")
     other.decks.create!(name: "Roid")
+    # Dois decks na lista: com um só, o Bullet não acusaria uma consulta por deck (N+1).
+    first = starter
+    second = user.decks.create!(name: "Rascunho")
     get api_decks_path
 
     assert_response :success
-    _(data).must_equal [ { "id" => starter.id, "name" => "Deck inicial", "updated_at" => starter.updated_at.as_json,
-                           "counts" => { "main" => 40, "extra" => 0, "side" => 15 } } ]
+    _(data).must_equal [ { "id" => first.id, "name" => "Deck inicial", "updated_at" => first.updated_at.as_json,
+                           "counts" => { "main" => 40, "extra" => 0, "side" => 15 } },
+                         { "id" => second.id, "name" => "Rascunho", "updated_at" => second.updated_at.as_json,
+                           "counts" => { "main" => 0, "extra" => 0, "side" => 0 } } ]
   end
 
   it "mostra o deck com as cartas, se é válido e os erros" do
