@@ -96,6 +96,12 @@ semente, os decks e a lista de respostas: a engine refaz o resto (ADR 0001).
     jogador e manda `duel.emote` para o outro; a mesa traz a frase dos últimos 8 s, então quem
     está sem tempo real também vê. Uma frase a cada 3 s (429). Vale também depois do fim, para
     o "bom duelo".
+20. **"Sempre perguntar" na corrente** (escopo 3.7; GXP-84): por padrão o servidor passa
+    sozinho a corrente sem opção (item 7); com a opção, o jogador recebe a pergunta mesmo sem
+    o que encadear, e o oponente não descobre isso pelo passe automático. A escolha fica no
+    navegador (como as animações) e vai para cada duelo (`POST /api/matches/:id/settings`,
+    guardada em `match_players.always_chain`). O passe que o jogador dá entra nas respostas
+    como qualquer outra, então o replay não muda.
 
 ## Consequências
 

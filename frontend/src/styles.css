@@ -2109,16 +2109,29 @@ button.danger {
   margin-top: 0.25rem;
 }
 
-.motion-setting {
-  display: flex;
-  gap: 0.5rem;
+.duel-settings {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.5rem 0.75rem;
   align-items: center;
-  margin: 0;
+  justify-content: start;
   color: var(--color-muted);
 }
 
-.motion-setting select {
+.duel-settings select {
   width: auto;
+}
+
+/* No computador, a coluna do lado é estreita: cada rótulo em cima da sua escolha. */
+@media (width >= 72rem) {
+  .duel-settings {
+    grid-template-columns: auto;
+    gap: 0.25rem;
+
+    > select:not(:last-child) {
+      margin-bottom: 0.5rem;
+    }
+  }
 }
 
 /* A pergunta da vez embaixo da mesa: um botão por escolha, com o texto do efeito menor. */

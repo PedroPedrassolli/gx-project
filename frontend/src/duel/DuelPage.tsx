@@ -13,6 +13,7 @@ import { actionablePlaces } from "./actionable.ts";
 import { Board } from "./Board.tsx";
 import { DuelDetail } from "./DuelDetail.tsx";
 import { ChainStack, DuelLog } from "./DuelSide.tsx";
+import { useAlwaysChain } from "./chainSetting.ts";
 import { DuelStatus } from "./DuelStatus.tsx";
 import { EmotePicker, useEmoteBubbles } from "./Emotes.tsx";
 import { withEmote, type EmotePlayer } from "./emotes.ts";
@@ -86,6 +87,24 @@ export function DuelPage() {
   const cards = catalog.data?.byCode ?? NO_CARDS;
   const packs = catalog.data?.packNames ?? NO_PACKS;
   const emotes = useEmoteBubbles(match.data?.players ?? []);
+  // "Sempre perguntar" (GXP-84): o navegador guarda; quando a mesa diz outra coisa (duelo
+  // novo, ou a escolha mudou), manda a do navegador.
+  const [alwaysChain, setAlwaysChain] = useAlwaysChain();
+  const { mutate: saveChain, isPending: savingChain } = useMutation({
+    mutationFn: (value: boolean) =>
+      request("POST", `/api/matches/${id}/settings`, { always_chain: value }),
+    onSuccess: (_, value) =>
+      client.setQueryData(matchKey(id), (old: MatchState | undefined) =>
+        old ? { ...old, always_chain: value } : old,
+      ),
+  });
+  const serverChain = match.data?.always_chain;
+  const dueling = match.data?.status === "dueling";
+  useEffect(() => {
+    if (dueling && serverChain !== undefined && serverChain !== alwaysChain && !savingChain) {
+      saveChain(alwaysChain);
+    }
+  }, [dueling, serverChain, alwaysChain, savingChain, saveChain]);
   const say = useMutation({
     mutationFn: async (emote: string) =>
       (
@@ -198,21 +217,32 @@ export function DuelPage() {
           cards={cards}
           language={language}
         />
-        <MotionSetting motion={motion} onChange={setMotion} />
+        <DuelSettings
+          motion={motion}
+          onMotion={setMotion}
+          alwaysChain={alwaysChain}
+          onAlwaysChain={setAlwaysChain}
+        />
       </div>
     </main>
   );
 }
 
-// A velocidade das animações, embaixo do histórico.
-function MotionSetting(props: { motion: Motion; onChange: (value: Motion) => void }) {
+// As configurações da mesa, embaixo do histórico: a velocidade das animações e a pergunta
+// da corrente. Rótulos à esquerda, escolhas à direita, alinhados.
+function DuelSettings(props: {
+  motion: Motion;
+  onMotion: (value: Motion) => void;
+  alwaysChain: boolean;
+  onAlwaysChain: (value: boolean) => void;
+}) {
   return (
-    <p className="motion-setting">
+    <div className="duel-settings">
       <label htmlFor="duel-motion">Animações</label>
       <select
         id="duel-motion"
         value={props.motion}
-        onChange={(event) => props.onChange(event.target.value as Motion)}
+        onChange={(event) => props.onMotion(event.target.value as Motion)}
       >
         {MOTIONS.map(([value, label]) => (
           <option key={value} value={value}>
@@ -220,6 +250,15 @@ function MotionSetting(props: { motion: Motion; onChange: (value: Motion) => voi
           </option>
         ))}
       </select>
-    </p>
+      <label htmlFor="duel-chain">Perguntar na corrente</label>
+      <select
+        id="duel-chain"
+        value={props.alwaysChain ? "always" : "auto"}
+        onChange={(event) => props.onAlwaysChain(event.target.value === "always")}
+      >
+        <option value="auto">Só quando der</option>
+        <option value="always">Sempre</option>
+      </select>
+    </div>
   );
 }

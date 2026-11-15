@@ -172,6 +172,17 @@ class Api::MatchesControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ 200, "hello" ], [ session.response.status, match.players.find_by!(team: 0).emote ]
   end
 
+  it "'sempre perguntar' fica guardado no jogador e volta na mesa" do
+    session = session_for(first)
+    session.post settings_api_match_path(match), params: { always_chain: true }, as: :json
+    assert_equal [ 204, true ], [ session.response.status, match.players.find_by!(team: 0).always_chain ]
+
+    session.get api_match_path(match)
+    assert_equal true, session.response.parsed_body.dig("data", "always_chain")
+    session.post settings_api_match_path(match), params: {}, as: :json
+    assert_equal false, match.players.find_by!(team: 0).always_chain
+  end
+
   it "desistir encerra a partida e avisa o outro; depois do fim, não dá mais" do
     session = session_for(first)
     session.post surrender_api_match_path(match), as: :json

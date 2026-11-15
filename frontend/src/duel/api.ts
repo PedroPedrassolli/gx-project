@@ -73,6 +73,7 @@ export type MatchState = {
   deadline_at?: string | null;
   turn_time_left?: number;
   ends_at?: string | null; // null: duelo sem limite de tempo
+  always_chain?: boolean; // "sempre perguntar" na corrente, como o servidor guardou
   seq: number;
   you: number;
   players: { team: number; nickname: string; emote?: string; emote_at?: string }[];

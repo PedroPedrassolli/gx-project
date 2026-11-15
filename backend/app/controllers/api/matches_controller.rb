@@ -83,6 +83,14 @@ class Api::MatchesController < Api::BaseController
     render json: { data: }
   end
 
+  # POST /api/matches/:id/settings: { always_chain }. "Sempre perguntar" na corrente (escopo
+  # 3.7): vale das próximas perguntas em diante. O navegador guarda a escolha e manda em cada
+  # duelo.
+  def settings
+    @player.update!(always_chain: ActiveModel::Type::Boolean.new.cast(params[:always_chain]) || false)
+    head :no_content
+  end
+
   private
 
   # A frase recente de um jogador (quem consulta sem tempo real vê por EMOTE_SHOWN).
@@ -118,6 +126,7 @@ class Api::MatchesController < Api::BaseController
       seq: @match.responses.size, you: team, room_code: @match.room&.code,
       deadline_at: @match.deadline_at&.iso8601, turn_time_left: @match.turn_time_left,
       ends_at: @match.ends_at&.iso8601,
+      always_chain: @match.players.find { |player| player.team == team }&.always_chain,
       players:, view: game.view(team) }
   end
 
