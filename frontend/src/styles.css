@@ -1446,3 +1446,38 @@ input[type="file"]::file-selector-button {
   max-width: 24rem;
   margin: 1rem auto 0;
 }
+
+/* A pergunta da vez embaixo da mesa: um botão por escolha, com o texto do efeito menor. */
+.prompt-panel {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1rem;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.prompt-panel h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.125rem;
+}
+
+.prompt-panel fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.prompt-panel .actions {
+  margin: 0 0 0.5rem;
+}
+
+.choice-detail {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+}
+
+.duel-error {
+  text-align: center;
+}
