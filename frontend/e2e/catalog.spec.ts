@@ -130,3 +130,20 @@ test("o catálogo com uma carta aberta passa no axe sem violações", async ({ p
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
 });
+
+test("no celular, o detalhe abre por cima da lista e fecha no mesmo lugar", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/cartas");
+  await page.getByRole("button", { name: /Mago Negro/ }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Mago Negro" });
+  await expect(dialog).toContainText("O mago definitivo");
+  await expect(dialog).toContainText("Beginner Monsters · Ultra Rara");
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
+
+  await dialog.getByRole("button", { name: "Fechar" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page).not.toHaveURL(/carta=/);
+  await expect(page.getByRole("button", { name: /Mago Negro/ })).toBeInViewport();
+});

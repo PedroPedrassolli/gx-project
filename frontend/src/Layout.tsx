@@ -6,8 +6,9 @@ import { useLogOut, useSession } from "./account/session.ts";
 import { SOURCE_URL } from "./legal/source.ts";
 import { markNavigation, usePageTitle } from "./pageTitle.ts";
 
-// Moldura de todas as páginas: a barra do topo (o nome do site, as cartas e a conta) e o
-// rodapé.
+// Moldura de todas as páginas: a barra do topo (o nome do site, o menu e a conta) e o
+// rodapé. No celular, a barra tem duas linhas fixas: a marca e a conta em cima, o menu
+// embaixo, em colunas iguais.
 export function Layout() {
   const session = useSession();
   const logOut = useLogOut();
@@ -25,16 +26,19 @@ export function Layout() {
       <nav className="topbar" aria-label="Principal">
         <Link to="/" className="brand">
           <BrandMark />
-          GX Project
+          <span className="brand-name">GX Project</span>
         </Link>
-        <NavLink to="/cartas">Cartas</NavLink>
-        {user && <NavLink to="/colecao">Coleção</NavLink>}
-        {user && <NavLink to="/decks">Decks</NavLink>}
+        <span className="topbar-links">
+          <NavLink to="/cartas">Cartas</NavLink>
+          {user && <NavLink to="/colecao">Coleção</NavLink>}
+          {user && <NavLink to="/decks">Decks</NavLink>}
+        </span>
         <span className="account">
           {user && (
             <>
               <span>
-                Olá, <Link to="/conta">{user.nickname}</Link>
+                <span className="greeting">Olá, </span>
+                <Link to="/conta">{user.nickname}</Link>
               </span>
               <button
                 type="button"

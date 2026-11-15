@@ -10,8 +10,8 @@ import {
   type Language,
   type Pack,
 } from "../catalog/cards.ts";
-import { useCardDetail, useCatalog } from "../catalog/data.ts";
-import { Detail } from "../catalog/parts.tsx";
+import { CardPanel, WIDE, useMediaQuery } from "../catalog/CardPanel.tsx";
+import { useCatalog } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
 import { useCollection } from "../collection/api.ts";
 import { useDeck, type Deck } from "./api.ts";
@@ -83,7 +83,7 @@ type EditorProps = {
 function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps) {
   const [rows, setRows] = useState<DeckRow[]>(deck.cards);
   const [selected, setSelected] = useState(0);
-  const detail = useCardDetail(selected);
+  const wide = useMediaQuery(WIDE);
   const packNames = useMemo(() => new Map(packs.map((item) => [item.id, item.name])), [packs]);
   const cardList = useMemo(() => [...cards.values()], [cards]);
   const [name, setName] = useState(deck.name);
@@ -154,13 +154,13 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
         />
         <div className="deck-side">
           {selected > 0 && (
-            <section className="card-detail" aria-labelledby="detail-title">
-              {detail.data ? (
-                <Detail card={detail.data} language={language} packs={packNames} />
-              ) : (
-                <h2 id="detail-title">Carregando a carta…</h2>
-              )}
-            </section>
+            <CardPanel
+              cardId={selected}
+              language={language}
+              packs={packNames}
+              wide={wide}
+              onClose={() => setSelected(0)}
+            />
           )}
           <section aria-labelledby="deck-title" className="deck-panel">
             <h2 id="deck-title">Deck</h2>
