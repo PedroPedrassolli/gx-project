@@ -2,7 +2,8 @@ module Matches
   # O duelo de uma partida na engine (ADR 0011): a Duel::Session com a semente, os decks e as
   # respostas do banco. Guarda na partida o turno, a fase e a pergunta da vez, e responde
   # sozinho o que não precisa de jogador: a cadeia sem opção (escopo 3.7: só pergunta quem
-  # pode responder) e a zona da carta que vai para o campo (Matches::AutoPlace).
+  # pode responder, a não ser que o jogador peça "sempre perguntar") e a zona da carta que vai
+  # para o campo (Matches::AutoPlace).
   class Game
     # "Não encadear" (-1), a resposta da cadeia sem opção.
     PASS = [ -1 ].pack("l<")
@@ -223,10 +224,14 @@ module Matches
     # A resposta que o servidor dá sozinho, ou nil quando a pergunta é do jogador.
     def automatic(prompt)
       case prompt&.fetch(:type)
-      when :select_chain then PASS if prompt[:chains].empty? && !prompt[:forced]
+      when :select_chain then PASS if prompt[:chains].empty? && !prompt[:forced] && !always_asks?(prompt[:player])
       when :select_place then AutoPlace.pick(prompt)
       end
     end
+
+    # "Sempre perguntar" (GXP-84): esse time quer a pergunta da corrente mesmo sem o que
+    # encadear, para o oponente não saber pelo passe automático.
+    def always_asks?(team) = @match.players.any? { |player| player.team == team && player.always_chain }
 
     # 2 é empate: ninguém vence.
     def finish(win)

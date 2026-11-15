@@ -302,6 +302,28 @@ test("as frases: a sua aparece no seu nome, e a do outro chega na consulta", asy
   expect(results.violations).toEqual([]);
 });
 
+test("'sempre perguntar' na corrente fica no navegador e vai para cada duelo", async ({ page }) => {
+  const match = await mockMatch(page);
+  match.set({ ...STATE, always_chain: false });
+  const sent: unknown[] = [];
+  await page.route("**/api/matches/5/settings", (route) => {
+    const body = route.request().postDataJSON();
+    sent.push(body);
+    match.set({ ...STATE, always_chain: body.always_chain });
+    return route.fulfill({ status: 204 });
+  });
+  await page.goto("/duelo/5");
+
+  await page.getByLabel("Perguntar na corrente").selectOption("Sempre");
+  await expect.poll(() => sent).toEqual([{ always_chain: true }]);
+
+  // Duelo novo: a mesa ainda não sabe, e o navegador manda a escolha de novo.
+  match.set({ ...STATE, always_chain: false });
+  await page.reload();
+  await expect(page.getByLabel("Perguntar na corrente")).toHaveValue("always");
+  await expect.poll(() => sent).toEqual([{ always_chain: true }, { always_chain: true }]);
+});
+
 test("o replay passa lance a lance e turno a turno, e reproduz sozinho", async ({ page }) => {
   await mockMatch(page);
   const frame = (step: number, turn: number, lp: number) => ({

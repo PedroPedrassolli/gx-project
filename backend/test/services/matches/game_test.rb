@@ -26,6 +26,16 @@ class Matches::GameTest < ActiveSupport::TestCase
 
   CHAMBERLAIN = 44_430_454 # monstro normal de nível 3, do deck inicial
 
+  it "com 'sempre perguntar', a corrente sem opção vira pergunta para aquele jogador" do
+    match = Match.create!(mode: "1x1", banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current)
+    2.times { |team| match.players.create!(team:, seat: team, always_chain: team == 0, deck: { main: [ CHAMBERLAIN ] * 40, extra: [] }) }
+    Matches::Game.new(match).start!
+
+    assert_equal [ "select_chain", 0, [] ], [ match.prompt["type"], match.prompt_team, match.prompt["chains"] ]
+    # O outro continua com o passe automático.
+    assert(match.responses.all? { |response| response.team == 1 })
+  end
+
   # Partida previsível: semente fixa e 40 cópias do mesmo monstro normal nos dois decks.
   def chamberlain_match(**times)
     match = Match.create!(mode: "1x1", banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current, **times)
