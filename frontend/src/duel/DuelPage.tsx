@@ -11,6 +11,7 @@ import { usePageTitle } from "../pageTitle.ts";
 import { useRealtime } from "../realtime/useRealtime.ts";
 import { matchKey, respond, useMatch, type MatchState } from "./api.ts";
 import { Board } from "./Board.tsx";
+import { ChainStack, DuelLog } from "./DuelSide.tsx";
 import { PromptPanel } from "./PromptPanel.tsx";
 
 // Mesa de duelo (escopo 4): a mesa vista pelo jogador, a vez de quem é e o detalhe da carta
@@ -114,6 +115,22 @@ export function DuelPage() {
           {answer.error.message}
         </p>
       )}
+      <div className="duel-side">
+        <ChainStack
+          chain={state.view.chain ?? []}
+          you={state.you}
+          names={names}
+          cards={cards}
+          language={language}
+        />
+        <DuelLog
+          events={state.view.events ?? []}
+          you={state.you}
+          names={names}
+          cards={cards}
+          language={language}
+        />
+      </div>
       {selectedCard && detail.data && (
         <section className="card-detail duel-detail" aria-labelledby="detail-title">
           <Detail card={detail.data} language={language} packs={packs} />
