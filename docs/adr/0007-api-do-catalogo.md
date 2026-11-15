@@ -27,9 +27,14 @@ mesmo domínio e no mesmo repositório.
    comprimida). O front pode filtrar e ordenar na própria lista, sem ir à rede a cada letra.
    A lista traz o resumo; o detalhe (`/api/cards/:id`) traz os textos, os pacotes e o link
    da revisão da Yugipedia (crédito da CC BY-SA).
-5. **Cache:** `Cache-Control: public, max-age=300, s-maxage=3600, stale-while-revalidate=86400`
+5. **Cache:** `Cache-Control: public, max-age=300, s-maxage=3600, stale-while-revalidate=2592000`
    e ETag pela versão dos dados (um resumo do conteúdo) junto com os parâmetros. Pedido com
-   `If-None-Match` igual recebe 304.
+   `If-None-Match` igual recebe 304. A cópia velha vale 30 dias na CDN (era 1 dia até
+   15/11/2026): o servidor desliga depois de 5 minutos parado e leva uns 4 s para acordar,
+   e quem voltava depois de mais de 25 horas esperava isso e mais a montagem do catálogo.
+   A Vercel tira o `s-maxage` e o `stale-while-revalidate` do que chega ao navegador; ele
+   fica só com os 5 minutos. Não vale contornar isso: com `stale-while-revalidate`, o
+   Safari baixa a lista inteira de novo em vez de receber 304 (bug 275248 do WebKit).
 6. **Formato:** `{ data, meta }` (`meta.total` e `meta.version`); erro como
    `{ error: { status, message } }`. Campo vazio não vai na resposta. Os valores ficam como
    a Yugipedia escreve (`Monster`, `DARK`, `Fiend`, `ultra_rare`); a tela traduz. O id é o do
@@ -37,8 +42,10 @@ mesmo domínio e no mesmo repositório.
 
 ## Consequências
 
-- Uma importação nova aparece em até 5 minutos no Rails, 1 hora na CDN e 5 minutos no
-  navegador. Um deploy novo começa com a CDN vazia.
+- Uma importação nova aparece em até 5 minutos no Rails, 1 hora na CDN (a partir da
+  segunda visita, porque a primeira recebe a cópia velha e dispara a busca da nova) e 5
+  minutos no navegador. Cada deploy tem a própria CDN, que começa vazia: o primeiro pedido
+  depois de um deploy espera o servidor.
 - Cada visitante sem cache baixa uns 84 KB da lista inteira; com a CDN, a função quase não
   roda, e o banco é lido uma vez a cada 5 minutos por instância.
 - Mudar um filtro ou um campo é mudar o contrato com o front: os dois mudam juntos, com os
