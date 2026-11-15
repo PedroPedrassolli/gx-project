@@ -77,6 +77,11 @@ semente, os decks e a lista de respostas: a engine refaz o resto (ADR 0001).
     páginas mostram o aviso com o link para a mesa. Quem some deixa o prazo vencer e perde por
     tempo; se os dois somem, a partida acaba na próxima consulta, inclusive quando um deles
     tenta criar ou entrar noutra sala (ninguém fica preso em "Você está num duelo").
+17. **Animações** (escopo 3.7): só o que chegou depois que a mesa abriu anima. A carta que
+    entra na mão ou no campo e o elo novo crescem até o lugar (CSS, `@starting-style`); o PV
+    que muda sobe e some; o ataque e a pilha do cemitério usam o Web Animations API. A
+    velocidade (normais, rápidas, desligadas) fica no navegador; com "reduzir movimento" no
+    aparelho, nada se desloca.
 
 ## Consequências
 

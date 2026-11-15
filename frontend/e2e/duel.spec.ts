@@ -186,6 +186,47 @@ test("na mesa, o monstro mostra o ATK em ataque e o DEF em defesa", async ({ pag
   await expect(monsters.getByText("2500", { exact: true })).toHaveCount(0);
 });
 
+test("animações: o que chega depois de abrir anima; desligadas, nada anima", async ({ page }) => {
+  // Anota onde cada animação do Web Animations API rodou (ataque, cemitério).
+  await page.addInitScript(() => {
+    const places: string[] = [];
+    Object.assign(window, { animatedPlaces: places });
+    const original = Element.prototype.animate;
+    Element.prototype.animate = function (this: Element, ...args: Parameters<Element["animate"]>) {
+      places.push(this.closest("[data-place]")?.getAttribute("data-place") ?? "");
+      return original.apply(this, args);
+    };
+  });
+  const match = await mockMatch(page);
+  const old = [{ id: 1, type: "lp", team: 1, kind: "damage", amount: 300 }];
+  match.set({ ...STATE, view: { ...STATE.view, events: old } });
+  await page.goto("/duelo/5");
+  await expect(page.getByText("Turno 3, vez de Syrus")).toBeVisible();
+  // O que já estava no histórico ao abrir fica parado.
+  await expect(page.locator(".lp-change")).toHaveCount(0);
+  await expect(page.locator("main")).toHaveAttribute("data-motion", "normal");
+
+  const attacker = { controller: 0, location: 4, sequence: 0, position: 1, code: 89631139 };
+  const grave = { controller: 1, location: 16, sequence: 0, position: 1 };
+  const news = [
+    { id: 2, type: "attack", attacker, target: null },
+    { id: 3, type: "lp", team: 1, kind: "damage", amount: 3000 },
+    { id: 4, type: "move", code: 46986414, from: { ...grave, location: 2 }, to: grave, reason: 1 },
+  ];
+  match.set({ ...STATE, view: { ...STATE.view, events: [...old, ...news] } });
+  await expect(page.locator('[data-lp="1"] .lp-change')).toHaveText("−3.000", { timeout: 5000 });
+  await expect
+    .poll(() =>
+      page.evaluate(() => (window as unknown as { animatedPlaces: string[] }).animatedPlaces),
+    )
+    .toEqual(["0-4-0", "1-16"]);
+
+  await page.getByLabel("Animações").selectOption("Desligadas");
+  await expect(page.locator(".lp-change")).toHaveCount(0);
+  await expect(page.locator("main")).toHaveAttribute("data-motion", "off");
+  expect(await page.evaluate(() => localStorage.getItem("gx-animacoes-do-duelo"))).toBe("off");
+});
+
 test("as pilhas abrem a lista: cemitério, banidas e o seu Extra", async ({ page }) => {
   const match = await mockMatch(page);
   const [mine, theirs] = STATE.view.sides;

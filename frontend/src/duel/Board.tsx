@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { displayName, imageUrl, type CardSummary, type Language } from "../catalog/cards.ts";
-import type { FieldCard, HandCard, Side, View } from "./api.ts";
+import type { DuelEvent, FieldCard, HandCard, Side, View } from "./api.ts";
 
 // A mesa (escopo 4, "Mesa de duelo"), como numa mesa de verdade: o seu campo embaixo, com a
 // zona de campo e o Extra à esquerda e o cemitério e o deck à direita; o do outro em cima,
@@ -23,6 +23,9 @@ type Props = {
   onCard: (code: number) => void;
   // No fim, a mesa fica como acabou, sem "vez de" nem fase marcada.
   finished?: boolean;
+  // A última mudança de PV de cada time (animação), sem nada quando as animações estão
+  // desligadas.
+  lpChanges?: Map<number, DuelEvent>;
 };
 
 // Uma pilha aberta: o título e as cartas, de cima (a última que entrou) para baixo.
@@ -84,6 +87,7 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
       <PileButton
         {...props}
         className="pile-grave"
+        place={`${team}-16`}
         label={label("Cemitério", "Seu cemitério")}
         pile={side.grave}
         onOpen={open(label("Cemitério", "Seu cemitério"), side.grave)}
@@ -135,6 +139,7 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
       <strong>{name}</strong>
       <span className="lp" data-lp={team}>
         PV {side.lp}
+        <LpChange event={props.lpChanges?.get(team)} />
       </span>
       <button
         type="button"
@@ -174,6 +179,7 @@ function PileButton(
     label: string;
     pile: HandCard[];
     hideTop?: boolean;
+    place?: string;
     onOpen: () => void;
   },
 ) {
@@ -182,6 +188,7 @@ function PileButton(
     <button
       type="button"
       className={`zone pile ${props.className}`}
+      data-place={props.place}
       aria-label={`${props.label}, ${count(props.pile.length)}`}
       onClick={props.onOpen}
     >
@@ -322,5 +329,20 @@ function CardView(props: Props & { card: FieldCard | HandCard; place?: string })
         </span>
       )}
     </>
+  );
+}
+
+// O PV que mudou sobe e some acima do número (o histórico tem a linha para o leitor de
+// tela). A chave é o evento: cada mudança nova é um elemento novo, e a animação roda de novo.
+const LP_SIGNS: Record<string, string> = { damage: "−", cost: "−", recover: "+" };
+
+function LpChange({ event }: { event?: DuelEvent }) {
+  if (!event) return null;
+  const kind = String(event.kind);
+  return (
+    <span key={event.id} className={`lp-change ${kind}`} aria-hidden="true">
+      {LP_SIGNS[kind] ?? ""}
+      {Number(event.amount).toLocaleString("pt-BR")}
+    </span>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "../api.ts";
 import { Link, useParams } from "react-router";
@@ -13,6 +13,16 @@ import { matchKey, respond, surrender, useMatch, type MatchState } from "./api.t
 import { Board } from "./Board.tsx";
 import { ChainStack, DuelLog } from "./DuelSide.tsx";
 import { DuelStatus } from "./DuelStatus.tsx";
+import {
+  DURATION,
+  lastId,
+  lpChanges,
+  MOTIONS,
+  play,
+  useFreshEvents,
+  useMotion,
+  type Motion,
+} from "./motion.ts";
 import { PromptPanel } from "./PromptPanel.tsx";
 
 // Mesa de duelo (escopo 4): a mesa vista pelo jogador, a vez de quem é e o detalhe da carta
@@ -35,6 +45,28 @@ export function DuelPage() {
   useEffect(() => {
     if (status) void client.invalidateQueries({ queryKey: SESSION_KEY });
   }, [client, status]);
+  const [motion, setMotion] = useMotion();
+  const fresh = useFreshEvents(match.data?.view.events);
+  const page = useRef<HTMLElement>(null);
+  // As animações de entrada (CSS, pelo data-motion) só valem a partir do quadro seguinte ao
+  // da primeira mesa: ao abrir a página, as cartas aparecem paradas.
+  const hasData = Boolean(match.data);
+  useEffect(() => {
+    const main = page.current;
+    if (!main) return;
+    const frame = requestAnimationFrame(() => (main.dataset.motion = motion));
+    return () => cancelAnimationFrame(frame);
+  }, [motion, hasData]);
+  const played = useRef(0);
+  const you = match.data?.you ?? 0;
+  useEffect(() => {
+    const latest = lastId(fresh);
+    if (!page.current || latest <= played.current) return;
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const news = fresh.filter((event) => event.id > played.current);
+    if (motion !== "off" && !still) play(page.current, news, you, DURATION[motion]);
+    played.current = latest;
+  }, [fresh, motion, you]);
   const catalog = useCatalog();
   const [language] = useCardLanguage();
   const [selected, setSelected] = useState<number | null>(null);
@@ -98,7 +130,7 @@ export function DuelPage() {
     (team) => state.players.find((player) => player.team === team)?.nickname ?? "Duelista",
   );
   return (
-    <main className="page duel-page">
+    <main className="page duel-page" ref={page}>
       <h1 className="visually-hidden">Duelo de {names.join(" contra ")}</h1>
       <Board
         view={state.view}
@@ -107,6 +139,7 @@ export function DuelPage() {
         language={language}
         onCard={setSelected}
         finished={state.status === "finished"}
+        lpChanges={motion === "off" ? undefined : lpChanges(fresh)}
       />
       <DuelStatus
         state={state}
@@ -161,7 +194,28 @@ export function DuelPage() {
           cards={cards}
           language={language}
         />
+        <MotionSetting motion={motion} onChange={setMotion} />
       </div>
     </main>
+  );
+}
+
+// A velocidade das animações, embaixo do histórico.
+function MotionSetting(props: { motion: Motion; onChange: (value: Motion) => void }) {
+  return (
+    <p className="motion-setting">
+      <label htmlFor="duel-motion">Animações</label>
+      <select
+        id="duel-motion"
+        value={props.motion}
+        onChange={(event) => props.onChange(event.target.value as Motion)}
+      >
+        {MOTIONS.map(([value, label]) => (
+          <option key={value} value={value}>
+            {label}
+          </option>
+        ))}
+      </select>
+    </p>
   );
 }
