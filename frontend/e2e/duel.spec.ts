@@ -224,6 +224,58 @@ test("do resultado, volta para a sala reaberta sem cair de novo na mesa", async 
   await expect(page).toHaveURL(/\/salas\/ABC234$/);
 });
 
+test("revanche: um clique deixa pronto com o mesmo deck e volta para a sala", async ({ page }) => {
+  const match = await mockMatch(page);
+  match.set({ ...STATE, status: "finished", winner_team: 0, room_code: "ABC234" });
+  const room = {
+    code: "ABC234",
+    public: false,
+    mode: "1x1",
+    best_of: 1,
+    banlist: true,
+    destiny_draw: false,
+    decision_seconds: 90,
+    duel_minutes: 60,
+    status: "waiting",
+    owner_id: 1,
+    seats: 2,
+    players: [
+      { seat: 0, user_id: 1, nickname: "JadenYuki", ready: true, deck_chosen: true, deck_id: 7 },
+      { seat: 1, user_id: 2, nickname: "Syrus", ready: false, deck_chosen: true },
+    ],
+  };
+  const sent: unknown[] = [];
+  let closed = false;
+  await page.route("**/api/rooms/ABC234/ready", (route) => {
+    sent.push(route.request().postDataJSON());
+    if (closed) {
+      return route.fulfill({
+        status: 404,
+        json: { error: { status: 404, message: "Não encontrado." } },
+      });
+    }
+    return route.fulfill({ json: { data: room } });
+  });
+  await page.route("**/api/rooms/ABC234", (route) => route.fulfill({ json: { data: room } }));
+  await page.route("**/api/decks", (route) =>
+    route.fulfill({
+      json: { data: [{ id: 7, name: "Heróis", updated_at: "2026-11-14T12:00:00Z" }] },
+    }),
+  );
+
+  // A sala que fechou avisa, e a tela fica no resultado.
+  closed = true;
+  await page.goto("/duelo/5");
+  await page.getByRole("button", { name: "Revanche" }).click();
+  await expect(page.getByRole("alert")).toHaveText("A sala fechou: quem criou saiu.");
+
+  closed = false;
+  await page.getByRole("button", { name: "Revanche" }).click();
+  await expect(page).toHaveURL(/\/salas\/ABC234$/);
+  await expect(page.getByRole("button", { name: "Não estou pronto" })).toBeVisible();
+  expect(sent).toEqual([{ ready: true }, { ready: true }]);
+});
+
 test("o replay passa lance a lance e turno a turno, e reproduz sozinho", async ({ page }) => {
   await mockMatch(page);
   const frame = (step: number, turn: number, lp: number) => ({

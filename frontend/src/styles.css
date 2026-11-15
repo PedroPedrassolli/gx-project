@@ -1896,6 +1896,19 @@ button.pile {
   justify-content: center;
 }
 
+/* Três ações no celular: uma embaixo da outra, da mesma largura (lado a lado, os textos
+   quebrariam em várias linhas). */
+@media (width < 30rem) {
+  .duel-actions:has(> :nth-child(3)) {
+    display: grid;
+    text-align: center;
+  }
+}
+
+.duel-actions-error {
+  text-align: center;
+}
+
 /* Replay: três botões da mesma largura e o turno para pular. */
 .replay-buttons {
   display: grid;
