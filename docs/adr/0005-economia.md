@@ -83,6 +83,14 @@ farm de DP entre contas combinadas.
   3.000 DP por dia em duelos, 1.500 nas contas com menos de 7 dias. Os valores ficam em
   constantes até existir o admin (F7).
 - **Nível:** cada nível novo paga 400 DP, que também contam para o próximo nível.
+- **Loja** (GXP-86): `GET /api/shop` traz o saldo, o nível e cada pacote com a dica de como
+  liberar (`Shop::Availability`, pelo `disponibilidade.yml`; missões, desafios e códigos ficam
+  bloqueados até o GXP-88, e a dica nunca mostra o código). `POST /api/shop/purchases` (1 ou 10
+  pacotes, com a chave da compra) roda numa transação: jogador travado, pacote liberado,
+  débito no razão (`compra:CHAVE`), sorteio (`Shop::Draw`: pesos 75, 18, 5 e 2 entre as
+  raridades que o pacote tem) com a semente gravada em `pack_openings` e as cartas na coleção.
+  A mesma chave devolve a mesma compra, sem cobrar de novo. A carta "nova" é a que o jogador
+  ainda não tinha (só a primeira cópia dela na compra).
 - **Resultado:** o resumo (linhas, cortes, subida de nível, total, nível e saldo) fica em
   `match_players.rewards`, com os textos prontos, e a mesa devolve o de quem consulta. O saldo
   e o nível também vão no usuário da sessão (topo da página no computador e a página da conta).

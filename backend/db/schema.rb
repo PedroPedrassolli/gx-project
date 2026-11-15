@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_230000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -183,6 +183,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_220000) do
     t.index ["pack_id", "card_id"], name: "index_pack_cards_on_pack_id_and_card_id", unique: true
   end
 
+  create_table "pack_openings", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "pack_id", null: false
+    t.string "purchase_key", null: false
+    t.integer "position", null: false
+    t.bigint "seed", null: false
+    t.jsonb "cards", null: false
+    t.datetime "created_at", null: false
+    t.index ["pack_id"], name: "index_pack_openings_on_pack_id"
+    t.index ["user_id", "purchase_key", "position"], name: "index_pack_openings_on_user_id_and_purchase_key_and_position", unique: true
+  end
+
   create_table "packs", force: :cascade do |t|
     t.string "name", null: false
     t.integer "position", null: false
@@ -279,6 +291,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_220000) do
   add_foreign_key "matches", "rooms", on_delete: :nullify
   add_foreign_key "pack_cards", "cards"
   add_foreign_key "pack_cards", "packs"
+  add_foreign_key "pack_openings", "packs"
+  add_foreign_key "pack_openings", "users"
   add_foreign_key "room_players", "decks", on_delete: :nullify
   add_foreign_key "room_players", "rooms"
   add_foreign_key "room_players", "users"
