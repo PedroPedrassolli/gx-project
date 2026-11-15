@@ -93,10 +93,23 @@ function inRange(value: number | undefined, min: string, max: string): boolean {
   return value >= (min === "" ? 0 : Number(min)) && value <= (max === "" ? Infinity : Number(max));
 }
 
+// Os nomes sem acento de cada carta, feitos uma vez: a busca roda a cada tecla nas 3.484
+// cartas. A quebra de linha separa os dois nomes (a busca não tem quebra de linha).
+const searchable = new WeakMap<CardSummary, string>();
+
+function searchText(card: CardSummary): string {
+  let text = searchable.get(card);
+  if (text === undefined) {
+    text = plain(`${card.name}\n${card.name_pt ?? ""}`);
+    searchable.set(card, text);
+  }
+  return text;
+}
+
 export function matches(card: CardSummary, filters: Filters): boolean {
   const query = plain(filters.q.trim());
   return (
-    (query === "" || [card.name, card.name_pt ?? ""].some((name) => plain(name).includes(query))) &&
+    (query === "" || searchText(card).includes(query)) &&
     (filters.cardType === "" || card.card_type === filters.cardType) &&
     (filters.attribute === "" || card.attribute === filters.attribute) &&
     (filters.race === "" || card.race === filters.race) &&

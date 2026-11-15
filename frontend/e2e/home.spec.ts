@@ -12,12 +12,13 @@ test("a página inicial mostra o projeto, os atalhos e a fase atual", async ({ p
   await expect(main.getByRole("link", { name: "Cartas" })).toHaveAttribute("href", "/cartas");
   // O duelo leva às salas (lá, quem não entrou vê o convite para entrar).
   await expect(main.getByRole("link", { name: "Duelo" })).toHaveAttribute("href", "/salas");
-  await expect(main.getByRole("link", { name: "Criar conta" })).toHaveAttribute(
-    "href",
-    "/cadastro",
-  );
-  // Decks e Coleção só aparecem para quem entrou.
-  await expect(main.getByRole("link", { name: "Decks" })).toHaveCount(0);
+  // As quatro cartas aparecem para todos (sem conta, Decks e Coleção pedem para entrar);
+  // entrar e criar conta ficam no topo.
+  await expect(main.getByRole("list", { name: "Atalhos" }).getByRole("listitem")).toHaveCount(4);
+  await expect(main.getByRole("link", { name: "Decks" })).toHaveAttribute("href", "/decks");
+  await expect(
+    page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Criar conta" }),
+  ).toHaveAttribute("href", "/cadastro");
 });
 
 test("com a conta aberta, a mesa tem os decks e a coleção", async ({ page }) => {
@@ -26,7 +27,7 @@ test("com a conta aberta, a mesa tem os decks e a coleção", async ({ page }) =
   const main = page.getByRole("main");
   await expect(main.getByRole("link", { name: "Decks" })).toHaveAttribute("href", "/decks");
   await expect(main.getByRole("link", { name: "Coleção" })).toHaveAttribute("href", "/colecao");
-  await expect(main.getByRole("link", { name: "Criar conta" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Criar conta" })).toHaveCount(0);
   await expect(
     page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Duelo" }),
   ).toHaveAttribute("href", "/salas");
@@ -34,7 +35,9 @@ test("com a conta aberta, a mesa tem os decks e a coleção", async ({ page }) =
 
 test("a página inicial passa no axe sem violações, com e sem conta", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("main").getByRole("link", { name: "Entrar" })).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Entrar" }),
+  ).toBeVisible();
   let results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
 

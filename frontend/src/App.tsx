@@ -1,15 +1,15 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router";
-import { useSession } from "./account/session.ts";
 import { currentPhase, PHASES } from "./roadmap.ts";
 import { usePageTitle } from "./pageTitle.ts";
 
 // Página inicial: a mesa. Os atalhos têm a forma de uma carta, cada um com a cor de
 // moldura de um tipo de carta, e o andamento do projeto aparece como as fases de um turno.
+// Nada aqui depende da sessão: as quatro cartas aparecem para todos (sem conta, Decks e
+// Coleção pedem para entrar), e "Entrar" e "Criar conta" ficam no topo. Assim a página não
+// pula quando a sessão chega, e a linha de cartas fica sempre cheia.
 export function App() {
   usePageTitle();
-  const session = useSession();
-  const user = session.data?.user;
   const phase = currentPhase(PHASES);
 
   return (
@@ -17,35 +17,21 @@ export function App() {
       <header>
         <h1>GX Project</h1>
         <p className="lead">Monte seu deck com as cartas da era GX e duele online com os amigos.</p>
-        {session.isSuccess && !user && (
-          <p className="actions">
-            <Link className="cta" to="/cadastro">
-              Criar conta
-            </Link>
-            <Link className="cta secondary" to="/entrar">
-              Entrar
-            </Link>
-          </p>
-        )}
       </header>
 
       <ul className="table-menu" aria-label="Atalhos">
         <MenuCard title="Duelo" to="/salas" frame="effect" art={<DuelArt />}>
           Crie uma sala e mande o código para um amigo duelar com você.
         </MenuCard>
-        {user && (
-          <MenuCard title="Decks" to="/decks" frame="spell" art={<DeckArt />}>
-            Monte, confira e importe os seus decks.
-          </MenuCard>
-        )}
+        <MenuCard title="Decks" to="/decks" frame="spell" art={<DeckArt />}>
+          Monte, confira e importe os seus decks.
+        </MenuCard>
         <MenuCard title="Cartas" to="/cartas" frame="normal" art={<CardsArt />}>
           Todas as cartas do jogo, com busca e texto em português.
         </MenuCard>
-        {user && (
-          <MenuCard title="Coleção" to="/colecao" frame="fusion" art={<CollectionArt />}>
-            Quanto você já tem de cada pacote.
-          </MenuCard>
-        )}
+        <MenuCard title="Coleção" to="/colecao" frame="fusion" art={<CollectionArt />}>
+          Quanto você já tem de cada pacote.
+        </MenuCard>
       </ul>
 
       <section aria-labelledby="status-title" className="roadmap">
