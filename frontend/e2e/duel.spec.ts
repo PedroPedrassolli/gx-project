@@ -252,3 +252,46 @@ test("cadeia, sim ou não e posição mandam a escolha certa", async ({ page }) 
   await page.getByRole("button", { name: "Defesa, com a face para baixo" }).click();
   expect(position).toEqual([{ seq: 3, response: { position: 8 } }]);
 });
+
+test("escolher cartas: um toque basta para uma carta; várias pedem o Confirmar", async ({
+  page,
+}) => {
+  const target = await mockPrompt(page, {
+    type: "select_card",
+    player: 0,
+    cancelable: true,
+    min: 1,
+    max: 1,
+    hint: 549,
+    cards: [{ code: 89631139, controller: 1, location: 4, sequence: 0 }],
+  });
+  await page.goto("/duelo/5");
+  const attack = page.getByRole("region", { name: "Escolha o alvo do ataque" });
+  await expect(attack.getByRole("button", { name: "Cancelar" })).toBeVisible();
+  await attack.getByRole("button", { name: "Blue-Eyes White Dragon (campo do oponente)" }).click();
+  expect(target).toEqual([{ seq: 3, response: { indexes: [0] } }]);
+
+  const destroy = await mockPrompt(page, {
+    type: "select_card",
+    player: 0,
+    cancelable: false,
+    min: 2,
+    max: 2,
+    hint: 502,
+    cards: [
+      { code: 46986414, controller: 0, location: 2, sequence: 0 },
+      { code: 83764718, controller: 0, location: 16, sequence: 0 },
+    ],
+  });
+  await page.goto("/duelo/5");
+  const panel = page.getByRole("region", { name: "Escolha a carta para destruir" });
+  const confirm = panel.getByRole("button", { name: "Confirmar" });
+  await panel.getByRole("checkbox", { name: "Mago Negro (mão)" }).check();
+  await expect(confirm).toBeDisabled();
+  await panel.getByRole("checkbox", { name: "Renascer do Monstro (cemitério)" }).check();
+  await expect(panel.getByText("Escolhidas: 2 de 2")).toBeVisible();
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
+  await confirm.click();
+  expect(destroy).toEqual([{ seq: 3, response: { indexes: [0, 1] } }]);
+});
