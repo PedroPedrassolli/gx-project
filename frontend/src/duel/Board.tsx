@@ -21,6 +21,8 @@ type Props = {
   cards: Map<number, CardSummary>;
   language: Language;
   onCard: (code: number) => void;
+  // No fim, a mesa fica como acabou, sem "vez de" nem fase marcada.
+  finished?: boolean;
 };
 
 // Uma pilha aberta: o título e as cartas, de cima (a última que entrou) para baixo.
@@ -35,11 +37,13 @@ export function Board(props: Props) {
       <SideArea {...props} side={theirs} opponent onPile={setPile} />
       <div className="phase-track">
         <p>
-          Turno {view.turn}, vez de {props.names[view.turn_team]}
+          {props.finished
+            ? `Turno ${view.turn}, duelo encerrado`
+            : `Turno ${view.turn}, vez de ${props.names[view.turn_team]}`}
         </p>
         <ol aria-label="Fases do turno">
           {PHASES.map(([key, label]) => (
-            <li key={key} aria-current={view.phase === key ? "step" : undefined}>
+            <li key={key} aria-current={!props.finished && view.phase === key ? "step" : undefined}>
               {label}
             </li>
           ))}
@@ -283,26 +287,40 @@ function CardView(props: Props & { card: FieldCard | HandCard; place?: string })
   const name = data ? displayName(data, props.language) : `Carta ${code}`;
   const faceDown = "face_down" in card && card.face_down;
   const revealed = "public" in card && card.public;
-  const stats = "atk" in card && card.atk !== undefined && data?.card_type === "Monster";
+  const monster =
+    "atk" in card && card.atk !== undefined && data?.card_type === "Monster" ? card : null;
+  const label = [
+    name,
+    faceDown && "virada para baixo",
+    defense && "em defesa",
+    revealed && "revelada",
+    monster && `ATK ${monster.atk}`,
+    typeof monster?.def === "number" && `DEF ${monster.def}`,
+  ];
   return (
-    <button
-      type="button"
-      className={["card", defense && "defense", faceDown && "face-down", revealed && "revealed"]
-        .filter(Boolean)
-        .join(" ")}
-      aria-label={`${name}${faceDown ? ", virada para baixo" : ""}${defense ? ", em defesa" : ""}${revealed ? ", revelada" : ""}`}
-      onClick={() => props.onCard(code)}
-    >
-      {data?.image !== undefined ? (
-        <img src={imageUrl(data.image, "p")} alt="" width={56} height={82} decoding="async" />
-      ) : (
-        <span className="card-name">{name}</span>
-      )}
-      {stats && (
-        <span className="card-stats">
-          {card.atk}/{card.def}
+    <>
+      <button
+        type="button"
+        className={["card", defense && "defense", faceDown && "face-down", revealed && "revealed"]
+          .filter(Boolean)
+          .join(" ")}
+        aria-label={label.filter(Boolean).join(", ")}
+        onClick={() => props.onCard(code)}
+      >
+        {data?.image !== undefined ? (
+          <img src={imageUrl(data.image, "p")} alt="" width={56} height={82} decoding="async" />
+        ) : (
+          <span className="card-name">{name}</span>
+        )}
+      </button>
+      {/* Na mesa vale o número da posição, como nos jogos oficiais: ATK em ataque, DEF em
+          defesa. Os dois inteiros cabiam só cortados numa zona de celular; o nome lido traz
+          os dois. Fica fora do botão para não girar junto com a carta em defesa. */}
+      {monster && (
+        <span className={defense ? "card-stats def" : "card-stats"} aria-hidden="true">
+          {defense ? monster.def : monster.atk}
         </span>
       )}
-    </button>
+    </>
   );
 }
