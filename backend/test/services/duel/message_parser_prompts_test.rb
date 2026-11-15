@@ -51,7 +51,8 @@ class Duel::MessageParserPromptsTest < ActiveSupport::TestCase
                  { cards: [ { code: 42, controller: 0, location: 1, sequence: 3 } ] } ],
     sort_chain: [ 21, [ 0 ].pack("L<"), { cards: [] } ],
     rock_paper_scissors: [ 132, "".b, {} ],
-    announce_race: [ 140, [ 1, 0x30 ].pack("CQ<"), { count: 1, available: 48 } ],
+    # O bit 62 (tipo do Rush) não passa: só os tipos oficiais.
+    announce_race: [ 140, [ 1, 0x30 | (1 << 62) ].pack("CQ<"), { count: 1, available: 48 } ],
     announce_attrib: [ 141, [ 1, 0x30 ].pack("CL<"), { count: 1, available: 48 } ],
     announce_card: [ 142, [ 1, 99 ].pack("CQ<"), { opcodes: [ 99 ] } ],
     announce_number: [ 143, [ 2, 1, 2 ].pack("CQ<Q<"), { options: [ 1, 2 ] } ]

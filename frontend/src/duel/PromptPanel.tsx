@@ -1,6 +1,13 @@
 import type { ReactNode } from "react";
 import type { Prompt } from "./api.ts";
-import { CounterChoice, HandChoice, NumberChoice, ZoneChoice } from "./Announcements.tsx";
+import {
+  BitsChoice,
+  CardNameChoice,
+  CounterChoice,
+  HandChoice,
+  NumberChoice,
+  ZoneChoice,
+} from "./Announcements.tsx";
 import { CardChoice, SortChoice, UnselectChoice } from "./CardChoice.tsx";
 import { hintText } from "./hints.ts";
 import { cardLabel, Choice, list, type PromptCard, type PromptProps } from "./promptParts.tsx";
@@ -77,6 +84,12 @@ function title(prompt: Prompt, props: Props) {
     case "select_counter":
       // A engine usa esta pergunta para tirar marcadores (remove_counter).
       return `Tire ${Number(prompt.count)} marcadores`;
+    case "announce_race":
+      return hintText(prompt) ?? "Declare um Tipo";
+    case "announce_attrib":
+      return hintText(prompt) ?? "Declare um Atributo";
+    case "announce_card":
+      return hintText(prompt) ?? "Declare o nome de uma carta";
     case "announce_number":
       return hintText(prompt) ?? "Declare um número";
     case "rock_paper_scissors":
@@ -182,6 +195,11 @@ function body(props: Props): ReactNode {
       return <ZoneChoice {...props} />;
     case "select_counter":
       return <CounterChoice {...props} />;
+    case "announce_race":
+    case "announce_attrib":
+      return <BitsChoice {...props} />;
+    case "announce_card":
+      return <CardNameChoice {...props} />;
     case "announce_number":
       return <NumberChoice {...props} />;
     case "rock_paper_scissors":
