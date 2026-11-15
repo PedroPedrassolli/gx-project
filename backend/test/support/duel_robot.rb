@@ -36,13 +36,16 @@ class DuelRobot
     actions.sample(random: @random) # nem batalha nem fim de turno: só sobra agir
   end
 
+  # Sem poder sair da batalha (to_m2 e to_ep falsos, como quando uma carta obriga a atacar),
+  # só sobra atacar ou ativar.
   def select_battlecmd(prompt)
-    if prompt[:attackable].any? && @random.rand < 0.85
+    stuck = !prompt[:to_m2] && !prompt[:to_ep]
+    if prompt[:attackable].any? && (stuck || @random.rand < 0.85)
       { command: "attack", index: @random.rand(prompt[:attackable].size) }
-    elsif prompt[:activatable].any? && @random.rand < 0.3
+    elsif prompt[:activatable].any? && (stuck || @random.rand < 0.3)
       { command: "activate", index: @random.rand(prompt[:activatable].size) }
     else
-      prompt[:to_m2] && @random.rand < 0.3 ? { command: "main2" } : { command: "end" }
+      prompt[:to_m2] && (!prompt[:to_ep] || @random.rand < 0.3) ? { command: "main2" } : { command: "end" }
     end
   end
 
