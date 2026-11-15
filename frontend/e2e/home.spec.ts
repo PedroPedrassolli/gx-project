@@ -19,6 +19,8 @@ test("a página inicial mostra o projeto, os atalhos e a fase atual", async ({ p
   await expect(
     page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Criar conta" }),
   ).toHaveAttribute("href", "/cadastro");
+  // Sem cartas na tela, nada de conexão com o site das imagens.
+  await expect(page.locator('link[rel="preconnect"]')).toHaveCount(0);
 });
 
 test("com a conta aberta, a mesa tem os decks e a coleção", async ({ page }) => {
