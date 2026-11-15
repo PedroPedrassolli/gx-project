@@ -9,6 +9,7 @@ import { PageNotice, SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 import { useRealtime } from "../realtime/useRealtime.ts";
 import { matchKey, respond, surrender, useMatch, type MatchState } from "./api.ts";
+import { actionablePlaces } from "./actionable.ts";
 import { Board } from "./Board.tsx";
 import { DuelDetail } from "./DuelDetail.tsx";
 import { ChainStack, DuelLog } from "./DuelSide.tsx";
@@ -121,6 +122,7 @@ export function DuelPage() {
         onCard={setSelected}
         finished={state.status === "finished"}
         lpChanges={motion === "off" ? undefined : lpChanges(fresh)}
+        actionable={actionablePlaces(state.view.prompt)}
       />
       <DuelStatus
         state={state}

@@ -1546,6 +1546,16 @@ button.pile {
   object-fit: cover;
 }
 
+/* O que a pergunta da vez deixa usar brilha em dourado: a carta na mão ou no campo e a
+   pilha que tem carta para usar. Escolher continua sendo nos botões da pergunta. */
+[data-actionable] > .card,
+.pile[data-actionable],
+.pile-banished[data-actionable] {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+  box-shadow: 0 0 0.75rem rgb(216 184 104 / 0.55);
+}
+
 /* Defesa: a carta deitada. */
 .card.defense {
   transform: rotate(90deg);
