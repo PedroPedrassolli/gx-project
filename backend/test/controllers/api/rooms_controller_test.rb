@@ -135,18 +135,69 @@ class Api::RoomsControllerTest < ActionDispatch::IntegrationTest
       assert_equal [ true, true, nil ], events(syrus).last.data[:players].first.values_at(:ready, :deck_chosen, :deck_id)
     end
 
-    it "o último a ficar pronto começa o duelo e os dois vão para a partida" do
+    # Os dois prontos com o deck inicial; o Jaden é o dono (lugar 0).
+    def ready_room
+      room = room_for(jaden)
+      Decks::StarterDeck.give_to(jaden)
+      Decks::StarterDeck.give_to(syrus)
+      room.players.first.update!(deck: jaden.decks.sole, ready: true)
+      room.players.create!(user: syrus, seat: 1, deck: syrus.decks.sole, ready: true)
+      room
+    end
+
+    it "com os dois prontos, o pedra, papel e tesoura decide quem começa e o duelo começa" do
       room = room_for(jaden)
       room.players.create!(user: syrus, seat: 1, deck: Decks::StarterDeck.give_to(syrus) && syrus.decks.sole, ready: true)
       Decks::StarterDeck.give_to(jaden)
-      session = session_for(jaden)
-      session.post ready_api_room_path(room.code), params: { deck_id: jaden.decks.sole.id, ready: true }, as: :json
+      owner = session_for(jaden)
+      guest = session_for(syrus)
+      owner.post ready_api_room_path(room.code), params: { deck_id: jaden.decks.sole.id, ready: true }, as: :json
+      assert_equal({ "hand" => nil, "chosen" => [], "last" => nil, "chooser_seat" => nil }, owner.response.parsed_body.dig("data", "opening"))
+      assert_equal 0, Match.count
 
+      owner.post hand_api_room_path(room.code), params: { hand: "rock" }, as: :json
+      assert_equal [ "rock", [ 0 ] ], owner.response.parsed_body.dig("data", "opening").values_at("hand", "chosen")
+      # O Syrus fica sabendo que o Jaden escolheu, mas não o quê.
+      assert_equal [ nil, [ 0 ] ], events(syrus).last.data[:opening].values_at(:hand, :chosen)
+
+      guest.post hand_api_room_path(room.code), params: { hand: "scissors" }, as: :json
+      assert_equal({ "hand" => nil, "chosen" => [], "last" => { "0" => "rock", "1" => "scissors" }, "chooser_seat" => 0 },
+                   guest.response.parsed_body.dig("data", "opening"))
+
+      guest.post first_api_room_path(room.code), params: { first: true }, as: :json
+      assert_equal [ 422, "Quem escolhe quem começa é quem ganhou." ], [ guest.response.status, guest.response.parsed_body.dig("error", "message") ]
+
+      owner.post first_api_room_path(room.code), params: { first: false }, as: :json
       match = Match.sole
-      assert_equal [ "dueling", match.id ], session.response.parsed_body["data"].values_at("status", "match_id")
+      assert_equal [ "dueling", match.id ], owner.response.parsed_body["data"].values_at("status", "match_id")
+      assert_equal syrus.id, match.players.find_by!(team: 0).user_id
       [ jaden, syrus ].each do |user|
         assert_includes events(user).map { |event| [ event.name, event.data ] }, [ "match.started", { code: room.code, match_id: match.id } ]
       end
+    end
+
+    it "deixar de estar pronto ou sair da sala recomeça a escolha" do
+      room = ready_room
+      Rooms::Opening.new(room).hand!(0, "rock")
+      session_for(syrus).post ready_api_room_path(room.code), params: { ready: false }, as: :json
+      assert_equal({}, room.reload.hands)
+
+      room.players.last.update!(ready: true)
+      Rooms::Opening.new(room).hand!(1, "paper")
+      session_for(syrus).post leave_api_room_path(room.code), as: :json
+      assert_equal [ {}, [ jaden.id ] ], [ room.reload.hands, room.players.map(&:user_id) ]
+    end
+
+    it "deck que mudou depois do pronto: o duelo não começa e quem escolheu fica sabendo" do
+      room = ready_room
+      Rooms::Opening.new(room).tap { |opening| opening.hand!(0, "rock") }.hand!(1, "scissors")
+      syrus.decks.sole.deck_cards.where(section: "main").destroy_all
+      owner = session_for(jaden)
+      owner.post first_api_room_path(room.code), params: { first: true }, as: :json
+
+      assert_equal [ 422, "Um deck mudou e não vale mais nesta sala: escolham de novo." ],
+                   [ owner.response.status, owner.response.parsed_body.dig("error", "message") ]
+      assert_equal [ 0, false, nil ], [ Match.count, room.players.reload.last.ready, room.reload.chooser_seat ]
     end
 
     it "recusa deck incompleto e deck de outro jogador, e deixa de ficar pronto" do

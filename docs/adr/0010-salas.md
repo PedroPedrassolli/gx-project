@@ -34,6 +34,14 @@ jogadores enquanto a partida não começa.
    `room.kicked`.
 8. **Tempo real:** cada mudança manda `room.updated` para cada jogador, com a sala vista por
    ele. Se o Ably falhar, o pedido segue: o front também consulta `GET /api/rooms/:code`.
+9. **Quem começa sai no pedra, papel e tesoura** (escopo 3.7, GXP-81). Com a sala cheia e
+   todos prontos, cada um escolhe a mão (`POST /api/rooms/:code/hand`); a sala guarda a mão
+   de cada lugar (`hands`) e só mostra a do outro quando todos escolheram (`last_hands`).
+   Empate repete; quem ganha (`chooser_seat`) escolhe começar ou deixar o outro começar
+   (`POST /api/rooms/:code/first`), e aí a partida começa com esse lugar no time 0 (a engine
+   começa por ele). Deixar de estar pronto, sair ou ser tirado recomeça a escolha. A sala é
+   travada a cada escolha, para duas mãos ao mesmo tempo não se apagarem. Não há prazo: na
+   sala de espera, quem cansou de esperar sai (ou o dono tira quem sumiu).
 
 ## Consequências
 

@@ -33,6 +33,8 @@ Rails.application.routes.draw do
         post :join
         post :leave
         post :ready
+        post :hand
+        post :first
         post :kick
       end
     end

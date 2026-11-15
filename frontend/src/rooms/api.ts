@@ -12,6 +12,17 @@ export type RoomPlayer = {
   deck_id?: number;
 };
 
+export type Hand = "rock" | "paper" | "scissors";
+
+// Com todos prontos, o pedra, papel e tesoura de quem começa (GXP-81). A mão do outro só vem
+// quando todos escolheram (last).
+export type Opening = {
+  hand: Hand | null;
+  chosen: number[];
+  last: Record<string, Hand> | null;
+  chooser_seat: number | null;
+};
+
 export type Room = {
   code: string;
   public: boolean;
@@ -26,6 +37,7 @@ export type Room = {
   seats: number;
   players: RoomPlayer[];
   match_id?: number; // em duelo: a partida
+  opening?: Opening;
 };
 
 export type RoomFlags = { public: boolean; banlist: boolean; destiny_draw: boolean };
