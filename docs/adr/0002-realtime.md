@@ -28,8 +28,9 @@ permite assinar esse canal, e escolheu o Ably (decisão 3).
 4. **Sem a chave** (desenvolvimento e CI), os eventos ficam na memória
    (`Realtime::MemoryPublisher`), com o mesmo método `publish(user_id:, event:, data:)`.
    `Realtime::Publisher.current` escolhe pela presença da `ABLY_API_KEY`.
-5. **O endpoint `POST /api/realtime/token` entra com as contas (F2).** Sem a sessão do
-   jogador, ele emitiria token para qualquer id.
+5. **O endpoint `POST /api/realtime/token` só responde com a sessão do jogador** (GXP-45):
+   sem ela, emitiria token para qualquer id. Sem a `ABLY_API_KEY`, responde 503 ("O tempo
+   real está desligado.") e o front consulta a API a cada 2 s.
 
 ## Consumo do plano grátis
 
