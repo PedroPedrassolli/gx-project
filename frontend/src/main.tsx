@@ -42,6 +42,9 @@ const NewPasswordPage = lazy(() =>
 const VerifyEmailPage = lazy(() =>
   import("./account/VerifyEmailPage.tsx").then((m) => ({ default: m.VerifyEmailPage })),
 );
+const RoomsPage = lazy(() =>
+  import("./rooms/RoomsPage.tsx").then((m) => ({ default: m.RoomsPage })),
+);
 const RoomPage = lazy(() => import("./rooms/RoomPage.tsx").then((m) => ({ default: m.RoomPage })));
 const TermsPage = lazy(() =>
   import("./legal/LegalPages.tsx").then((m) => ({ default: m.TermsPage })),
@@ -70,6 +73,7 @@ createRoot(root).render(
             <Route path="colecao" element={<CollectionPage />} />
             <Route path="decks" element={<DecksPage />} />
             <Route path="decks/:id" element={<DeckEditPage />} />
+            <Route path="salas" element={<RoomsPage />} />
             <Route path="salas/:code" element={<RoomPage />} />
             <Route path="entrar" element={<LogInPage />} />
             <Route path="conta" element={<AccountPage />} />

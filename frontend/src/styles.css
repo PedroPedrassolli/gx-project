@@ -1207,3 +1207,41 @@ input[type="file"]::file-selector-button {
 .my-deck h2 {
   margin-top: 0;
 }
+
+/* Lista de salas: criar, entrar com o código e as abertas. */
+.rooms-page {
+  max-width: 52rem;
+}
+
+.room-create {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.room-create legend {
+  margin-bottom: 0.4rem;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.code-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+}
+
+.code-form label {
+  flex: 1 1 100%;
+  font-weight: 600;
+}
+
+.code-form input {
+  width: 9rem;
+  font-family: var(--font-title);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
