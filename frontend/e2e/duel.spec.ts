@@ -338,3 +338,42 @@ test("tributo e soma mandam a escolha certa", async ({ page }) => {
   await page.getByRole("button", { name: "Confirmar" }).click();
   expect(sum).toEqual([{ seq: 3, response: { indexes: [0, 1] } }]);
 });
+
+test("uma carta por vez e a ordem mandam a escolha certa", async ({ page }) => {
+  const field = (code: number, sequence: number) => ({
+    code,
+    controller: 0,
+    location: 4,
+    sequence,
+  });
+  const unselect = await mockPrompt(page, {
+    type: "select_unselect_card",
+    player: 0,
+    finishable: true,
+    cancelable: false,
+    min: 1,
+    max: 2,
+    selectable: [field(89631139, 0)],
+    unselectable: [field(46986414, 1)],
+  });
+  await page.goto("/duelo/5");
+  await expect(page.getByRole("button", { name: "Concluir" })).toBeVisible();
+  await page.getByRole("button", { name: "Tirar Mago Negro (campo)" }).click();
+  expect(unselect).toEqual([{ seq: 3, response: { index: 1 } }]);
+
+  const deckTop = [
+    { code: 46986414, controller: 0, location: 1, sequence: 0 },
+    { code: 83764718, controller: 0, location: 1, sequence: 1 },
+  ];
+  const sort = await mockPrompt(page, { type: "sort_card", player: 0, cards: deckTop });
+  await page.goto("/duelo/5");
+  await page.getByRole("button", { name: "Renascer do Monstro (deck)" }).click();
+  await page.getByRole("button", { name: "Mago Negro (deck)" }).click();
+  await page.getByRole("button", { name: "Confirmar" }).click();
+  expect(sort).toEqual([{ seq: 3, response: { order: [1, 0] } }]);
+
+  const keep = await mockPrompt(page, { type: "sort_card", player: 0, cards: deckTop });
+  await page.goto("/duelo/5");
+  await page.getByRole("button", { name: "Deixar como está" }).click();
+  expect(keep).toEqual([{ seq: 3, response: {} }]);
+});

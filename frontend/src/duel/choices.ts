@@ -97,3 +97,7 @@ export function progress(prompt: Prompt, chosen: number[]) {
         : `Escolhidas: ${picked.length} (de ${min} a ${max})`;
   }
 }
+
+// A resposta da ordem: para cada carta, a posição em que ela fica (0 é a primeira).
+export const sortOrder = (taps: number[], count: number) =>
+  Array.from({ length: count }, (_, card) => taps.indexOf(card));
