@@ -295,3 +295,46 @@ test("escolher cartas: um toque basta para uma carta; várias pedem o Confirmar"
   await confirm.click();
   expect(destroy).toEqual([{ seq: 3, response: { indexes: [0, 1] } }]);
 });
+
+test("tributo e soma mandam a escolha certa", async ({ page }) => {
+  const field = (code: number, sequence: number, extra = {}) => ({
+    code,
+    controller: 0,
+    location: 4,
+    sequence,
+    ...extra,
+  });
+  const tribute = await mockPrompt(page, {
+    type: "select_tribute",
+    player: 0,
+    cancelable: true,
+    min: 2,
+    max: 2,
+    hint: 500,
+    cards: [field(89631139, 0, { release_param: 1 }), field(46986414, 1, { release_param: 1 })],
+  });
+  await page.goto("/duelo/5");
+  await page.getByRole("checkbox", { name: "Blue-Eyes White Dragon (campo)" }).check();
+  await expect(page.getByText("Tributos: 1 de 2")).toBeVisible();
+  await page.getByRole("checkbox", { name: "Mago Negro (campo)" }).check();
+  await page.getByRole("button", { name: "Confirmar" }).click();
+  expect(tribute).toEqual([{ seq: 3, response: { indexes: [0, 1] } }]);
+
+  const sum = await mockPrompt(page, {
+    type: "select_sum",
+    player: 0,
+    select_max: false,
+    acc: 8,
+    min: 0,
+    max: 0,
+    must: [],
+    cards: [field(89631139, 0, { sum: 4 }), field(46986414, 1, { sum: 4 })],
+  });
+  await page.goto("/duelo/5");
+  await page.getByRole("checkbox", { name: "Blue-Eyes White Dragon (campo)" }).check();
+  await expect(page.getByText("Total: 4 de pelo menos 8")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Confirmar" })).toBeDisabled();
+  await page.getByRole("checkbox", { name: "Mago Negro (campo)" }).check();
+  await page.getByRole("button", { name: "Confirmar" }).click();
+  expect(sum).toEqual([{ seq: 3, response: { indexes: [0, 1] } }]);
+});
