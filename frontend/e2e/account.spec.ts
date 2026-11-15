@@ -125,6 +125,8 @@ test.describe("cadastro", () => {
 
     await expect(page.getByRole("heading", { level: 1, name: "Conta criada!" })).toBeVisible();
     await expect(page.getByRole("status")).toContainText(PLAYER.email);
+    // O remetente é um e-mail grátis: a mensagem pode cair no spam (ADR 0004).
+    await expect(page.getByRole("status")).toContainText("Procure por “GX Project” no spam");
   });
 
   test("pede o aceite dos termos, com os links para ler antes", async ({ page }) => {
@@ -165,6 +167,7 @@ test("pede para confirmar o e-mail e manda o link de novo", async ({ page }) => 
 
   const notice = page.getByRole("status").filter({ hasText: "Confirme seu e-mail" });
   await expect(notice).toContainText(PLAYER.email);
+  await expect(notice).toContainText("Procure por “GX Project” no spam");
   await notice.getByRole("button", { name: "Mandar de novo" }).click();
   await expect(notice).toContainText("Mandamos de novo.");
 

@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { ApiError } from "../api.ts";
 import { useSignUp } from "./session.ts";
 import { sentence, TextField } from "./TextField.tsx";
+import { SPAM_HINT } from "./spamHint.ts";
 import { usePageTitle } from "../pageTitle.ts";
 
 const EMPTY = { email: "", password: "", nickname: "", birth_date: "" };
@@ -27,7 +28,8 @@ export function SignUpPage() {
       <main className="page narrow">
         <h1>Conta criada!</h1>
         <p role="status">
-          Mandamos um link para <strong>{form.email}</strong>. Abra para confirmar seu e-mail.
+          Mandamos um link para <strong>{form.email}</strong>. Abra para confirmar seu e-mail.{" "}
+          {SPAM_HINT}
         </p>
         <p>
           <Link className="cta" to="/cartas">

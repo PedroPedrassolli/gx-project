@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router";
 import { ApiError, request } from "../api.ts";
 import { TextField } from "./TextField.tsx";
+import { SPAM_HINT } from "./spamHint.ts";
 import { usePageTitle } from "../pageTitle.ts";
 
 function errorMessage(error: Error) {
@@ -26,7 +27,7 @@ export function ForgotPasswordPage() {
       {ask.isSuccess ? (
         <p role="status">
           Se <strong>{email}</strong> tiver conta, mandamos um link para criar uma senha nova. Ele
-          vale por 1 hora.
+          vale por 1 hora. {SPAM_HINT}
         </p>
       ) : (
         <form className="form" onSubmit={submit} noValidate>
