@@ -147,6 +147,7 @@ export function DuelPage() {
           language={language}
           pending={answer.isPending}
           onAnswer={(response) => answer.mutate(response)}
+          onCard={setSelected}
         />
       )}
       {answer.error && (

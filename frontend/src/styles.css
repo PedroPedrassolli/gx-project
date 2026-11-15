@@ -2070,9 +2070,24 @@ button.danger {
 }
 
 .picks input {
+  flex: none;
   width: 1.25rem;
   height: 1.25rem;
   margin: 0;
+}
+
+/* A miniatura da carta em cada opção (GXP-79); o verso quando o jogador não a vê. */
+.pick-thumb {
+  flex: none;
+  width: 28px;
+  height: auto;
+  aspect-ratio: 28 / 41;
+  border-radius: 2px;
+}
+
+.pick-thumb.back {
+  border: 1px solid var(--color-accent);
+  background: repeating-linear-gradient(45deg, #1d2d57 0 3px, #121c36 3px 6px);
 }
 
 .counter-input {
