@@ -1791,6 +1791,34 @@ button.pile {
   font-weight: 600;
 }
 
+/* Ações embaixo da mesa (desistir; no fim, a sala e o replay): lado a lado, no centro. */
+.duel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+/* Replay: três botões da mesma largura e o turno para pular. */
+.replay-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 8rem));
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.replay-jump {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+}
+
+.replay-jump select {
+  width: auto;
+}
+
 .duel-result {
   padding: 1rem;
   border: 2px solid var(--color-accent);

@@ -186,6 +186,91 @@ test("na mesa, o monstro mostra o ATK em ataque e o DEF em defesa", async ({ pag
   await expect(monsters.getByText("2500", { exact: true })).toHaveCount(0);
 });
 
+test("o replay passa lance a lance e turno a turno, e reproduz sozinho", async ({ page }) => {
+  await mockMatch(page);
+  const frame = (step: number, turn: number, lp: number) => ({
+    step,
+    view: {
+      ...STATE.view,
+      turn,
+      sides: [STATE.view.sides[0], { ...STATE.view.sides[1], lp }],
+      events: [{ id: step, type: "lp", team: 1, kind: "damage", amount: 100 }],
+    },
+  });
+  const turns: Record<string, unknown[]> = {
+    "1": [frame(0, 1, 8000), frame(2, 1, 7900)],
+    "2": [frame(5, 2, 7800)],
+  };
+  const asked: string[] = [];
+  await page.route(/\/api\/matches\/5\/replay/, (route) => {
+    const turn = new URL(route.request().url()).searchParams.get("turn") ?? "1";
+    asked.push(turn);
+    return route.fulfill({
+      json: {
+        data: {
+          id: 5,
+          turn: Number(turn),
+          turns: 2,
+          you: 0,
+          players: STATE.players,
+          frames: turns[turn],
+        },
+      },
+    });
+  });
+  await page.goto("/duelo/5/replay");
+
+  const theirs = page.getByRole("region", { name: "Lado de Syrus" });
+  await expect(page.getByText("Turno 1 de 2")).toBeVisible();
+  await expect(page.getByText("Lance 1 de 2")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Anterior" })).toBeDisabled();
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(theirs.getByText("PV 7900")).toBeVisible();
+  // O histórico é o do turno até o lance.
+  await expect(
+    page.getByRole("region", { name: "Histórico" }).getByText("Syrus perdeu 100 PV."),
+  ).toHaveCount(2);
+
+  await page.getByRole("button", { name: "Próximo" }).click();
+  await expect(page.getByText("Turno 2 de 2")).toBeVisible();
+  await expect(theirs.getByText("PV 7800")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Próximo" })).toBeDisabled();
+
+  // Voltar do começo de um turno leva ao último lance do anterior.
+  await page.getByRole("button", { name: "Anterior" }).click();
+  await expect(page.getByText("Lance 2 de 2")).toBeVisible();
+  await expect(page.getByText("Turno 1 de 2")).toBeVisible();
+
+  await page.getByLabel("Ir para o turno").selectOption("1");
+  await expect(page.getByText("Lance 1 de 2")).toBeVisible();
+  await page.getByRole("button", { name: "Reproduzir" }).click();
+  await expect(page.getByRole("button", { name: "Pausar" })).toBeVisible();
+  await expect(page.getByText("Turno 2 de 2")).toBeVisible({ timeout: 6000 });
+  await expect(page.getByRole("button", { name: "Reproduzir" })).toBeDisabled();
+  expect([...new Set(asked)].sort()).toEqual(["1", "2"]);
+});
+
+test("o resultado leva ao replay; antes do fim, o replay avisa que não está pronto", async ({
+  page,
+}) => {
+  const match = await mockMatch(page);
+  match.set({ ...STATE, status: "finished", winner_team: 0, finish_reason: "surrender" });
+  await page.route(/\/api\/matches\/5\/replay/, (route) =>
+    route.fulfill({
+      status: 409,
+      json: { error: { status: 409, message: "O replay fica pronto quando o duelo acaba." } },
+    }),
+  );
+  await page.goto("/duelo/5");
+  await page.getByRole("link", { name: "Ver o replay" }).click();
+  await expect(page).toHaveURL(/\/duelo\/5\/replay$/);
+  await expect(page.getByRole("alert")).toHaveText("O replay fica pronto quando o duelo acaba.");
+  await expect(page.getByRole("link", { name: "Voltar para o duelo" })).toHaveAttribute(
+    "href",
+    "/duelo/5",
+  );
+});
+
 test("animações: o que chega depois de abrir anima; desligadas, nada anima", async ({ page }) => {
   // Anota onde cada animação do Web Animations API rodou (ataque, cemitério).
   await page.addInitScript(() => {

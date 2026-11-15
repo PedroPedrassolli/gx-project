@@ -101,6 +101,14 @@ async function mockApi(page: Page) {
       "/api/rooms": [{ ...ROOM, players: 1 }],
       "/api/rooms/ABC234": ROOM,
       "/api/matches/5": MATCH,
+      "/api/matches/5/replay": {
+        id: 5,
+        turn: 1,
+        turns: 12,
+        you: 0,
+        players: MATCH.players,
+        frames: [{ step: 0, view: { ...MATCH.view, prompt: undefined } }],
+      },
     };
     if (path === "/api/session") return route.fallback();
     if (path === "/api/collection") {
@@ -152,6 +160,7 @@ const PAGES: [string, string, boolean][] = [
   ["/salas", "Salas", true],
   ["/salas/ABC234", "Sala", true],
   ["/duelo/5", "Duelo", true],
+  ["/duelo/5/replay", "Replay", true],
 ];
 
 for (const [path, name, loggedIn] of PAGES) {

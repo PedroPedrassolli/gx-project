@@ -41,7 +41,7 @@ export function DuelStatus(props: Props) {
         {finished ? <Result {...props} /> : <Turn {...props} />}
       </div>
       {finished ? (
-        <BackToRoom code={state.room_code} />
+        <BackToRoom code={state.room_code} matchId={state.id} />
       ) : (
         <>
           {/* Pergunta nova, prazo novo: o relógio recomeça (e volta a avisar quando zerar). */}
@@ -137,12 +137,16 @@ function Result({ state, names }: Props) {
   );
 }
 
-// No fim, o caminho de volta: a sala reabre para a revanche (ou a lista, se a sala sumiu).
-function BackToRoom({ code }: { code?: string | null }) {
+// No fim, o caminho de volta (a sala reabre para a revanche, ou a lista, se a sala sumiu) e
+// o replay, que fica 30 dias.
+function BackToRoom({ code, matchId }: { code?: string | null; matchId: number }) {
   return (
     <p className="duel-actions">
       <Link className="cta" to={code ? `/salas/${code}` : "/salas"}>
         {code ? "Voltar para a sala" : "Ver as salas"}
+      </Link>
+      <Link className="cta secondary" to={`/duelo/${matchId}/replay`}>
+        Ver o replay
       </Link>
     </p>
   );
