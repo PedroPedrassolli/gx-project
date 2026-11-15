@@ -12,7 +12,8 @@ export type FieldCard = {
   def?: number;
 };
 
-export type HandCard = { code?: number; hidden?: boolean };
+// Na própria mão, "public" marca a carta revelada por um efeito, que o outro também vê.
+export type HandCard = { code?: number; hidden?: boolean; public?: boolean };
 
 export type Side = {
   team: number;

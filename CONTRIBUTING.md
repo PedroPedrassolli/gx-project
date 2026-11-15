@@ -32,6 +32,7 @@ mudar o projeto sem quebrar nada.
 | `backend` | `bin/rubocop` / `bin/brakeman` / `bin/bundler-audit` | Estilo e segurança |
 | `backend` | `bin/rails duel:record_health_check` | Grava de novo o duelo do `/up/engine` (depois de atualizar a engine ou os scripts) |
 | `backend` | `bin/rails "duel:benchmark[200]"` | Mede aqui a ação fria e a quente, como o `/up/engine` |
+| `backend` | `ROBOT_DUELS=50 bin/rails test test/services/matches/robot_duel_test.rb` | Joga 50 duelos inteiros com decks sorteados do catálogo (na CI são 4), escolhendo ao acaso |
 | `backend` | `bin/rails dados:jogo` | Baixa de novo da Yugipedia os dados do jogo para `db/seeds/jogo` (uns 3 minutos; veja o README da pasta) |
 | `backend` | `bin/rails dados:cobertura` | Cruza o pool com os scripts da engine e as imagens do YGOPRODeck (depois de atualizar a engine ou os dados) |
 | `backend` | `bin/rails catalogo:importar` | Grava no banco o catálogo dos YAML (cartas, pacotes, banlist e conversor); pode rodar de novo |
