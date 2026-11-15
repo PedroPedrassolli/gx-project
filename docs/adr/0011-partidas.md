@@ -34,6 +34,15 @@ semente, os decks e a lista de respostas: a engine refaz o resto (ADR 0001).
    quantidade. Carta virada para baixo do outro mostra só a posição. As perguntas não levam o
    código de carta escondida do outro (na mão, no deck, no Extra ou virada no campo).
 
+9. **A resposta do jogador** (`POST /api/matches/:id/responses`) leva a escolha em JSON
+   (comando e índice, sim ou não, índices das cartas...), que o `Duel::ResponseEncoder` vira
+   os bytes que a engine espera. Ele só confere a forma; a engine diz se a jogada vale (se
+   não vale, 422 e nada muda). A partida fica travada durante a resposta, e o `seq` (quantas
+   respostas o jogador viu) evita jogar sobre uma mesa velha (409).
+10. **Depois da resposta, cada outro jogador recebe a mesa inteira dele** (`duel.updated`),
+    não só o que mudou: a tela troca a mesa toda, e o que veio fora de ordem se resolve
+    sozinho. Quem respondeu recebe a mesa nova na própria resposta HTTP.
+
 ## Consequências
 
 - Partidas e respostas crescem com cada duelo. O replay vale 30 dias (escopo 3.7); a limpeza

@@ -13,9 +13,21 @@ module Matches
                                    responses: match.responses.map(&:bytes), destiny_draw: match.destiny_draw)
     end
 
+    # A vez é de outro time, ou o duelo acabou.
+    class NotYourTurn < StandardError; end
+
     # Primeira vez: a engine roda até a primeira pergunta de verdade.
     def start!
       settle(@session.start)
+    end
+
+    # A escolha do time para a pergunta da vez (o JSON da tela). A forma errada sobe
+    # Duel::ResponseEncoder::InvalidChoice; a jogada que a engine recusa sobe
+    # Duel::Session::InvalidResponse. Nos dois casos, nada muda.
+    def respond!(team, choice)
+      raise NotYourTurn, "Não é a sua vez." unless @match.dueling? && @match.prompt_team == team
+
+      settle(answer(team, Duel::ResponseEncoder.encode(@match.prompt["type"], choice)))
     end
 
     # A mesa vista por um time (Duel::View), com o que a partida guardou.

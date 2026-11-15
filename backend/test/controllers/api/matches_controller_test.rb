@@ -1,0 +1,85 @@
+require "test_helper"
+
+class Api::MatchesControllerTest < ActionDispatch::IntegrationTest
+  include StarterDeckCards
+
+  def player(name) = User.create!(email: "#{name.downcase}@example.com", password: "duelista123", nickname: name, age_group: "18+")
+
+  def session_for(user)
+    open_session.tap { |session| session.post api_session_path, params: { email: user.email, password: "duelista123" }, as: :json }
+  end
+
+  let(:jaden) { player("Jaden") }
+  let(:syrus) { player("Syrus") }
+  # A partida começa como no jogo: sala, decks iniciais e os dois prontos.
+  let(:match) do
+    load_starter_deck_cards
+    room = Room.create!(owner: jaden, code: "ABC234")
+    [ jaden, syrus ].each_with_index do |user, seat|
+      Decks::StarterDeck.give_to(user)
+      room.players.create!(user:, seat:, deck: user.decks.sole, ready: true)
+    end
+    Matches::Start.new(room).call
+  end
+  # Quem começa saiu no sorteio.
+  let(:first) { User.find(match.players.find_by!(team: 0).user_id) }
+  let(:second) { User.find(match.players.find_by!(team: 1).user_id) }
+
+  def answer(session, response, seq: match.reload.responses.count)
+    session.post responses_api_match_path(match), params: { seq:, response: }, as: :json
+  end
+
+  before { Realtime::Publisher.current.clear }
+
+  it "mostra a mesa só para quem joga, com a pergunta para quem responde" do
+    session = session_for(first)
+    session.get api_match_path(match)
+    data = session.response.parsed_body["data"]
+    assert_equal [ "dueling", 0, "select_idlecmd" ], [ data["status"], data["you"], data.dig("view", "prompt", "type") ]
+    assert_equal %w[Jaden Syrus], data["players"].pluck("nickname").sort
+
+    other = session_for(second)
+    other.get api_match_path(match)
+    assert_equal [ nil, 0 ], other.response.parsed_body.dig("data", "view").values_at("prompt", "waiting_for")
+
+    outsider = session_for(player("Chazz"))
+    outsider.get api_match_path(match)
+    assert_equal 404, outsider.response.status
+  end
+
+  it "a resposta avança o duelo e o outro recebe a mesa nova" do
+    session = session_for(first)
+    answer(session, { command: "end" })
+
+    data = session.response.parsed_body["data"]
+    assert_equal [ 200, 1, 2 ], [ session.response.status, data.dig("view", "waiting_for"), data.dig("view", "turn") ]
+    update = Realtime::Publisher.current.events_for(second.id).sole
+    assert_equal [ "duel.updated", 1, data["seq"] ], [ update.name, update.data[:you], update.data[:seq] ]
+    assert_equal "select_idlecmd", update.data.dig(:view, :prompt, :type).to_s
+  end
+
+  it "sem o Ably no ar, a jogada vale do mesmo jeito" do
+    Realtime::MemoryPublisher.any_instance.stubs(:publish).raises(Realtime::AblyPublisher::Error, "sem conexão")
+    session = session_for(first)
+    answer(session, { command: "end" })
+
+    assert_equal [ 200, 2 ], [ session.response.status, match.reload.turn ]
+  end
+
+  it "resposta com a mesa velha ou fora da vez dá 409, e a jogada que não vale dá 422" do
+    session = session_for(first)
+    answer(session, { command: "end" }, seq: 0)
+    assert_equal [ 409, "A mesa mudou: confira e jogue de novo." ], [ session.response.status, session.response.parsed_body.dig("error", "message") ]
+
+    other = session_for(second)
+    answer(other, { command: "end" })
+    assert_equal [ 409, "Não é a sua vez." ], [ other.response.status, other.response.parsed_body.dig("error", "message") ]
+
+    before = match.reload.responses.count
+    [ { command: "summon", index: 59 }, { command: "voar" } ].each do |response|
+      answer(session, response)
+      assert_equal [ 422, "Essa jogada não vale agora." ], [ session.response.status, session.response.parsed_body.dig("error", "message") ]
+    end
+    assert_equal before, match.reload.responses.count
+  end
+end
