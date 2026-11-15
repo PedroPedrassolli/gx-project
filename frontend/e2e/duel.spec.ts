@@ -150,6 +150,7 @@ test("sem tempo real, o fim do duelo aparece na próxima consulta", async ({ pag
 });
 
 // A vez é do jogador: a mesa traz a pergunta e o servidor responde com a mesa nova.
+// A resposta vai depois do clique, sem esperar por ela: os testes conferem com expect.poll.
 async function mockPrompt(page: Page, prompt: Record<string, unknown>, reply = { status: 200 }) {
   const sent: unknown[] = [];
   const mine = { ...STATE, view: { ...STATE.view, turn_team: 0, waiting_for: 0, prompt } };
@@ -204,7 +205,7 @@ test("na fase principal, a escolha vai para o servidor e a mesa nova aparece", a
 
   await panel.getByRole("button", { name: "Invocar Mago Negro (mão)" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Vez de Syrus" })).toBeVisible();
-  expect(sent).toEqual([{ seq: 3, response: { command: "summon", index: 0 } }]);
+  await expect.poll(() => sent).toEqual([{ seq: 3, response: { command: "summon", index: 0 } }]);
 });
 
 test("jogada que o servidor recusa mostra o aviso", async ({ page }) => {
@@ -226,7 +227,7 @@ test("cadeia, sim ou não e posição mandam a escolha certa", async ({ page }) 
   });
   await page.goto("/duelo/5");
   await page.getByRole("button", { name: "Não encadear" }).click();
-  expect(chain).toEqual([{ seq: 3, response: { index: -1 } }]);
+  await expect.poll(() => chain).toEqual([{ seq: 3, response: { index: -1 } }]);
 
   const yesNo = await mockPrompt(page, {
     type: "select_yesno",
@@ -239,7 +240,7 @@ test("cadeia, sim ou não e posição mandam a escolha certa", async ({ page }) 
     .getByRole("region", { name: "Usar o Destiny Draw?" })
     .getByRole("button", { name: "Sim" })
     .click();
-  expect(yesNo).toEqual([{ seq: 3, response: { yes: true } }]);
+  await expect.poll(() => yesNo).toEqual([{ seq: 3, response: { yes: true } }]);
 
   const position = await mockPrompt(page, {
     type: "select_position",
@@ -250,7 +251,7 @@ test("cadeia, sim ou não e posição mandam a escolha certa", async ({ page }) 
   await page.goto("/duelo/5");
   await expect(page.getByRole("button", { name: "Ataque, com a face para baixo" })).toHaveCount(0);
   await page.getByRole("button", { name: "Defesa, com a face para baixo" }).click();
-  expect(position).toEqual([{ seq: 3, response: { position: 8 } }]);
+  await expect.poll(() => position).toEqual([{ seq: 3, response: { position: 8 } }]);
 });
 
 test("escolher cartas: um toque basta para uma carta; várias pedem o Confirmar", async ({
@@ -269,7 +270,7 @@ test("escolher cartas: um toque basta para uma carta; várias pedem o Confirmar"
   const attack = page.getByRole("region", { name: "Escolha o alvo do ataque" });
   await expect(attack.getByRole("button", { name: "Cancelar" })).toBeVisible();
   await attack.getByRole("button", { name: "Blue-Eyes White Dragon (campo do oponente)" }).click();
-  expect(target).toEqual([{ seq: 3, response: { indexes: [0] } }]);
+  await expect.poll(() => target).toEqual([{ seq: 3, response: { indexes: [0] } }]);
 
   const destroy = await mockPrompt(page, {
     type: "select_card",
@@ -293,7 +294,7 @@ test("escolher cartas: um toque basta para uma carta; várias pedem o Confirmar"
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
   await confirm.click();
-  expect(destroy).toEqual([{ seq: 3, response: { indexes: [0, 1] } }]);
+  await expect.poll(() => destroy).toEqual([{ seq: 3, response: { indexes: [0, 1] } }]);
 });
 
 test("tributo e soma mandam a escolha certa", async ({ page }) => {
@@ -318,7 +319,7 @@ test("tributo e soma mandam a escolha certa", async ({ page }) => {
   await expect(page.getByText("Tributos: 1 de 2")).toBeVisible();
   await page.getByRole("checkbox", { name: "Mago Negro (campo)" }).check();
   await page.getByRole("button", { name: "Confirmar" }).click();
-  expect(tribute).toEqual([{ seq: 3, response: { indexes: [0, 1] } }]);
+  await expect.poll(() => tribute).toEqual([{ seq: 3, response: { indexes: [0, 1] } }]);
 
   const sum = await mockPrompt(page, {
     type: "select_sum",
@@ -336,7 +337,7 @@ test("tributo e soma mandam a escolha certa", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Confirmar" })).toBeDisabled();
   await page.getByRole("checkbox", { name: "Mago Negro (campo)" }).check();
   await page.getByRole("button", { name: "Confirmar" }).click();
-  expect(sum).toEqual([{ seq: 3, response: { indexes: [0, 1] } }]);
+  await expect.poll(() => sum).toEqual([{ seq: 3, response: { indexes: [0, 1] } }]);
 });
 
 test("uma carta por vez e a ordem mandam a escolha certa", async ({ page }) => {
@@ -359,7 +360,7 @@ test("uma carta por vez e a ordem mandam a escolha certa", async ({ page }) => {
   await page.goto("/duelo/5");
   await expect(page.getByRole("button", { name: "Concluir" })).toBeVisible();
   await page.getByRole("button", { name: "Tirar Mago Negro (campo)" }).click();
-  expect(unselect).toEqual([{ seq: 3, response: { index: 1 } }]);
+  await expect.poll(() => unselect).toEqual([{ seq: 3, response: { index: 1 } }]);
 
   const deckTop = [
     { code: 46986414, controller: 0, location: 1, sequence: 0 },
@@ -370,10 +371,57 @@ test("uma carta por vez e a ordem mandam a escolha certa", async ({ page }) => {
   await page.getByRole("button", { name: "Renascer do Monstro (deck)" }).click();
   await page.getByRole("button", { name: "Mago Negro (deck)" }).click();
   await page.getByRole("button", { name: "Confirmar" }).click();
-  expect(sort).toEqual([{ seq: 3, response: { order: [1, 0] } }]);
+  await expect.poll(() => sort).toEqual([{ seq: 3, response: { order: [1, 0] } }]);
 
   const keep = await mockPrompt(page, { type: "sort_card", player: 0, cards: deckTop });
   await page.goto("/duelo/5");
   await page.getByRole("button", { name: "Deixar como está" }).click();
-  expect(keep).toEqual([{ seq: 3, response: {} }]);
+  await expect.poll(() => keep).toEqual([{ seq: 3, response: {} }]);
+});
+
+test("zona, marcadores, número e pedra, papel e tesoura mandam a escolha certa", async ({
+  page,
+}) => {
+  // Livres: a zona de monstro 3 de quem escolhe (bit 2) e a de campo do oponente (bit 29).
+  const zone = await mockPrompt(page, {
+    type: "select_disfield",
+    player: 0,
+    count: 1,
+    flag: 0xffffffff & ~(1 << 2) & ~(1 << 29),
+  });
+  await page.goto("/duelo/5");
+  await expect(page.getByRole("button", { name: "Sua zona de monstro 3" })).toBeVisible();
+  await page.getByRole("button", { name: "Zona de campo do oponente" }).click();
+  await expect.poll(() => zone).toEqual([{ seq: 3, response: { places: [1, 8, 5] } }]);
+
+  const counters = await mockPrompt(page, {
+    type: "select_counter",
+    player: 0,
+    counter_type: 1,
+    count: 2,
+    cards: [
+      { code: 46986414, controller: 0, location: 4, sequence: 0, counters: 2 },
+      { code: 83764718, controller: 0, location: 8, sequence: 0, counters: 1 },
+    ],
+  });
+  await page.goto("/duelo/5");
+  const panel = page.getByRole("region", { name: "Tire 2 marcadores" });
+  await panel.getByRole("spinbutton", { name: "Mago Negro (campo), com 2" }).fill("1");
+  await expect(panel.getByRole("button", { name: "Confirmar" })).toBeDisabled();
+  await panel.getByRole("spinbutton", { name: "Renascer do Monstro (campo), com 1" }).fill("1");
+  await expect(panel.getByText("Marcadores: 2 de 2")).toBeVisible();
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
+  await panel.getByRole("button", { name: "Confirmar" }).click();
+  await expect.poll(() => counters).toEqual([{ seq: 3, response: { counts: [1, 1] } }]);
+
+  const number = await mockPrompt(page, { type: "announce_number", player: 0, options: [1, 2, 3] });
+  await page.goto("/duelo/5");
+  await page.getByRole("button", { name: "3", exact: true }).click();
+  await expect.poll(() => number).toEqual([{ seq: 3, response: { index: 2 } }]);
+
+  const hand = await mockPrompt(page, { type: "rock_paper_scissors", player: 0 });
+  await page.goto("/duelo/5");
+  await page.getByRole("button", { name: "Papel" }).click();
+  await expect.poll(() => hand).toEqual([{ seq: 3, response: { hand: 3 } }]);
 });
