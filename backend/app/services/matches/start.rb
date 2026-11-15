@@ -22,6 +22,7 @@ module Matches
           match.players.create!(user_id: player.user_id, seat: player.seat, team:, deck: snapshot(decks.fetch(player.deck_id)))
         end
         @room.update!(status: "dueling")
+        Game.new(match).start!
         match
       end
     end

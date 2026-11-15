@@ -24,6 +24,15 @@ semente, os decks e a lista de respostas: a engine refaz o resto (ADR 0001).
    com quem ganha escolhendo ir primeiro ou segundo, vem depois de o duelo funcionar.
 5. **A partida fica quando a sala some** (o banco tira a sala dela) e quando alguém apaga a
    conta (o jogador some da partida): o replay é do outro jogador também.
+6. **A engine roda já no começo** (`Matches::Game#start!`), até a primeira pergunta de verdade.
+   A partida guarda o que a engine não guarda e a tela precisa: o turno, de quem é a vez, a
+   fase e a pergunta da vez (com o time que responde), lidos das mensagens.
+7. **Cadeia sem opção o servidor responde sozinho** ("não encadear") e grava a resposta: o
+   jogador só é consultado se tiver o que fazer (escopo 3.7).
+8. **A mesa de cada jogador sai das consultas à engine** (`Duel::View`), não de remontar o
+   estado pelas mensagens. Cada um vê a própria mão e o próprio Extra; do outro, só a
+   quantidade. Carta virada para baixo do outro mostra só a posição. As perguntas não levam o
+   código de carta escondida do outro (na mão, no deck, no Extra ou virada no campo).
 
 ## Consequências
 
