@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { Prompt } from "./api.ts";
-import { CardChoice } from "./CardChoice.tsx";
+import { CardChoice, SortChoice, UnselectChoice } from "./CardChoice.tsx";
 import { hintText } from "./hints.ts";
 import { cardLabel, Choice, list, type PromptCard, type PromptProps } from "./promptParts.tsx";
 
@@ -64,7 +64,12 @@ function title(prompt: Prompt, props: Props) {
     case "select_card":
     case "select_tribute":
     case "select_sum":
+    case "select_unselect_card":
       return hintText(prompt) ?? "Escolha as cartas";
+    case "sort_card":
+      return hintText(prompt) ?? "Ordene as cartas";
+    case "sort_chain":
+      return "Ordem dos efeitos na corrente";
     default:
       return hintText(prompt) ?? "Sua vez";
   }
@@ -156,6 +161,11 @@ function body(props: Props): ReactNode {
     case "select_tribute":
     case "select_sum":
       return <CardChoice {...props} />;
+    case "select_unselect_card":
+      return <UnselectChoice {...props} />;
+    case "sort_card":
+    case "sort_chain":
+      return <SortChoice {...props} />;
     default:
       return <p>Esta pergunta ainda não tem tela.</p>;
   }

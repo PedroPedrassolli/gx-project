@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { atLeastSum, canConfirm, exactSum, progress } from "./choices.ts";
+import { atLeastSum, canConfirm, exactSum, progress, sortOrder } from "./choices.ts";
 
 const card = (extra: Record<string, number> = {}) => ({
   code: 1,
@@ -53,4 +53,8 @@ test("só libera o Confirmar quando a engine vai aceitar a escolha", () => {
   assert.equal(canConfirm(sum, [1]), false);
   assert.equal(canConfirm({ ...sum, select_max: false, acc: 7 }, [1]), true);
   assert.equal(progress(sum, [1]), "Total: 7 de 8");
+});
+
+test("a ordem diz a posição de cada carta, na ordem dos toques", () => {
+  assert.deepEqual(sortOrder([2, 0, 1], 3), [1, 2, 0]);
 });

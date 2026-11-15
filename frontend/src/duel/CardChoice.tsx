@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { canConfirm, progress } from "./choices.ts";
+import { canConfirm, progress, sortOrder } from "./choices.ts";
 import { cardLabel, Choice, list, type PromptProps } from "./promptParts.tsx";
 
 // Escolha de cartas (select_card, select_tribute, select_sum). Quando é uma carta só, o
@@ -61,6 +61,85 @@ export function CardChoice(props: PromptProps) {
           onClick={() => onAnswer({ indexes: chosen })}
         />
         {cancel}
+      </p>
+    </>
+  );
+}
+
+// Uma carta por resposta (select_unselect_card): a engine pergunta de novo com as listas
+// novas. O -1 conclui quando a escolha já vale e desiste quando ainda não vale.
+export function UnselectChoice(props: PromptProps) {
+  const { prompt, onAnswer } = props;
+  const selectable = list(prompt, "selectable");
+  const unselectable = list(prompt, "unselectable");
+  return (
+    <>
+      <p className="actions">
+        {selectable.map((card, index) => (
+          <Choice
+            key={index}
+            label={`Escolher ${cardLabel(card, props)}`}
+            onClick={() => onAnswer({ index })}
+          />
+        ))}
+      </p>
+      {unselectable.length > 0 && (
+        <p className="actions">
+          {unselectable.map((card, index) => (
+            <Choice
+              key={index}
+              label={`Tirar ${cardLabel(card, props)}`}
+              onClick={() => onAnswer({ index: selectable.length + index })}
+            />
+          ))}
+        </p>
+      )}
+      <p className="actions">
+        {prompt.finishable ? (
+          <Choice label="Concluir" onClick={() => onAnswer({ index: -1 })} />
+        ) : (
+          Boolean(prompt.cancelable) && (
+            <Choice label="Cancelar" onClick={() => onAnswer({ index: -1 })} />
+          )
+        )}
+      </p>
+    </>
+  );
+}
+
+// Ordem de cartas (sort_card) ou de efeitos na corrente (sort_chain): toque na ordem.
+export function SortChoice(props: PromptProps) {
+  const { prompt, onAnswer } = props;
+  const cards = list(prompt, "cards");
+  const [taps, setTaps] = useState<number[]>([]);
+  return (
+    <>
+      <p>
+        {prompt.type === "sort_chain"
+          ? "Toque nos efeitos na ordem em que entram na corrente."
+          : "Toque nas cartas na ordem: a primeira fica em cima."}
+      </p>
+      <p className="actions">
+        {cards.map((card, index) => {
+          const position = taps.indexOf(index);
+          return (
+            <Choice
+              key={index}
+              label={`${position >= 0 ? `${position + 1}º: ` : ""}${cardLabel(card, props)}`}
+              disabled={position >= 0}
+              onClick={() => setTaps([...taps, index])}
+            />
+          );
+        })}
+      </p>
+      <p className="actions">
+        <Choice
+          label="Confirmar"
+          disabled={taps.length < cards.length}
+          onClick={() => onAnswer({ order: sortOrder(taps, cards.length) })}
+        />
+        {taps.length > 0 && <Choice label="Recomeçar" onClick={() => setTaps([])} />}
+        <Choice label="Deixar como está" onClick={() => onAnswer({})} />
       </p>
     </>
   );
