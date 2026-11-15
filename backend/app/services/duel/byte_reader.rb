@@ -15,6 +15,16 @@ module Duel
     def i32 = take(4, "l<")
     def u64 = take(8, "Q<")
 
+    attr_reader :offset
+
+    # Os próximos bytes, sem interpretar.
+    def bytes(size)
+      raise TruncatedError, "mensagem acabou antes do esperado" if @offset + size > @bytes.bytesize
+
+      @offset += size
+      @bytes.byteslice(@offset - size, size)
+    end
+
     # Posição de uma carta no formato loc_info da engine (10 bytes).
     def location
       { controller: u8, location: u8, sequence: u32, position: u32 }
