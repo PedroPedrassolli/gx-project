@@ -3,6 +3,16 @@ require "test_helper"
 class Duel::CardDatabaseTest < ActiveSupport::TestCase
   subject { Duel::Engine.cards }
 
+  describe "#strings" do
+    it "traz os textos dos efeitos, na ordem; carta desconhecida não tem nenhum" do
+      strings = subject.strings(74191942) # Painful Choice
+
+      assert_equal [ "Select 5 cards from your Deck", "Select 1 card to add to your opponent's hand" ], strings.first(2)
+      assert_equal 16, strings.size
+      assert_equal [], subject.strings(1)
+    end
+  end
+
   describe "#find" do
     it "traz os dados de um monstro Normal" do
       card = subject.find(46986414) # Dark Magician

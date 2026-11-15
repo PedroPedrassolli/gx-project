@@ -42,6 +42,10 @@ semente, os decks e a lista de respostas: a engine refaz o resto (ADR 0001).
 10. **Depois da resposta, cada outro jogador recebe a mesa inteira dele** (`duel.updated`),
     não só o que mudou: a tela troca a mesa toda, e o que veio fora de ordem se resolve
     sozinho. Quem respondeu recebe a mesa nova na própria resposta HTTP.
+11. **O texto das perguntas vem do servidor:** cada descrição (efeito, opção, cadeia, sim ou
+    não) é (código da carta << 20) | número do texto, e o servidor põe ao lado o texto
+    `strN` da carta no BabelCDB, em inglês, que é o que existe. O Destiny Draw tem o próprio
+    texto em português. As perguntas do próprio jogo (sem carta) a tela descreve.
 
 ## Consequências
 
