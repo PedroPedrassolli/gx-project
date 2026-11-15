@@ -53,6 +53,15 @@ module Duel
 
     def finished? = @finished
 
+    # A engine no ponto atual do duelo, para consultar a mesa (Duel::View). Depois volta para
+    # o cache.
+    def with_engine
+      engine = @cache.take(@id, version) || rebuild
+      yield engine
+    ensure
+      @cache.put(@id, version, engine) if engine
+    end
+
     private
 
     # Hash das respostas, com o tamanho de cada uma na frente (assim ["ab", "c"] e

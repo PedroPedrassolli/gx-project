@@ -10,6 +10,7 @@ module Duel
     RETRY = 1
     WIN = 5
     NEW_TURN = 40
+    NEW_PHASE = 41
     DRAW = 90
 
     # As perguntas que a engine faz aos jogadores (lista fechada pelo header fixado).
