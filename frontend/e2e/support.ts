@@ -11,13 +11,21 @@ export const PLAYER = {
 export const PASSWORD = "duelista123";
 const TOKEN = "token-de-teste";
 
-// API de sessão falsa: lembra quem está logado e confere o token CSRF, como o Rails.
-export async function mockSession(page: Page, { loggedIn = false } = {}) {
+type Duel = { match_id: number; room_code: string };
+
+// API de sessão falsa: lembra quem está logado e confere o token CSRF, como o Rails. duel é
+// o duelo em andamento que o GET /api/session devolve.
+export async function mockSession(
+  page: Page,
+  { loggedIn = false, duel = null }: { loggedIn?: boolean; duel?: Duel | null } = {},
+) {
   let user: typeof PLAYER | null = loggedIn ? PLAYER : null;
 
   await page.route("**/api/session", async (route) => {
     const request = route.request();
-    if (request.method() === "GET") return route.fulfill({ json: { user, csrf_token: TOKEN } });
+    if (request.method() === "GET") {
+      return route.fulfill({ json: { user, csrf_token: TOKEN, duel: user ? duel : null } });
+    }
     if (request.headers()["x-csrf-token"] !== TOKEN) {
       return route.fulfill({
         status: 403,

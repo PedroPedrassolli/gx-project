@@ -94,6 +94,19 @@ async function mockMatch(page: Page) {
 
 test.beforeEach(async ({ page }) => mockSession(page, { loggedIn: true }));
 
+test("de qualquer página, o aviso leva de volta ao duelo em andamento", async ({ page }) => {
+  await mockSession(page, { loggedIn: true, duel: { match_id: 5, room_code: "ABC234" } });
+  await mockMatch(page);
+  await page.goto("/cartas");
+
+  const notice = page.getByRole("status").filter({ hasText: "Você tem um duelo em andamento." });
+  await notice.getByRole("link", { name: "Voltar para a mesa" }).click();
+  await expect(page).toHaveURL(/\/duelo\/5$/);
+  await expect(page.getByText("Turno 3, vez de Syrus")).toBeVisible();
+  // Na própria mesa, o aviso some.
+  await expect(notice).toHaveCount(0);
+});
+
 test("mostra os dois lados da mesa, escondendo o que é do outro", async ({ page }) => {
   await mockMatch(page);
   await page.goto("/duelo/5");
