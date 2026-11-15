@@ -106,8 +106,11 @@ h2 {
 }
 
 /* ---- Página inicial: a mesa. ---- */
+/* A largura das quatro cartas do menu: elas e as fases do andamento enchem a linha. */
 .page.home {
-  max-width: 60rem;
+  --menu-gap: clamp(0.75rem, 2vw, 1.25rem);
+
+  max-width: 54rem;
 }
 
 .actions {
@@ -120,8 +123,8 @@ h2 {
    o navegador conta as colunas pela largura máxima e deixaria uma só no celular). */
 .table-menu {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 12rem));
-  gap: clamp(0.75rem, 2vw, 1.25rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--menu-gap);
   margin: 2rem 0 0;
   padding: 0;
   list-style: none;
@@ -131,7 +134,7 @@ h2 {
    meio e o texto numa caixa clara, como numa carta. A carta inteira é o link. */
 @media (min-width: 40rem) {
   .table-menu {
-    grid-template-columns: repeat(4, minmax(0, 12rem));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -222,13 +225,18 @@ h2 {
   margin-top: 3rem;
 }
 
+/* Oito fases: 2 por linha no celular e 4 no resto, sem uma fase sozinha na última linha. */
 .phases {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
-  gap: 1rem 0.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem var(--menu-gap);
   margin: 1rem 0 0;
   padding: 0;
   list-style: none;
+
+  @media (width >= 40rem) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .phases li {
@@ -323,8 +331,9 @@ a:focus-visible {
 
 /* ---- Catálogo: a faixa do título tem as cores dos três dormitórios. ---- */
 
+/* A mesma largura do topo (72rem), como o Deck Edit e o duelo: as bordas se alinham. */
 .catalog-page {
-  max-width: 80rem;
+  max-width: 72rem;
 }
 
 .catalog-header::after {
@@ -391,9 +400,24 @@ a:focus-visible {
   position: relative;
   display: inline-flex;
   margin: 0 0.4rem 0.4rem 0;
-  padding: 0.15rem 0.85rem;
+  /* Mais estreita no celular: os grupos de opções cabem numa linha só. */
+  padding: 0.15rem clamp(0.5rem, 2.5vw, 0.85rem);
   border: 1px solid var(--color-field-border);
   border-radius: 999px;
+}
+
+/* Quatro opções (o tipo de carta) num celular estreito: 2 × 2, em vez de 3 + 1. */
+@media (width < 24rem) {
+  .field:has(> label.choice:nth-of-type(4):last-of-type) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+
+    > .choice {
+      justify-content: center;
+      margin: 0;
+    }
+  }
 }
 
 .choice input {
@@ -478,10 +502,11 @@ button {
   gap: 1.5rem;
 }
 
-/* Na tela larga, o detalhe fica ao lado da lista, parado enquanto a lista rola, e rola
-   sozinho quando é mais alto que a tela; na estreita, em cima da lista. */
+/* Na tela larga, com uma carta aberta, o detalhe fica ao lado da lista, parado enquanto a
+   lista rola, e rola sozinho quando é mais alto que a tela. Sem carta aberta, a lista ocupa
+   a largura toda (uma coluna vazia à direita deixava a página torta). */
 @media (width >= 60rem) {
-  .catalog-body {
+  .catalog-body.with-detail {
     grid-template-columns: minmax(0, 1fr) 24rem;
   }
 
@@ -559,10 +584,13 @@ button {
   text-align: left;
 }
 
+/* Nome comprido ("Transformação") quebra com hífen em vez de sair da moldura. */
 .card-tile strong {
   font-family: var(--font-title);
   font-weight: 600;
   line-height: 1.25;
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 
 .card-tile[aria-current="true"] {
@@ -572,6 +600,7 @@ button {
 
 .tile-text {
   display: grid;
+  min-width: 0;
   gap: 0.2rem;
   min-width: 0;
 }
