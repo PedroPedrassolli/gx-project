@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router";
 import { ApiError, request } from "../api.ts";
 import { useSession } from "../account/session.ts";
 import { useDecks, type Deck } from "./api.ts";
+import { SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 
 type Created = { data: Deck; meta?: { warnings: string[] } };
@@ -47,14 +48,7 @@ export function DecksPage() {
   }
 
   if (session.isSuccess && !user) {
-    return (
-      <main className="page narrow">
-        <h1>Decks</h1>
-        <p>
-          <Link to="/entrar">Entre na sua conta</Link> para montar seus decks.
-        </p>
-      </main>
-    );
+    return <SignInFirst title="Decks" reason="para montar seus decks" />;
   }
 
   return (

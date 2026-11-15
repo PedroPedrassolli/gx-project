@@ -4,6 +4,7 @@ import { Link, Navigate, useNavigate, useParams } from "react-router";
 import { ApiError } from "../api.ts";
 import { useSession } from "../account/session.ts";
 import { useDecks } from "../decks/api.ts";
+import { PageNotice, SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 import { useRealtime } from "../realtime/useRealtime.ts";
 import { roomAction, roomKey, useRoom, type Room, type RoomPlayer } from "./api.ts";
@@ -47,32 +48,23 @@ export function RoomPage() {
   });
 
   if (session.isSuccess && !user) {
-    return (
-      <main className="page narrow">
-        <h1>Sala {code}</h1>
-        <p>
-          <Link to="/entrar">Entre na sua conta</Link> para jogar.
-        </p>
-      </main>
-    );
+    return <SignInFirst title={`Sala ${code}`} reason="para jogar" />;
   }
   if (room.error) {
     return (
-      <main className="page narrow">
-        <h1>Sala {code}</h1>
+      <PageNotice title={`Sala ${code}`}>
         <p role="alert">Não achamos esta sala. Confira o código ou crie outra.</p>
         <p>
           <Link to="/salas">Ver as salas</Link>
         </p>
-      </main>
+      </PageNotice>
     );
   }
   if (!room.data || !user) {
     return (
-      <main className="page narrow">
-        <h1>Sala {code}</h1>
+      <PageNotice title={`Sala ${code}`}>
         <p role="status">Carregando a sala…</p>
-      </main>
+      </PageNotice>
     );
   }
 
@@ -83,10 +75,9 @@ export function RoomPage() {
   if (data.status === "dueling" && data.match_id) {
     if (!room.isFetchedAfterMount) {
       return (
-        <main className="page narrow">
-          <h1>Sala {code}</h1>
+        <PageNotice title={`Sala ${code}`}>
           <p role="status">Carregando a sala…</p>
-        </main>
+        </PageNotice>
       );
     }
     return <Navigate to={`/duelo/${data.match_id}`} replace />;

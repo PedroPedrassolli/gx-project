@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router";
 import { useSession } from "../account/session.ts";
 import { EMPTY_FILTERS, matches, sortCards, type Filters } from "../catalog/cards.ts";
 import { CardPanel, WIDE, useMediaQuery } from "../catalog/CardPanel.tsx";
-import { useCatalog, usePackRarities } from "../catalog/data.ts";
+import { NO_PACKS, useCatalog, usePackRarities } from "../catalog/data.ts";
 import { CatalogFilters } from "../catalog/Filters.tsx";
 import { useCardLanguage } from "../catalog/language.ts";
 import { CardTile } from "../catalog/parts.tsx";
 import { useCollection, type Progress } from "./api.ts";
+import { SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 
 const PAGE = 60;
@@ -45,20 +45,10 @@ export function CollectionPage() {
     );
     return sortCards(list, filters, language);
   }, [catalog.data, owned, filters, pack, rarities, language]);
-  const packNames = useMemo(
-    () => new Map(catalog.data?.packs.map((item) => [item.id, item.name])),
-    [catalog.data],
-  );
+  const packNames = catalog.data?.packNames ?? NO_PACKS;
 
   if (session.isSuccess && !user) {
-    return (
-      <main className="page narrow">
-        <h1>Coleção</h1>
-        <p>
-          <Link to="/entrar">Entre na sua conta</Link> para ver a sua coleção.
-        </p>
-      </main>
-    );
+    return <SignInFirst title="Coleção" reason="para ver a sua coleção" />;
   }
 
   const meta = collection.data?.meta;

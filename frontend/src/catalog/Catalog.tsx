@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { EMPTY_FILTERS, matches, sortCards, type Filters } from "./cards.ts";
 import { CardPanel, WIDE, useMediaQuery } from "./CardPanel.tsx";
-import { useCatalog, usePackRarities } from "./data.ts";
+import { NO_PACKS, useCatalog, usePackRarities } from "./data.ts";
 import { CatalogFilters } from "./Filters.tsx";
 import { RARITIES, label } from "./labels.ts";
 import { useCardLanguage } from "./language.ts";
@@ -30,10 +30,7 @@ export function Catalog() {
     );
     return sortCards(list, filters, language);
   }, [catalog.data, filters, pack, rarities, language]);
-  const packNames = useMemo(
-    () => new Map(catalog.data?.packs.map((item) => [item.id, item.name])),
-    [catalog.data],
-  );
+  const packNames = catalog.data?.packNames ?? NO_PACKS;
 
   function update(change: Partial<Filters>) {
     setFilters((old) => ({ ...old, ...change }));

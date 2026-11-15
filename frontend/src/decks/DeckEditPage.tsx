@@ -56,7 +56,7 @@ export function DeckEditPage() {
     );
   }
 
-  const cards = new Map(catalog.data.cards.map((card) => [card.id, card]));
+  const cards = catalog.data.byId;
   const owned = new Map(collection.data.data.map((row) => [row.card_id, row.quantity]));
   return (
     <Editor
