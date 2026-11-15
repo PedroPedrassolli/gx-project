@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_220000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -103,6 +103,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_210000) do
     t.index ["user_id"], name: "index_decks_on_user_id"
   end
 
+  create_table "dp_transactions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "reason", null: false
+    t.integer "amount", null: false
+    t.integer "balance_after", null: false
+    t.string "ref_type"
+    t.bigint "ref_id"
+    t.string "key", null: false
+    t.text "note"
+    t.datetime "created_at", null: false
+    t.index ["ref_type", "ref_id"], name: "index_dp_transactions_on_ref"
+    t.index ["user_id", "id"], name: "index_dp_transactions_on_user_id_and_id"
+    t.index ["user_id", "key"], name: "index_dp_transactions_on_user_id_and_key", unique: true
+  end
+
   create_table "match_players", force: :cascade do |t|
     t.bigint "match_id", null: false
     t.bigint "user_id"
@@ -114,6 +129,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_210000) do
     t.string "emote"
     t.datetime "emote_at"
     t.boolean "always_chain", default: false, null: false
+    t.jsonb "rewards"
     t.index ["match_id", "team"], name: "index_match_players_on_match_id_and_team", unique: true
     t.index ["user_id"], name: "index_match_players_on_user_id"
   end
@@ -153,6 +169,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_210000) do
     t.string "finish_reason"
     t.integer "decision_seconds", default: 90
     t.integer "duel_minutes", default: 60
+    t.integer "win_reason"
     t.index ["room_id"], name: "index_matches_on_room_id"
   end
 
@@ -240,6 +257,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_210000) do
     t.datetime "updated_at", null: false
     t.datetime "email_verified_at"
     t.datetime "terms_accepted_at"
+    t.integer "level", default: 1, null: false
+    t.integer "dp_earned", default: 0, null: false
     t.index "lower((nickname)::text)", name: "index_users_on_lower_nickname", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
   end
@@ -253,6 +272,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_210000) do
   add_foreign_key "deck_cards", "cards"
   add_foreign_key "deck_cards", "decks"
   add_foreign_key "decks", "users"
+  add_foreign_key "dp_transactions", "users"
   add_foreign_key "match_players", "matches"
   add_foreign_key "match_players", "users", on_delete: :nullify
   add_foreign_key "match_responses", "matches"

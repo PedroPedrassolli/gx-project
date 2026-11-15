@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router";
 import { ApiError } from "../api.ts";
 import { roomAction, roomKey } from "../rooms/api.ts";
-import type { MatchState } from "./api.ts";
+import type { MatchState, RewardLine, Rewards } from "./api.ts";
 import { clock } from "./time.ts";
 
 // A situação do duelo embaixo da mesa: de quem é a vez e quanto tempo falta (escopo 3.7),
@@ -138,6 +138,42 @@ function Result({ state, names }: Props) {
     <>
       <h2>{title}</h2>
       {reason && <p>{reason}</p>}
+      {state.rewards && <RewardsTable rewards={state.rewards} />}
+    </>
+  );
+}
+
+const number = (value: number) => value.toLocaleString("pt-BR");
+const signed = (value: number) => `${value < 0 ? "−" : "+"}${number(Math.abs(value))} DP`;
+
+// O DP do duelo (GXP-85): cada bônus, os cortes do anti-farm, a subida de nível e o total.
+function RewardsTable({ rewards }: { rewards: Rewards }) {
+  const rows = (lines: RewardLine[], className?: string) =>
+    lines.map((line, index) => (
+      <tr key={`${line.key}-${index}`} className={className}>
+        <th scope="row">{line.label}</th>
+        <td>{signed(line.dp)}</td>
+      </tr>
+    ));
+  return (
+    <>
+      <table className="rewards">
+        <caption>DP do duelo</caption>
+        <tbody>
+          {rows(rewards.lines)}
+          {rows(rewards.cuts, "cut")}
+          {rows(rewards.level_ups, "level-up")}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row">Total</th>
+            <td>{signed(rewards.total)}</td>
+          </tr>
+        </tfoot>
+      </table>
+      <p className="balance">
+        Saldo: {number(rewards.balance)} DP. Nível {rewards.level}.
+      </p>
     </>
   );
 }

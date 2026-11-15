@@ -8,7 +8,7 @@ test("a página inicial mostra o projeto, os atalhos e a fase atual", async ({ p
   await page.goto("/");
   const main = page.getByRole("main");
   await expect(main.getByRole("heading", { level: 1, name: "GX Project" })).toBeVisible();
-  await expect(main.getByText("Fase atual: F3, Duelo 1x1 em sala.")).toBeVisible();
+  await expect(main.getByText("Fase atual: F4, Economia e loja.")).toBeVisible();
   await expect(main.getByRole("link", { name: "Cartas" })).toHaveAttribute("href", "/cartas");
   // O duelo leva às salas (lá, quem não entrou vê o convite para entrar).
   await expect(main.getByRole("link", { name: "Duelo" })).toHaveAttribute("href", "/salas");

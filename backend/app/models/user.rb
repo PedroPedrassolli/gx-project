@@ -11,6 +11,8 @@ class User < ApplicationRecord
   end
   has_many :sessions, dependent: :destroy
   has_many :collection_cards, dependent: :delete_all
+  # A exclusão da conta (LGPD) leva o razão de DP junto (ADR 0005 item 1).
+  has_many :dp_transactions, dependent: :delete_all
   has_many :decks, dependent: :destroy
   # Sala de duelo: a vaga do jogador e as salas que ele criou (apagar a conta apaga as duas).
   has_one :room_player, dependent: :delete
@@ -29,7 +31,8 @@ class User < ApplicationRecord
   validate :nickname_must_be_clean
 
   # O que a API mostra do usuário: nunca a senha.
-  def as_json(*) = { id:, email:, email_verified: email_verified_at.present?, nickname:, age_group:, role: }
+  # O saldo de DP sai do razão (ADR 0005): o topo e a conta mostram, com o nível.
+  def as_json(*) = { id:, email:, email_verified: email_verified_at.present?, nickname:, age_group:, role:, level:, dp: Economy::Ledger.balance(self) }
 
   private
 

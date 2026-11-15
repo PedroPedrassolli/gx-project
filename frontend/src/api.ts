@@ -9,6 +9,8 @@ export type User = {
   nickname: string;
   age_group: "13-17" | "18+";
   role: string;
+  level: number;
+  dp: number; // o saldo de DP (razão, ADR 0005)
 };
 
 // duel: o duelo em andamento (para a volta à mesa de qualquer página), ou null.

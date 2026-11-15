@@ -7,6 +7,8 @@ export const PLAYER = {
   nickname: "JadenYuki",
   age_group: "13-17",
   role: "player",
+  level: 2,
+  dp: 1234,
 };
 export const PASSWORD = "duelista123";
 const TOKEN = "token-de-teste";

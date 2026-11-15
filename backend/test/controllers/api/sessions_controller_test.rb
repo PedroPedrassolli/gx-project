@@ -20,10 +20,12 @@ class Api::SessionsControllerTest < ActionDispatch::IntegrationTest
 
     it "com login, devolve o usuário, sem a senha" do
       log_in
+      Economy::Ledger.post!(user, 154, reason: "duel", key: "partida:1")
       get api_session_path
 
       _(response.parsed_body["user"]).must_equal({ "id" => user.id, "email" => "jaden@example.com", "email_verified" => false,
-                                                   "nickname" => "JadenYuki", "age_group" => "13-17", "role" => "player" })
+                                                   "nickname" => "JadenYuki", "age_group" => "13-17", "role" => "player",
+                                                   "level" => 1, "dp" => 154 })
       _(response.parsed_body["duel"]).must_be_nil
     end
 

@@ -182,12 +182,13 @@ class Matches::GameTest < ActiveSupport::TestCase
   it "a mensagem de vitória encerra a partida; empate fica sem vencedor" do
     [ [ 1, 1 ], [ 2, nil ] ].each do |player, winner|
       match = empty_match
-      win = Duel::MessageParser::Message.new(type: Duel::MessageParser::WIN, payload: [ player, 0 ].pack("CC"))
+      win = Duel::MessageParser::Message.new(type: Duel::MessageParser::WIN, payload: [ player, 2 ].pack("CC"))
       Duel::Session.any_instance.stubs(:start).returns([ win ])
       Duel::Session.any_instance.stubs(:finished?).returns(true)
+      Economy::DuelRewards.any_instance.stubs(:call)
       Matches::Game.new(match).start!
 
-      assert_equal [ "finished", winner, nil ], [ match.reload.status, match.winner_team, match.prompt ]
+      assert_equal [ "finished", winner, nil, 2 ], [ match.reload.status, match.winner_team, match.prompt, match.win_reason ]
     end
   end
 
