@@ -70,12 +70,19 @@ export function CollectionPage() {
       {meta && (
         <section aria-labelledby="progress-title" className="progress">
           <h2 id="progress-title">Você tem {progressText(meta.total)} cartas do jogo</h2>
+          <progress
+            value={meta.total.owned}
+            max={meta.total.cards}
+            aria-labelledby="progress-title"
+          />
           <details>
             <summary>Por pacote</summary>
             <ul className="pack-progress">
               {meta.packs.map((item) => (
                 <li key={item.id}>
                   <span>{packNames.get(item.id)}</span> <span>{progressText(item)}</span>
+                  {/* A barra repete o texto ao lado: o leitor de tela pula. */}
+                  <progress value={item.owned} max={item.cards} aria-hidden="true" />
                 </li>
               ))}
             </ul>

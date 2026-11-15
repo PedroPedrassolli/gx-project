@@ -63,6 +63,9 @@ test("mostra só as cartas do jogador, com as cópias e o progresso", async ({ p
   await expect(
     page.getByRole("heading", { level: 2, name: "Você tem 2 de 3 (66,7%) cartas do jogo" }),
   ).toBeVisible();
+  const bar = page.getByRole("progressbar", { name: "Você tem 2 de 3 (66,7%) cartas do jogo" });
+  await expect(bar).toHaveAttribute("value", "2");
+  await expect(bar).toHaveAttribute("max", "3");
   const results = page.getByRole("region", { name: "Cartas da coleção" });
   await expect(results.getByRole("status")).toHaveText("2 cartas");
   await expect(results.getByRole("button", { name: /Mago Negro/ })).toContainText("2 cópias");
