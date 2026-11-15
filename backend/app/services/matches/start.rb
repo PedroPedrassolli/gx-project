@@ -10,7 +10,7 @@ module Matches
     # A partida nova, ou nil se ainda falta alguém, se um deck deixou de valer ou se outro
     # pedido já começou o duelo.
     def call
-      Room.transaction do
+      started = Room.transaction do
         @room.lock!
         players = @room.players.to_a
         next unless @room.waiting? && players.size == @room.seats && players.all? { |player| player.ready && player.deck_id }
@@ -34,6 +34,9 @@ module Matches
         Game.new(match).start!
         match
       end
+      # Duelo novo é a hora de tirar do banco os replays vencidos.
+      Cleanup.call if started
+      started
     end
 
     private

@@ -9,10 +9,11 @@ module Matches
     # Quantos eventos a partida guarda para o log da mesa (GXP-65).
     MAX_EVENTS = 50
 
-    def initialize(match)
+    # cache: onde ficam as engines vivas; o replay passa um só dele (Matches::Replay).
+    def initialize(match, cache: Duel::Session::CACHE)
       @match = match
       decks = match.players.map { |player| player.deck.deep_symbolize_keys }
-      @session = Duel::Session.new(id: "match-#{match.id}", seed: match.seed, decks:,
+      @session = Duel::Session.new(id: "match-#{match.id}", seed: match.seed, decks:, cache:,
                                    responses: match.responses.map(&:bytes), destiny_draw: match.destiny_draw)
     end
 
@@ -57,6 +58,20 @@ module Matches
       raise NotYourTurn, "O duelo já acabou." unless @match.dueling?
 
       close(winner: 1 - team, reason: "surrender")
+    end
+
+    # Replay (Matches::Replay): refaz o duelo do começo com as respostas guardadas, numa
+    # partida que não vai para o banco, e devolve a mesa do time depois de cada resposta do
+    # turno pedido que mudou algo, com os eventos dela. Para no fim do turno.
+    def replay(team, responses, turn)
+      frames = []
+      going = replay_step(@session.start, team, turn, frames, 0)
+      responses.each_with_index do |bytes, index|
+        break unless going
+
+        going = replay_step(@session.respond(bytes), team, turn, frames, index + 1)
+      end
+      frames
     end
 
     # A mesa vista por um time (Duel::View), com o que a partida guardou.
@@ -133,6 +148,26 @@ module Matches
       @match.prompt = prompt
       @match.prompt_team = prompt&.fetch(:player)
       prompt
+    end
+
+    # Registra as mensagens de uma resposta e guarda o quadro quando ela é do turno pedido.
+    # Falso quando o duelo já passou do turno: o resto não precisa ser refeito.
+    def replay_step(messages, team, turn, frames, step)
+      before = @match.events_count
+      record(messages)
+      return false if @match.turn > turn
+
+      frames << frame(team, step, @match.events_count - before) if @match.turn == turn && @match.events_count > before
+      true
+    end
+
+    # Um quadro do replay: a mesa depois da resposta, sem pergunta, com os eventos novos.
+    def frame(team, step, count)
+      state = @match.slice(:turn, :turn_team, :phase).symbolize_keys
+      view = @session.with_engine do |engine|
+        Duel::View.new(engine, team).to_h(**state, prompt: nil, prompt_team: nil, events: events.last(count), chain:)
+      end
+      { step:, view: }
     end
 
     # O jsonb do banco volta com as chaves em texto; aqui elas ficam com símbolos.

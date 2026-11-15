@@ -117,6 +117,24 @@ class Api::MatchesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  it "o replay abre depois do fim, só para quem jogou, um turno por vez" do
+    session = session_for(first)
+    session.get replay_api_match_path(match)
+    assert_equal [ 409, "O replay fica pronto quando o duelo acaba." ], [ session.response.status, session.response.parsed_body.dig("error", "message") ]
+
+    session.post surrender_api_match_path(match), as: :json
+    session.get replay_api_match_path(match, turn: 99)
+    data = session.response.parsed_body["data"]
+    assert_equal [ 200, 1, 1, 0, "surrender" ], [ session.response.status, data["turn"], data["turns"], data["you"], data["finish_reason"] ]
+    assert_equal [ 1 ], data["frames"].map { |frame| frame.dig("view", "turn") }.uniq
+    # A partida acabada não muda: o navegador guarda por um dia.
+    assert_equal "max-age=86400, private", session.response.headers["Cache-Control"]
+
+    outsider = session_for(player("Chazz"))
+    outsider.get replay_api_match_path(match)
+    assert_equal 404, outsider.response.status
+  end
+
   it "desistir encerra a partida e avisa o outro; depois do fim, não dá mais" do
     session = session_for(first)
     session.post surrender_api_match_path(match), as: :json

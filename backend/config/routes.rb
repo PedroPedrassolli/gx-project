@@ -26,6 +26,7 @@ Rails.application.routes.draw do
     resources :matches, only: :show do
       post :responses, on: :member, action: :respond
       post :surrender, on: :member
+      get :replay, on: :member
     end
     resources :rooms, only: %i[index show create], param: :code do
       member do

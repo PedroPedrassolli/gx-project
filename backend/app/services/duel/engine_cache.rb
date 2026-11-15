@@ -37,5 +37,11 @@ module Duel
     def size
       @mutex.synchronize { @entries.size }
     end
+
+    # Fecha todas: o replay usa um cache só dele e fecha no fim.
+    def clear
+      entries = @mutex.synchronize { @entries.values.tap { @entries.clear } }
+      entries.each { |entry| entry.engine.close }
+    end
   end
 end
