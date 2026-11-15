@@ -2,8 +2,8 @@ import { useState } from "react";
 import { canConfirm, progress } from "./choices.ts";
 import { cardLabel, Choice, list, type PromptProps } from "./promptParts.tsx";
 
-// Escolha de cartas (select_card). Quando é uma carta só, o toque já responde; com mais,
-// as caixas e o "Confirmar", que só libera o que a engine aceita.
+// Escolha de cartas (select_card, select_tribute, select_sum). Quando é uma carta só, o
+// toque já responde; com mais, as caixas e o "Confirmar", que só libera o que a engine aceita.
 export function CardChoice(props: PromptProps) {
   const { prompt, onAnswer } = props;
   const cards = list(prompt, "cards");
@@ -12,7 +12,7 @@ export function CardChoice(props: PromptProps) {
     <Choice label="Cancelar" onClick={() => onAnswer({ cancel: true })} />
   );
 
-  if (Number(prompt.max) === 1) {
+  if (prompt.type !== "select_sum" && Number(prompt.max) === 1) {
     return (
       <p className="actions">
         {cards.map((card, index) => (
@@ -31,8 +31,12 @@ export function CardChoice(props: PromptProps) {
     setChosen((current) =>
       current.includes(index) ? current.filter((item) => item !== index) : [...current, index],
     );
+  const must = list(prompt, "must");
   return (
     <>
+      {must.length > 0 && (
+        <p>Já entram: {must.map((card) => cardLabel(card, props)).join(", ")}.</p>
+      )}
       <ul className="picks">
         {cards.map((card, index) => (
           <li key={index}>

@@ -62,6 +62,8 @@ function title(prompt: Prompt, props: Props) {
     case "select_position":
       return hintText(prompt) ?? "Em que posição?";
     case "select_card":
+    case "select_tribute":
+    case "select_sum":
       return hintText(prompt) ?? "Escolha as cartas";
     default:
       return hintText(prompt) ?? "Sua vez";
@@ -151,6 +153,8 @@ function body(props: Props): ReactNode {
         </p>
       );
     case "select_card":
+    case "select_tribute":
+    case "select_sum":
       return <CardChoice {...props} />;
     default:
       return <p>Esta pergunta ainda não tem tela.</p>;
