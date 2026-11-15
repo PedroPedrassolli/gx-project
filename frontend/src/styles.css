@@ -1514,6 +1514,11 @@ input[type="file"]::file-selector-button {
   margin: 0;
 }
 
+.counter-input {
+  width: 4.5rem;
+  margin-left: auto;
+}
+
 .pick-count {
   margin: 0 0 0.5rem;
   color: var(--color-muted);

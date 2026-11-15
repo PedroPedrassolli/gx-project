@@ -1,0 +1,130 @@
+import { useState } from "react";
+import { freeZones } from "./announce.ts";
+import { cardLabel, Choice, list, type PromptCard, type PromptProps } from "./promptParts.tsx";
+
+// Os anúncios da engine: zona, marcadores, número e pedra, papel e tesoura. Quando é uma
+// escolha só, o toque já responde.
+
+// Zona para escolher (select_disfield): a resposta é jogador, local e sequência de cada uma.
+export function ZoneChoice(props: PromptProps) {
+  const { prompt, onAnswer } = props;
+  const zones = freeZones(prompt);
+  const count = Number(prompt.count);
+  const [chosen, setChosen] = useState<number[]>([]);
+  const send = (indexes: number[]) =>
+    onAnswer({
+      places: indexes.flatMap((index) => {
+        const zone = zones[index];
+        return zone ? [zone.player, zone.location, zone.sequence] : [];
+      }),
+    });
+
+  if (count === 1) {
+    return (
+      <p className="actions">
+        {zones.map((zone, index) => (
+          <Choice key={index} label={zone.label} onClick={() => send([index])} />
+        ))}
+      </p>
+    );
+  }
+  const toggle = (index: number) =>
+    setChosen((current) =>
+      current.includes(index) ? current.filter((item) => item !== index) : [...current, index],
+    );
+  return (
+    <>
+      <ul className="picks">
+        {zones.map((zone, index) => (
+          <li key={index}>
+            <label>
+              <input
+                type="checkbox"
+                checked={chosen.includes(index)}
+                onChange={() => toggle(index)}
+              />
+              {zone.label}
+            </label>
+          </li>
+        ))}
+      </ul>
+      <p className="pick-count" aria-live="polite">
+        Zonas: {chosen.length} de {count}
+      </p>
+      <p className="actions">
+        <Choice label="Confirmar" disabled={chosen.length !== count} onClick={() => send(chosen)} />
+      </p>
+    </>
+  );
+}
+
+// Marcadores para tirar (select_counter): quantos de cada carta, somando o total pedido.
+export function CounterChoice(props: PromptProps) {
+  const { prompt, onAnswer } = props;
+  const cards = list(prompt, "cards") as (PromptCard & { counters: number })[];
+  const count = Number(prompt.count);
+  const [counts, setCounts] = useState(() => cards.map(() => 0));
+  const total = counts.reduce((sum, value) => sum + value, 0);
+  const update = (index: number, value: number, max: number) =>
+    setCounts((current) =>
+      current.map((old, item) =>
+        item === index ? Math.min(max, Math.max(0, Number.isNaN(value) ? 0 : value)) : old,
+      ),
+    );
+  return (
+    <>
+      <ul className="picks">
+        {cards.map((card, index) => (
+          <li key={index}>
+            <label>
+              {cardLabel(card, props)}, com {card.counters}
+              <input
+                type="number"
+                className="counter-input"
+                min={0}
+                max={card.counters}
+                value={counts[index]}
+                onChange={(event) => update(index, event.target.valueAsNumber, card.counters)}
+              />
+            </label>
+          </li>
+        ))}
+      </ul>
+      <p className="pick-count" aria-live="polite">
+        Marcadores: {total} de {count}
+      </p>
+      <p className="actions">
+        <Choice label="Confirmar" disabled={total !== count} onClick={() => onAnswer({ counts })} />
+      </p>
+    </>
+  );
+}
+
+// Número da lista da engine (announce_number): a resposta é o índice.
+export function NumberChoice(props: PromptProps) {
+  const options = (props.prompt.options as number[] | undefined) ?? [];
+  return (
+    <p className="actions">
+      {options.map((value, index) => (
+        <Choice key={index} label={String(value)} onClick={() => props.onAnswer({ index })} />
+      ))}
+    </p>
+  );
+}
+
+// Pedra, papel e tesoura: 1 é tesoura, 2 pedra e 3 papel (como a engine compara).
+const HANDS: [number, string][] = [
+  [2, "Pedra"],
+  [3, "Papel"],
+  [1, "Tesoura"],
+];
+
+export function HandChoice(props: PromptProps) {
+  return (
+    <p className="actions">
+      {HANDS.map(([hand, label]) => (
+        <Choice key={hand} label={label} onClick={() => props.onAnswer({ hand })} />
+      ))}
+    </p>
+  );
+}

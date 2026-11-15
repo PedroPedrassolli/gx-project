@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Prompt } from "./api.ts";
+import { CounterChoice, HandChoice, NumberChoice, ZoneChoice } from "./Announcements.tsx";
 import { CardChoice, SortChoice, UnselectChoice } from "./CardChoice.tsx";
 import { hintText } from "./hints.ts";
 import { cardLabel, Choice, list, type PromptCard, type PromptProps } from "./promptParts.tsx";
@@ -70,6 +71,16 @@ function title(prompt: Prompt, props: Props) {
       return hintText(prompt) ?? "Ordene as cartas";
     case "sort_chain":
       return "Ordem dos efeitos na corrente";
+    case "select_place":
+    case "select_disfield":
+      return hintText(prompt) ?? "Escolha a zona";
+    case "select_counter":
+      // A engine usa esta pergunta para tirar marcadores (remove_counter).
+      return `Tire ${Number(prompt.count)} marcadores`;
+    case "announce_number":
+      return hintText(prompt) ?? "Declare um número";
+    case "rock_paper_scissors":
+      return "Pedra, papel e tesoura";
     default:
       return hintText(prompt) ?? "Sua vez";
   }
@@ -166,6 +177,15 @@ function body(props: Props): ReactNode {
     case "sort_card":
     case "sort_chain":
       return <SortChoice {...props} />;
+    case "select_place":
+    case "select_disfield":
+      return <ZoneChoice {...props} />;
+    case "select_counter":
+      return <CounterChoice {...props} />;
+    case "announce_number":
+      return <NumberChoice {...props} />;
+    case "rock_paper_scissors":
+      return <HandChoice {...props} />;
     default:
       return <p>Esta pergunta ainda não tem tela.</p>;
   }
