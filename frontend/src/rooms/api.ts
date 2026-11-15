@@ -23,6 +23,7 @@ export type Room = {
   owner_id: number;
   seats: number;
   players: RoomPlayer[];
+  match_id?: number; // em duelo: a partida
 };
 
 export type RoomOptions = { public: boolean; banlist: boolean; destiny_draw: boolean };

@@ -5,6 +5,7 @@ import { CARD_TYPES, MONSTER_TYPES, PROPERTIES, RACES, label } from "./labels.ts
 
 export type CardSummary = {
   id: number;
+  code?: number; // código da carta na engine: é com ele que o duelo fala das cartas
   name: string;
   name_pt?: string;
   card_type?: "Monster" | "Spell" | "Trap";

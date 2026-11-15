@@ -16,7 +16,7 @@ class Api::CardsControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       _(data.pluck("name")).must_equal [ "Ancient Gear", "Clear Wall", "Cyril", "Night Assailant", "Trap Hole" ]
       _(response.parsed_body["meta"]["total"]).must_equal 5
-      _(data.last).must_equal({ "id" => card_id(200), "name" => "Trap Hole", "card_type" => "Trap",
+      _(data.last).must_equal({ "id" => card_id(200), "code" => 200, "name" => "Trap Hole", "card_type" => "Trap",
                                 "property" => "Normal", "banlist" => "limited", "image" => 200 })
       _(data.find { |card| card["name"] == "Clear Wall" }).wont_include "image"
     end
