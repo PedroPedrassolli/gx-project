@@ -17,8 +17,8 @@ type RoomSummary = {
 };
 
 const OPTIONS: { key: keyof RoomOptions; label: string }[] = [
-  { key: "public", label: "Pública (aparece na lista para qualquer um entrar)" },
-  { key: "banlist", label: "Banlist do jogo" },
+  { key: "public", label: "Pública" },
+  { key: "banlist", label: "Banlist" },
   { key: "destiny_draw", label: "Destiny Draw" },
 ];
 
@@ -76,6 +76,10 @@ export function RoomsPage() {
             </label>
           ))}
         </fieldset>
+        <p className="hint">
+          A pública aparece em “Salas abertas” para qualquer um entrar; a privada, só com o código.
+          A banlist é a do jogo.
+        </p>
         <p className="actions">
           <button
             type="button"
