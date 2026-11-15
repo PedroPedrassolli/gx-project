@@ -49,7 +49,8 @@ module Catalog
     # ---- linhas da resposta -------------------------------------------------------------
 
     def summary(card)
-      { id: card.id, name: card.name, name_pt: card.name_pt, card_type: card.card_type, property: card.property,
+      # code: o código da carta na engine; é com ele que o duelo fala das cartas (GXP-51).
+      { id: card.id, code: card.engine_code, name: card.name, name_pt: card.name_pt, card_type: card.card_type, property: card.property,
         attribute: card.card_attribute, race: card.race, monster_types: card.monster_types.presence,
         level: card.level, atk: card.attack, def: card.defense, banlist: @statuses[card.id], image: card.image_code }.compact
     end

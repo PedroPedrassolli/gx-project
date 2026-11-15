@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, Navigate, useNavigate, useParams } from "react-router";
 import { ApiError } from "../api.ts";
 import { useSession } from "../account/session.ts";
 import { useDecks } from "../decks/api.ts";
@@ -22,6 +22,7 @@ export function RoomPage() {
     // O canal é do jogador: o aviso pode ser de outra sala.
     if ((data as { code?: string } | null)?.code !== code) return;
     if (event === "room.updated") client.setQueryData(roomKey(code), data as Room);
+    if (event === "match.started") navigate(`/duelo/${(data as { match_id: number }).match_id}`);
     if (event === "room.closed") leaveTo("A sala fechou: quem criou saiu.");
     if (event === "room.kicked") leaveTo("Quem criou a sala tirou você dela.");
   });
@@ -76,6 +77,9 @@ export function RoomPage() {
   }
 
   const data = room.data;
+  // Em duelo (o aviso pode não ter chegado, sem tempo real): vai para a mesa.
+  if (data.status === "dueling" && data.match_id)
+    return <Navigate to={`/duelo/${data.match_id}`} replace />;
   const me = data.players.find((player) => player.user_id === user.id);
   const owner = data.owner_id === user.id;
   const chosenDeck = deckId || String(me?.deck_id ?? "");

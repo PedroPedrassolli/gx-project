@@ -1245,3 +1245,13 @@ input[type="file"]::file-selector-button {
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
+
+/* Some da tela, mas o leitor de tela lê (título da mesa de duelo). */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
