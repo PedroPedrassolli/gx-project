@@ -22,6 +22,7 @@ Rails.application.routes.draw do
       get :export
     end
     resource :collection, only: :show
+    post "realtime/token" => "realtime_tokens#create", as: :realtime_token
     resources :decks, only: %i[index show create update destroy] do
       collection do
         post :validate
