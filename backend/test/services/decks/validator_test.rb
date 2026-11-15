@@ -53,6 +53,17 @@ class Decks::ValidatorTest < ActiveSupport::TestCase
                                           "Monstro 4 é semi-limitada: no máximo 2 cópias (tem 3)." ]
   end
 
+  it "na sala sem banlist, a carta proibida passa" do
+    user = User.create!(email: "jaden@example.com", password: "duelista123", nickname: "JadenYuki", age_group: "18+")
+    card = Card.create!(engine_code: 1, name: "Monstro Proibido", card_type: "Monster", monster_types: [ "Normal" ], source_revision: 1)
+    Banlist.find_or_create_by!(name: Catalog::Importer::DEFAULT_BANLIST).entries.create!(card:, status: "forbidden")
+    user.collection_cards.create!(card:, quantity: 1, obtained_at: Time.current)
+    rows = [ entry(card.id, "main", 1) ]
+
+    assert_includes Decks::Validator.build(user, rows).errors, "Monstro Proibido está proibida."
+    assert_not_includes Decks::Validator.build(user, rows, banlist: false).errors, "Monstro Proibido está proibida."
+  end
+
   it "só aceita as cartas que o jogador tem, somando as seções" do
     collection = self.collection.merge(1 => 2, 2 => 0)
     deck = main_deck + [ entry(1, "side", 1) ]

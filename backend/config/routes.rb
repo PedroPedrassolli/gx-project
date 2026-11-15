@@ -27,6 +27,8 @@ Rails.application.routes.draw do
       member do
         post :join
         post :leave
+        post :ready
+        post :kick
       end
     end
     resources :decks, only: %i[index show create update destroy] do
