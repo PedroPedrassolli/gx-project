@@ -10,6 +10,8 @@ test("a página inicial mostra o projeto, os atalhos e a fase atual", async ({ p
   await expect(main.getByRole("heading", { level: 1, name: "GX Project" })).toBeVisible();
   await expect(main.getByText("Fase atual: F3, Duelo 1x1 em sala.")).toBeVisible();
   await expect(main.getByRole("link", { name: "Cartas" })).toHaveAttribute("href", "/cartas");
+  // O duelo leva às salas (lá, quem não entrou vê o convite para entrar).
+  await expect(main.getByRole("link", { name: "Duelo" })).toHaveAttribute("href", "/salas");
   await expect(main.getByRole("link", { name: "Criar conta" })).toHaveAttribute(
     "href",
     "/cadastro",
@@ -25,6 +27,9 @@ test("com a conta aberta, a mesa tem os decks e a coleção", async ({ page }) =
   await expect(main.getByRole("link", { name: "Decks" })).toHaveAttribute("href", "/decks");
   await expect(main.getByRole("link", { name: "Coleção" })).toHaveAttribute("href", "/colecao");
   await expect(main.getByRole("link", { name: "Criar conta" })).toHaveCount(0);
+  await expect(
+    page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Duelo" }),
+  ).toHaveAttribute("href", "/salas");
 });
 
 test("a página inicial passa no axe sem violações, com e sem conta", async ({ page }) => {
