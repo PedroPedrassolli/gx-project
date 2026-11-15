@@ -103,7 +103,7 @@ export function CollectionPage() {
         }}
       />
 
-      <div className={selected > 0 && wide ? "catalog-body with-detail" : "catalog-body"}>
+      <div className="catalog-body">
         {selected > 0 && (
           <CardPanel
             cardId={selected}
