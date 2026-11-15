@@ -52,7 +52,8 @@ partir do Rails.
    diferença com o banco (outra instância avançou o duelo, transação desfeita) faz o duelo
    ser refeito pelo replay, com o mesmo resultado. A engine sai do cache enquanto está em
    uso, então duas requisições nunca mexem nela ao mesmo tempo. Duelo que acabou não volta
-   para o cache.
+   para o cache. Refazer é barato: um duelo inteiro de 1.469 respostas (70 turnos, decks
+   sorteados do catálogo) é refeito em uns 50 ms (medido no GXP-64).
 10. **Resposta recusada:** quando a engine recusa uma resposta (`MSG_RETRY`), o duelo fica
     na mesma pergunta, igualzinho (conferido em teste: o resto do duelo não muda). A
     resposta não entra no histórico e a `Duel::Session` avisa com `InvalidResponse`.

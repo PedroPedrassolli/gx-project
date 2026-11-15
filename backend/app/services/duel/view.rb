@@ -37,7 +37,7 @@ module Duel
       spells = @engine.query_location(team, Query::SPELLS)
       {
         team:, lp: counts[:lp], deck: counts[:deck], extra: counts[:extra],
-        hand: @engine.query_location(team, Query::HAND).map { |card| mine || card[:public] ? { code: card[:code] } : { hidden: true } },
+        hand: @engine.query_location(team, Query::HAND).map { |card| hand_card(card, mine) },
         monsters: @engine.query_location(team, Query::MONSTERS).first(5).map { |card| field_card(card, mine) },
         spells: spells.first(5).map { |card| field_card(card, mine) },
         field_spell: field_card(spells[5], mine),
@@ -45,6 +45,14 @@ module Duel
         banished: @engine.query_location(team, Query::BANISHED).map { |card| card[:public] || mine ? { code: card[:code] } : { hidden: true } },
         extra_cards: (@engine.query_location(team, Query::EXTRA).map { |card| { code: card[:code] } } if mine)
       }.compact
+    end
+
+    # Na mão, o outro só vê a carta revelada por um efeito (public); o dono vê todas e
+    # sabe quais estão à vista.
+    def hand_card(card, mine)
+      return { hidden: true } unless mine || card[:public]
+
+      { code: card[:code], public: (true if mine && card[:public]) }.compact
     end
 
     # Carta no campo: virada para baixo e do outro, só a posição (ataque ou defesa).
