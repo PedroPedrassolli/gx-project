@@ -1,6 +1,7 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
+import { preconnect } from "react-dom";
 import { request } from "../api.ts";
-import type { CardDetail, CardSummary, Pack } from "./cards.ts";
+import { IMAGES_SITE, type CardDetail, type CardSummary, type Pack } from "./cards.ts";
 
 // Dados do catálogo pela API (ADR 0007), guardados pelo TanStack Query: o catálogo, a
 // coleção e o Deck Edit usam as mesmas cartas sem buscar de novo.
@@ -29,7 +30,11 @@ export const catalogQuery = queryOptions({
   staleTime: HOUR,
 });
 
+// Toda página que usa o catálogo mostra imagens das cartas: a conexão com o site delas abre
+// já no começo, enquanto a lista ainda chega, e as primeiras imagens aparecem uns 0,4 s
+// antes. O React põe o <link rel="preconnect"> uma vez só, por mais que a página chame.
 export function useCatalog() {
+  preconnect(IMAGES_SITE);
   return useQuery(catalogQuery);
 }
 

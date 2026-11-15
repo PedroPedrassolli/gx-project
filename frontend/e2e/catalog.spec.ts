@@ -105,6 +105,10 @@ test("mostra o detalhe da carta e troca o idioma do texto", async ({ page }) => 
 
 test("mostra a miniatura e a imagem da carta, e esconde a que não carrega", async ({ page }) => {
   await page.goto("/cartas?carta=1");
+  // A conexão com o site das imagens abre junto com a página, antes de a lista chegar.
+  await expect(
+    page.locator('link[rel="preconnect"][href="https://gx-project-imagens.pages.dev"]'),
+  ).toHaveCount(1);
   const thumb = page.getByRole("button", { name: /Mago Negro/ }).locator("img");
   await expect(thumb).toHaveAttribute("src", /\/cards\/p\/46986414\.webp$/);
   await expect(thumb).toHaveAttribute("loading", "lazy");
