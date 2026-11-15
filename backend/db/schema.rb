@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_15_030000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_040000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -144,6 +144,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_15_030000) do
     t.jsonb "events", default: [], null: false
     t.integer "events_count", default: 0, null: false
     t.jsonb "chain", default: [], null: false
+    t.datetime "prompt_at"
+    t.datetime "deadline_at"
+    t.integer "turn_time_left", default: 300, null: false
+    t.string "finish_reason"
     t.index ["room_id"], name: "index_matches_on_room_id"
   end
 

@@ -82,4 +82,47 @@ class Api::MatchesControllerTest < ActionDispatch::IntegrationTest
     end
     assert_equal before, match.reload.responses.count
   end
+
+  it "a mesa traz o relógio: o prazo da pergunta, o banco do turno e o fim do duelo" do
+    session = session_for(first)
+    session.get api_match_path(match)
+    data = session.response.parsed_body["data"]
+
+    assert_equal [ match.deadline_at.iso8601, 300, (match.started_at + 60.minutes).iso8601, "ABC234" ],
+                 data.values_at("deadline_at", "turn_time_left", "ends_at", "room_code")
+  end
+
+  it "prazo vencido: a próxima consulta encerra a partida e o outro fica sabendo" do
+    travel_to(match.deadline_at + 1.second) do
+      session = session_for(second)
+      session.get api_match_path(match)
+
+      assert_equal [ "finished", 1, "timeout" ], session.response.parsed_body["data"].values_at("status", "winner_team", "finish_reason")
+      assert_equal "duel.updated", Realtime::Publisher.current.events_for(first.id).sole.name
+    end
+  end
+
+  it "resposta depois do prazo: 409, e a partida já acabou" do
+    travel_to(match.deadline_at + 1.second) do
+      session = session_for(first)
+      answer(session, { command: "end" })
+
+      assert_equal [ 409, "O tempo acabou." ], [ session.response.status, session.response.parsed_body.dig("error", "message") ]
+      assert_equal "finished", match.reload.status
+    end
+  end
+
+  it "desistir encerra a partida e avisa o outro; depois do fim, não dá mais" do
+    session = session_for(first)
+    session.post surrender_api_match_path(match), as: :json
+
+    assert_equal [ "finished", 1, "surrender" ], session.response.parsed_body["data"].values_at("status", "winner_team", "finish_reason")
+    assert_equal "duel.updated", Realtime::Publisher.current.events_for(second.id).sole.name
+    session.post surrender_api_match_path(match), as: :json
+    assert_equal 409, session.response.status
+
+    outsider = session_for(player("Chazz"))
+    outsider.post surrender_api_match_path(match), as: :json
+    assert_equal 404, outsider.response.status
+  end
 end

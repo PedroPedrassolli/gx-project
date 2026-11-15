@@ -49,9 +49,12 @@ class Api::RoomsController < Api::BaseController
     full_room
   end
 
-  # POST /api/rooms/:code/leave: sai da sala. Se o dono sai, a sala fecha para todos.
+  # POST /api/rooms/:code/leave: sai da sala. Se o dono sai, a sala fecha para todos. No meio
+  # do duelo, não: primeiro se desiste dele (na mesa).
   def leave
     player = @room.players.find_by!(user: current_user)
+    return render_error(:unprocessable_content, "Desista do duelo antes de sair da sala.") unless @room.waiting?
+
     remove(player)
     head :no_content
   end

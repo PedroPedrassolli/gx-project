@@ -24,16 +24,23 @@ class Matches::GameTest < ActiveSupport::TestCase
     assert(match.responses.all? { |response| response.bytes == Matches::Game::PASS })
   end
 
-  it "põe a carta sozinha na zona livre do centro, sem perguntar a zona" do
-    chamberlain = 44_430_454 # monstro normal de nível 3, do deck inicial
+  CHAMBERLAIN = 44_430_454 # monstro normal de nível 3, do deck inicial
+
+  # Partida previsível: semente fixa e 40 cópias do mesmo monstro normal nos dois decks.
+  def chamberlain_match
     match = Match.create!(mode: "1x1", banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current)
-    2.times { |team| match.players.create!(team:, seat: team, deck: { main: [ chamberlain ] * 40, extra: [] }) }
+    2.times { |team| match.players.create!(team:, seat: team, deck: { main: [ CHAMBERLAIN ] * 40, extra: [] }) }
     Matches::Game.new(match).start!
-    game = Matches::Game.new(match.reload)
+    match.reload
+  end
+
+  it "põe a carta sozinha na zona livre do centro, sem perguntar a zona" do
+    match = chamberlain_match
+    game = Matches::Game.new(match)
     game.respond!(0, { command: "summon", index: 0 })
 
     assert_equal "select_idlecmd", match.reload.prompt["type"]
-    assert_equal chamberlain, game.view(0)[:sides][0][:monsters][2][:code]
+    assert_equal CHAMBERLAIN, game.view(0)[:sides][0][:monsters][2][:code]
     assert_includes match.responses.map(&:bytes), [ 0, 0x04, 2 ].pack("C*")
   end
 
@@ -71,16 +78,53 @@ class Matches::GameTest < ActiveSupport::TestCase
   end
 
   it "o ataque guarda o código das cartas com a face para cima, lido da mesa na hora" do
-    chamberlain = 44_430_454 # monstro normal de nível 3, do deck inicial
-    match = Match.create!(mode: "1x1", banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current)
-    2.times { |team| match.players.create!(team:, seat: team, deck: { main: [ chamberlain ] * 40, extra: [] }) }
-    Matches::Game.new(match).start!
-    game = Matches::Game.new(match.reload)
+    match = chamberlain_match
+    game = Matches::Game.new(match)
     [ [ 0, { command: "summon", index: 0 } ], [ 0, { command: "end" } ], [ 1, { command: "summon", index: 0 } ],
       [ 1, { command: "battle" } ], [ 1, { command: "attack", index: 0 } ], [ 1, { indexes: [ 0 ] } ] ].each { |team, choice| game.respond!(team, choice) }
 
     attack = match.reload.events.find { |event| event["type"] == "attack" }
-    assert_equal [ chamberlain, chamberlain ], [ attack.dig("attacker", "code"), attack.dig("target", "code") ]
+    assert_equal [ CHAMBERLAIN, CHAMBERLAIN ], [ attack.dig("attacker", "code"), attack.dig("target", "code") ]
+  end
+
+  it "o prazo da pergunta é o da decisão ou o que sobra do banco do turno de quem joga" do
+    travel_to(Time.zone.local(2026, 11, 15, 12)) do
+      match = chamberlain_match
+      assert_equal [ Time.current + 90.seconds, 300 ], [ match.deadline_at, match.turn_time_left ]
+
+      travel 280.seconds
+      Matches::Game.new(match).respond!(0, { command: "summon", index: 0 })
+      assert_equal [ 20, Time.current + 20.seconds ], [ match.turn_time_left, match.deadline_at ]
+
+      # Fim do turno: a vez passa e o banco volta inteiro.
+      Matches::Game.new(match).respond!(0, { command: "end" })
+      assert_equal [ 1, 300, Time.current + 90.seconds ], [ match.prompt_team, match.turn_time_left, match.deadline_at ]
+    end
+  end
+
+  it "pergunta sem resposta no prazo: quem devia responder perde e a sala volta a esperar" do
+    room = match.room
+    assert_not Matches::Game.new(match).expire!
+
+    travel_to(match.deadline_at + 1.second) do
+      assert Matches::Game.new(match).expire!
+    end
+    assert_equal [ "finished", 1, "timeout" ], [ match.reload.status, match.winner_team, match.finish_reason ]
+    assert_equal [ "waiting", [ false, false ] ], [ room.reload.status, room.players.pluck(:ready) ]
+  end
+
+  it "passou do limite do duelo: ganha quem tem mais PV, e PV iguais dão empate" do
+    match.update!(deadline_at: 2.hours.from_now)
+    travel_to(match.started_at + Matches::Clock::DUEL + 1.second) do
+      assert Matches::Game.new(match).expire!
+    end
+    assert_equal [ "finished", nil, "time_limit" ], [ match.reload.status, match.winner_team, match.finish_reason ]
+  end
+
+  it "quem desiste perde, e a sala volta a esperar" do
+    Matches::Game.new(match).surrender!(0)
+
+    assert_equal [ "finished", 1, "surrender", "waiting" ], [ match.reload.status, match.winner_team, match.finish_reason, match.room.status ]
   end
 
   it "a corrente resolvida sai da pilha e o log fica com os últimos eventos" do

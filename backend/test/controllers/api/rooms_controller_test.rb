@@ -163,6 +163,10 @@ class Api::RoomsControllerTest < ActionDispatch::IntegrationTest
     owner = session_for(jaden)
     owner.post api_rooms_path, as: :json
     assert_equal [ 422, "Você está num duelo." ], [ owner.response.status, owner.response.parsed_body.dig("error", "message") ]
+    # Sair no meio do duelo, só desistindo antes (o botão "Desistir" fica na mesa).
+    owner.post leave_api_room_path(room.code), as: :json
+    assert_equal [ 422, "Desista do duelo antes de sair da sala." ], [ owner.response.status, owner.response.parsed_body.dig("error", "message") ]
+    assert room.reload.players.exists?(user: jaden)
   end
 
   it "mostra a sala pelo código, em maiúsculas ou minúsculas" do
