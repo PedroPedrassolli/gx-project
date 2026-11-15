@@ -141,6 +141,12 @@ jobs:
           # A engine de duelo roda dentro do container (biblioteca nativa via FFI).
           curl -fsS http://localhost:8080/up/engine | tee engine.json | grep -q '"ok":true'
           echo "::notice title=Engine no container::$(cat engine.json)"
+          # O Ruby da imagem roda com o YJIT e o jemalloc (GXP-63): sem eles, o duelo fica
+          # mais lento sem nenhum erro aparecer.
+          if ! jq -e '.yjit and .jemalloc' engine.json > /dev/null; then
+            echo "::error title=YJIT e jemalloc::esperava os dois true no /up/engine"
+            exit 1
+          fi
           # Só os scripts do pool vão para a imagem (bin/prune-scripts): confere que cada
           # carta do pool tem o seu e que todos carregam na engine.
           docker exec backend bin/rails engine:conferir | tee conferir.txt

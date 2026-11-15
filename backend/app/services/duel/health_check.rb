@@ -24,9 +24,24 @@ module Duel
       messages, warm_ms = measure { session(duel, id, responses[0...-1]).respond(responses[-1]) }
       winner = winner_of(messages)
       # Resposta que não vale mais faz o duelo desviar: o vencedor deixa de bater.
-      { ok: winner == duel[:winner], responses: responses.size, winner:, cold_ms:, warm_ms: }
+      { ok: winner == duel[:winner], responses: responses.size, winner:, cold_ms:, warm_ms:, **runtime }
     rescue Engine::Error, Session::InvalidResponse => error
       { ok: false, error: error.message }
+    end
+
+    # Como o Ruby roda neste servidor. Na imagem da Vercel os dois precisam ser true (a CI
+    # confere): o YJIT compila o código Ruby mais usado (o Rails liga sozinho, quando o Ruby
+    # tem) e o jemalloc é um alocador de memória mais rápido e que fragmenta menos.
+    def self.runtime
+      yjit = defined?(RubyVM::YJIT) ? RubyVM::YJIT.enabled? : false
+      { yjit:, jemalloc: jemalloc? }
+    end
+
+    # No Linux, /proc/self/maps lista as bibliotecas carregadas no processo; o jemalloc entra
+    # pelo LD_PRELOAD do Dockerfile.vercel.
+    def self.jemalloc?
+      maps = "/proc/self/maps"
+      File.exist?(maps) && File.read(maps).include?("libjemalloc")
     end
 
     def self.session(duel, id, responses)
@@ -44,6 +59,6 @@ module Duel
       message && MessageParser.win(message)[:player]
     end
 
-    private_class_method :session, :measure, :winner_of
+    private_class_method :session, :measure, :winner_of, :jemalloc?
   end
 end
