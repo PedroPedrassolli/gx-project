@@ -87,6 +87,19 @@ class Matches::GameTest < ActiveSupport::TestCase
     assert_equal [ CHAMBERLAIN, CHAMBERLAIN ], [ attack.dig("attacker", "code"), attack.dig("target", "code") ]
   end
 
+  # Achado do robô (300 duelos, semente 1024): quando a jogada declara o ataque e vira o alvo
+  # de uma vez, o código vinha com a posição da declaração (virado), como carta escondida.
+  it "alvo virado na declaração e para cima no fim da jogada: o código vem com a posição de agora" do
+    game = Matches::Game.new(chamberlain_match)
+    engine = Struct.new(:cards) { def query_location(*) = cards }.new([ nil, nil, { code: CHAMBERLAIN, position: 0x4 } ])
+    event = { type: "attack", attacker: { controller: 1, location: 4, sequence: 0, position: 0x1 },
+              target: { controller: 0, location: 4, sequence: 2, position: 0x8 } }
+
+    game.instance_variable_get(:@session).define_singleton_method(:with_engine) { |&block| block.call(engine) }
+
+    assert_equal [ CHAMBERLAIN, 0x4 ], game.send(:with_codes, event)[:target].values_at(:code, :position)
+  end
+
   it "o prazo da pergunta é o da decisão ou o que sobra do banco do turno de quem joga" do
     travel_to(Time.zone.local(2026, 11, 15, 12)) do
       match = chamberlain_match
