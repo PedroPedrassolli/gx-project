@@ -7,6 +7,7 @@ require "test_helper"
 class Matches::RobotDuelTest < ActiveSupport::TestCase
   EXTRA_TYPES = %w[Fusion Synchro].freeze
   MAX_RESPONSES = 3000
+  FIELD = { 0x04 => Duel::Query::MONSTERS, 0x08 => Duel::Query::SPELLS }.freeze
 
   # Os códigos do catálogo do jogo, para os decks sorteados e para declarar nome de carta.
   CATALOG = YAML.safe_load_file(Rails.root.join("db/seeds/jogo/cartas.yml")).select { |card| card["passcode"] }
@@ -36,6 +37,7 @@ class Matches::RobotDuelTest < ActiveSupport::TestCase
       team = match.prompt_team
       views = [ game.view(0), game.view(1) ]
       assert_nothing_hidden_shown(views, seed)
+      assert_choices_on_field(game, views[team][:prompt], seed)
       answer(game, team, views[team][:prompt], robot, seed)
     end
     assert_equal "finished", match.status, "semente #{seed}: o duelo não acabou em #{MAX_RESPONSES} respostas"
@@ -72,6 +74,21 @@ class Matches::RobotDuelTest < ActiveSupport::TestCase
       view[:events].each { |event| assert_event_hidden(event, viewer, seed) }
     end
     assert_equal 1, views.count { |view| view.key?(:prompt) }, "semente #{seed}: a pergunta tem de ir para um só"
+  end
+
+  # Cada carta do campo que a pergunta oferece está mesmo naquela zona, com o mesmo código
+  # (quando à vista) e a mesma posição: o botão da tela aponta para a carta da mesa (GXP-77).
+  def assert_choices_on_field(game, prompt, seed)
+    game.instance_variable_get(:@session).with_engine do |engine|
+      Duel::View::PROMPT_LISTS.flat_map { |key| Array(prompt[key]) }.each do |card|
+        next unless FIELD.key?(card[:location])
+
+        actual = engine.query_location(card[:controller], FIELD[card[:location]])[card[:sequence]]
+        assert actual, "semente #{seed}: a pergunta oferece uma zona vazia: #{card}"
+        assert_equal actual[:code], card[:code], "semente #{seed}: outra carta na zona: #{card}" unless card[:code].zero?
+        assert_equal actual[:position], card[:position], "semente #{seed}: outra posição na zona: #{card}" if card[:position]
+      end
+    end
   end
 
   # No log, do outro lado: a compra sem as cartas, a carta baixada sem código e a carta que
