@@ -1,10 +1,13 @@
 module Matches
-  # Começa o duelo quando a sala está cheia e todos estão prontos (GXP-48; ADR 0011): sorteia
-  # quem começa, embaralha os decks e guarda tudo na partida. A engine só roda quando o duelo
-  # é aberto (GXP-49).
+  # Começa o duelo quando a sala está cheia e todos estão prontos (GXP-48; ADR 0011): põe
+  # quem começa no time 0 (a engine começa por ele), embaralha os decks e guarda tudo na
+  # partida.
   class Start
-    def initialize(room)
+    # first_seat: o lugar que começa, escolhido no pedra, papel e tesoura (Rooms::Opening).
+    # Sem ele (testes e o robô de duelos), sorteio.
+    def initialize(room, first_seat: nil)
       @room = room
+      @first_seat = first_seat
     end
 
     # A partida nova, ou nil se ainda falta alguém, se um deck deixou de valer ou se outro
@@ -15,7 +18,7 @@ module Matches
         players = @room.players.to_a
         next unless @room.waiting? && players.size == @room.seats && players.all? { |player| player.ready && player.deck_id }
 
-        decks = Deck.includes(:user, deck_cards: :card).where(id: players.map(&:deck_id)).index_by(&:id)
+        decks = Deck.includes(:user, :deck_cards).where(id: players.map(&:deck_id)).index_by(&:id)
         # O deck pode ter mudado depois do "pronto": vale o que ele é agora. Quem ficou com
         # deck que não vale deixa de estar pronto, e o duelo espera (escopo 3.3).
         invalid = players.reject { |player| Decks::Validator.for(decks.fetch(player.deck_id), banlist: @room.banlist).valid? }
@@ -28,11 +31,11 @@ module Matches
                               decision_seconds: @room.decision_seconds, duel_minutes: @room.duel_minutes,
                               turn_time_left: Clock.turn_bank(@room.decision_seconds),
                               seed: Array.new(4) { SecureRandom.random_number(2**63) }, started_at: Time.current)
-        # Quem começa sai no sorteio: a pedra, papel e tesoura do escopo (3.7) vem depois.
-        players.shuffle(random: SecureRandom).each_with_index do |player, team|
+        order = @first_seat ? players.sort_by { |player| player.seat == @first_seat ? 0 : 1 } : players.shuffle(random: SecureRandom)
+        order.each_with_index do |player, team|
           match.players.create!(user_id: player.user_id, seat: player.seat, team:, deck: snapshot(decks.fetch(player.deck_id)))
         end
-        @room.update!(status: "dueling")
+        @room.update!(status: "dueling", hands: {}, last_hands: nil, chooser_seat: nil)
         Game.new(match).start!
         match
       end
@@ -47,9 +50,11 @@ module Matches
     # cartas marcadas como Destiny.
     def snapshot(deck)
       rows = deck.deck_cards.to_a
-      codes = ->(section) { rows.select { |row| row.section == section }.flat_map { |row| [ row.card.engine_code ] * row.quantity } }
+      # Só o código da engine de cada carta, numa consulta (a carta inteira não é usada aqui).
+      engine_codes = Card.where(id: rows.map(&:card_id)).pluck(:id, :engine_code).to_h
+      codes = ->(section) { rows.select { |row| row.section == section }.flat_map { |row| [ engine_codes.fetch(row.card_id) ] * row.quantity } }
       { main: codes.call("main").shuffle(random: SecureRandom), extra: codes.call("extra"),
-        destiny: rows.select { |row| row.section == "main" && row.destiny }.map { |row| row.card.engine_code } }
+        destiny: rows.select { |row| row.section == "main" && row.destiny }.map { |row| engine_codes.fetch(row.card_id) } }
     end
   end
 end

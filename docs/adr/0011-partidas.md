@@ -20,8 +20,9 @@ semente, os decks e a lista de respostas: a engine refaz o resto (ADR 0001).
 3. **O deck guardado já vem embaralhado** (`SecureRandom`): a engine não embaralha no começo,
    e o replay precisa da mesma ordem. A semente são quatro números de 63 bits (a engine pede
    quatro de 64; 63 cabem no `bigint` do Postgres).
-4. **Quem começa sai num sorteio por enquanto.** A pedra, papel e tesoura do escopo (3.7),
-   com quem ganha escolhendo ir primeiro ou segundo, vem depois de o duelo funcionar.
+4. **Quem começa sai no pedra, papel e tesoura da sala** (ADR 0010 item 9): quem ganha
+   escolhe, e `Matches::Start` põe esse jogador no time 0. Sem escolha (testes e o robô de
+   duelos), sorteio.
 5. **A partida fica quando a sala some** (o banco tira a sala dela) e quando alguém apaga a
    conta (o jogador some da partida): o replay é do outro jogador também.
 6. **A engine roda já no começo** (`Matches::Game#start!`), até a primeira pergunta de verdade.

@@ -8,7 +8,16 @@ import { useDecks } from "../decks/api.ts";
 import { PageNotice, SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 import { useRealtime } from "../realtime/useRealtime.ts";
-import { roomAction, roomKey, useRoom, type Room, type RoomPlayer } from "./api.ts";
+import {
+  roomAction,
+  roomKey,
+  useRoom,
+  type Hand,
+  type Opening,
+  type Room,
+  type RoomPlayer,
+} from "./api.ts";
+import { HANDS, handName, roundText } from "./opening.ts";
 import { decisionChip, duelChip } from "./times.ts";
 
 // Sala de espera (escopo 4, "Salas"): os lugares frente a frente, quem já está pronto e o
@@ -136,6 +145,16 @@ export function RoomPage() {
         })}
       </ol>
 
+      {me && data.opening && (
+        <OpeningPanel
+          code={code}
+          opening={data.opening}
+          me={me}
+          other={data.players.find((player) => player.user_id !== user.id)}
+          onUpdate={update}
+        />
+      )}
+
       {me ? (
         <section aria-labelledby="my-deck-title" className="my-deck">
           <h2 id="my-deck-title">Seu deck</h2>
@@ -206,6 +225,83 @@ export function RoomPage() {
 }
 
 // Um lugar ocupado: o apelido, se criou a sala e se já está pronto.
+// Quem começa (GXP-81): cada um escolhe a mão sem ver a do outro; quem ganha escolhe se
+// começa. Quem deixa de estar pronto (ou sai) faz a escolha recomeçar.
+function OpeningPanel(props: {
+  code: string;
+  opening: Opening;
+  me: RoomPlayer;
+  other?: RoomPlayer;
+  onUpdate: (room: Room | undefined) => unknown;
+}) {
+  const { code, opening, me, onUpdate } = props;
+  const name = props.other?.nickname ?? "o oponente";
+  const hand = useMutation({
+    mutationFn: (value: Hand) => roomAction(code, "hand", { hand: value }),
+    onSuccess: onUpdate,
+  });
+  const first = useMutation({
+    mutationFn: (value: boolean) => roomAction(code, "first", { first: value }),
+    onSuccess: onUpdate,
+  });
+  const error = hand.error ?? first.error;
+  const otherChose = props.other && opening.chosen.includes(props.other.seat);
+
+  return (
+    <section aria-labelledby="opening-title" className="opening">
+      <h2 id="opening-title">Quem começa?</h2>
+      {opening.last && <p>{roundText(opening.last, me.seat, name)}</p>}
+      {opening.chooser_seat === null ? (
+        opening.hand ? (
+          <p role="status">
+            Você tirou {handName(opening.hand)}. Esperando {name}…
+          </p>
+        ) : (
+          <>
+            <p>{otherChose ? `${name} já escolheu. E você?` : "Pedra, papel ou tesoura?"}</p>
+            <div className="hands" role="group" aria-label="Sua mão">
+              {HANDS.map((item) => (
+                <button
+                  key={item.hand}
+                  type="button"
+                  disabled={hand.isPending}
+                  onClick={() => hand.mutate(item.hand)}
+                >
+                  <span aria-hidden="true" className="hand-icon">
+                    {item.icon}
+                  </span>
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </>
+        )
+      ) : opening.chooser_seat === me.seat ? (
+        <p className="actions">
+          <button
+            type="button"
+            className="cta"
+            disabled={first.isPending}
+            onClick={() => first.mutate(true)}
+          >
+            Começar
+          </button>
+          <button type="button" disabled={first.isPending} onClick={() => first.mutate(false)}>
+            Deixar {name} começar
+          </button>
+        </p>
+      ) : (
+        <p role="status">{name} está escolhendo quem começa…</p>
+      )}
+      {error && (
+        <p role="alert" className="form-error">
+          {error.message}
+        </p>
+      )}
+    </section>
+  );
+}
+
 function Seat(props: { player: RoomPlayer; ownerId: number; onKick?: () => void }) {
   const { player } = props;
   const state = player.ready

@@ -15,6 +15,8 @@ type Room = {
   owner_id: number;
   seats: number;
   players: Record<string, unknown>[];
+  match_id?: number;
+  opening?: Record<string, unknown>;
 };
 
 const ME = { seat: 0, user_id: PLAYER.id, nickname: "JadenYuki", ready: false, deck_chosen: false };
@@ -226,4 +228,67 @@ test("lista as salas abertas e vai para uma pelo código", async ({ page }) => {
   await page.getByLabel("Código da sala").fill("abc234");
   await page.getByRole("button", { name: "Ir para a sala" }).click();
   await expect(page).toHaveURL("/salas/ABC234");
+});
+
+// Os dois prontos: o Jaden (lugar 0) e o Syrus (lugar 1).
+const READY = { ...ME, ready: true, deck_chosen: true, deck_id: 7 };
+const SYRUS = { seat: 1, user_id: 2, nickname: "Syrus", ready: true, deck_chosen: true };
+const NO_HANDS = { hand: null, chosen: [], last: null, chooser_seat: null };
+
+test("com os dois prontos, o pedra, papel e tesoura decide quem começa", async ({ page }) => {
+  const room = await mockRoom(page, { ...ROOM, players: [READY, SYRUS], opening: NO_HANDS });
+  const sent: unknown[] = [];
+  await page.route("**/api/rooms/ABC234/hand", (route) => {
+    sent.push(route.request().postDataJSON());
+    // Empate na primeira rodada; na segunda, o papel do Jaden ganha da pedra do Syrus.
+    const last = sent.length === 1 ? { "0": "rock", "1": "rock" } : { "0": "paper", "1": "rock" };
+    const opening = { ...NO_HANDS, last, chooser_seat: sent.length === 1 ? null : 0 };
+    return route.fulfill({
+      json: { data: room.set({ ...ROOM, players: [READY, SYRUS], opening }) },
+    });
+  });
+  await page.route("**/api/rooms/ABC234/first", (route) => {
+    sent.push(route.request().postDataJSON());
+    const data = { ...ROOM, status: "dueling", match_id: 5, players: [READY, SYRUS] };
+    return route.fulfill({ json: { data: room.set(data) } });
+  });
+  await page.goto("/salas/ABC234");
+
+  const hands = page.getByRole("group", { name: "Sua mão" });
+  await hands.getByRole("button", { name: "Pedra" }).click();
+  await expect(page.getByText("Empate: os dois tiraram pedra. De novo!")).toBeVisible();
+  await hands.getByRole("button", { name: "Papel" }).click();
+  await expect(page.getByText("Você tirou papel e Syrus, pedra: você ganhou.")).toBeVisible();
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
+
+  await page.getByRole("button", { name: "Deixar Syrus começar" }).click();
+  await expect(page).toHaveURL("/duelo/5");
+  expect(sent).toEqual([{ hand: "rock" }, { hand: "paper" }, { first: false }]);
+});
+
+test("quem escolheu a mão espera o outro, e quem perdeu espera a escolha", async ({ page }) => {
+  const room = await mockRoom(page, {
+    ...ROOM,
+    players: [READY, SYRUS],
+    opening: { ...NO_HANDS, chosen: [1] },
+  });
+  await page.goto("/salas/ABC234");
+  await expect(page.getByText("Syrus já escolheu. E você?")).toBeVisible();
+
+  room.set({
+    ...ROOM,
+    players: [READY, SYRUS],
+    opening: { ...NO_HANDS, hand: "rock", chosen: [0] },
+  });
+  await expect(
+    page.getByRole("status").filter({ hasText: "Você tirou pedra. Esperando Syrus…" }),
+  ).toBeVisible();
+
+  const opening = { ...NO_HANDS, last: { "0": "rock", "1": "paper" }, chooser_seat: 1 };
+  room.set({ ...ROOM, players: [READY, SYRUS], opening });
+  await expect(page.getByText("Você tirou pedra e Syrus, papel: Syrus ganhou.")).toBeVisible();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Syrus está escolhendo quem começa…" }),
+  ).toBeVisible();
 });

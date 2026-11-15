@@ -37,16 +37,25 @@ test("duelo 1x1: sala com código, os dois prontos, jogadas, desistência, resul
 
   await ready(jaden);
   await ready(syrus);
+  // Quem começa sai no pedra, papel e tesoura: a pedra do Jaden quebra a tesoura do Syrus, e o
+  // Jaden escolhe começar.
+  await jaden
+    .getByRole("group", { name: "Sua mão" })
+    .getByRole("button", { name: "Pedra" })
+    .click();
+  await syrus
+    .getByRole("group", { name: "Sua mão" })
+    .getByRole("button", { name: "Tesoura" })
+    .click();
+  await jaden.getByRole("button", { name: "Começar", exact: true }).click();
   for (const page of [jaden, syrus])
     await expect(page).toHaveURL(/\/duelo\/\d+$/, { timeout: 15_000 });
 
-  // Quem começa saiu no sorteio: quem tem a vez baixa uma carta e encerra o turno, e o outro
-  // desiste no turno dele.
+  // O Jaden baixa uma carta e encerra o turno, e o Syrus desiste no turno dele.
   const status = (page: Page) => page.getByRole("status").filter({ hasText: /Sua vez|Vez de/ });
-  await expect(status(jaden)).toBeVisible();
-  const jadenFirst = (await status(jaden).textContent())?.includes("Sua vez");
-  const [first, second] = jadenFirst ? [jaden, syrus] : [syrus, jaden];
-  const firstName = jadenFirst ? "Jaden" : "Syrus";
+  await expect(status(jaden)).toHaveText("Sua vez.");
+  const [first, second] = [jaden, syrus];
+  const firstName = "Jaden";
 
   // Carta baixada (quando a mão tem uma): o outro vê só o verso, porque o servidor não manda o
   // que ela é. Baixar não abre efeito nem corrente, então a vez segue igual.

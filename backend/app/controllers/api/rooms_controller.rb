@@ -3,7 +3,11 @@
 # consulta GET /api/rooms/:code.
 class Api::RoomsController < Api::BaseController
   before_action :require_authentication
-  before_action :set_room, only: %i[join leave ready kick]
+  before_action :set_room, only: %i[join leave ready hand first kick]
+
+  rescue_from Rooms::Opening::Invalid do |error|
+    render_error(:unprocessable_content, error.message)
+  end
 
   # GET /api/rooms: as salas públicas esperando gente, as mais novas primeiro.
   def index
@@ -63,7 +67,8 @@ class Api::RoomsController < Api::BaseController
   end
 
   # POST /api/rooms/:code/ready: escolhe o deck e fica pronto (ou deixa de ficar). O deck
-  # precisa valer com as regras da sala.
+  # precisa valer com as regras da sala. Com todos prontos, a sala passa para o pedra, papel e
+  # tesoura (hand e first).
   def ready
     player = @room.players.find_by!(user: current_user)
     return render_error(:unprocessable_content, "Esta sala já está em duelo.") unless @room.waiting?
@@ -74,14 +79,31 @@ class Api::RoomsController < Api::BaseController
       return render_error(:unprocessable_content, "Este deck não vale nesta sala.", { deck: validator.errors }) unless validator.valid?
 
       player.update!(deck:, ready: true)
-      # O último a ficar pronto começa o duelo: quem estava na sala vai para a partida.
-      if (match = Matches::Start.new(@room).call)
-        publish(match.players.map(&:user_id), "match.started") { { code: @room.code, match_id: match.id } }
-      end
     else
       player.update!(ready: false)
+      Rooms::Opening.new(@room).reset!
     end
     render json: { data: room_json(broadcast_update(@room.id), current_user.id) }
+  end
+
+  # POST /api/rooms/:code/hand: { hand: "rock" | "paper" | "scissors" }. A mão do outro só
+  # aparece para cada um quando todos escolheram.
+  def hand
+    player = @room.players.find_by!(user: current_user)
+    Rooms::Opening.new(@room).hand!(player.seat, params[:hand].to_s)
+    render json: { data: room_json(broadcast_update(@room.id), current_user.id) }
+  end
+
+  # POST /api/rooms/:code/first: { first: true | false }. Quem ganhou o pedra, papel e
+  # tesoura escolhe se começa, e o duelo começa: quem estava na sala vai para a partida.
+  def first
+    player = @room.players.find_by!(user: current_user)
+    match = Rooms::Opening.new(@room).first!(player.seat, ActiveModel::Type::Boolean.new.cast(params[:first]))
+    room = broadcast_update(@room.id)
+    return render_error(:unprocessable_content, "Um deck mudou e não vale mais nesta sala: escolham de novo.") unless match
+
+    publish(match.players.map(&:user_id), "match.started") { { code: @room.code, match_id: match.id } }
+    render json: { data: room_json(room, current_user.id) }
   end
 
   # POST /api/rooms/:code/kick: o dono tira alguém da sala antes de começar.
@@ -148,6 +170,7 @@ class Api::RoomsController < Api::BaseController
       publish(members, "room.closed") { { code: room.code } }
     else
       player.destroy!
+      Rooms::Opening.new(room).reset!
       broadcast_update(room.id)
     end
   end
@@ -179,8 +202,9 @@ class Api::RoomsController < Api::BaseController
     end
     # Em duelo, a sala diz qual é a partida (quem recarregar a página vai para ela).
     match_id = room.matches.where(status: "dueling").pick(:id) unless room.waiting?
+    seat = room.players.find { |player| player.user_id == viewer_id }&.seat
     room.slice(:code, :public, :mode, :best_of, :banlist, :destiny_draw, :status, :owner_id)
-        .merge(seats: room.seats, players:, match_id:).compact
+        .merge(seats: room.seats, players:, match_id:, opening: Rooms::Opening.new(room).view(seat)).compact
         .merge(room.slice(:decision_seconds, :duel_minutes)) # nulo (sem limite) também vai
   end
 end
