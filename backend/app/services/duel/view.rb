@@ -58,10 +58,26 @@ module Duel
       shown.merge(code: card[:code], atk: card[:atk], def: card[:def])
     end
 
+    # Esconde o código das cartas que o jogador não vê e põe o texto de cada descrição.
     def mask(prompt)
-      prompt.to_h do |key, value|
-        [ key, PROMPT_LISTS.include?(key) ? value.map { |card| hidden?(card) ? card.merge(code: 0) : card } : value ]
+      shown = prompt.to_h do |key, value|
+        [ key, PROMPT_LISTS.include?(key) ? value.map { |card| with_text(hidden?(card) ? card.merge(code: 0) : card) } : value ]
       end
+      shown[:options_text] = shown[:options].map { |option| text(option) } if shown[:options]
+      with_text(shown)
+    end
+
+    def with_text(item)
+      item[:description] ? item.merge(text: text(item[:description])) : item
+    end
+
+    # A descrição é (código da carta << 20) | número do texto (aux.Stringid). Sem carta, é um
+    # texto do próprio jogo: aqui só o do Destiny Draw, o resto a tela descreve.
+    def text(description)
+      return "Usar o Destiny Draw?" if description == Engine::DESTINY_DRAW_QUESTION
+
+      code = description >> 20
+      Engine.cards.strings(code)[description & 0xFFFFF].presence if code.positive?
     end
 
     # Carta do outro na mão, no deck, no Extra ou virada no campo: o código não vai.

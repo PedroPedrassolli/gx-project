@@ -47,6 +47,18 @@ class Duel::ViewTest < ActiveSupport::TestCase
     assert_equal [ [ { code: 8 } ], [ { code: 9 }, { hidden: true } ] ], theirs.values_at(:grave, :banished)
   end
 
+  it "a pergunta traz o texto de cada descrição (efeitos e opções da carta e o Destiny Draw)" do
+    painful = 74191942 << 20
+    view = ->(prompt) { Duel::View.new(engine, 0).to_h(**state, prompt:)[:prompt] }
+
+    options = view.call({ type: :select_option, player: 0, options: [ painful, painful | 1 ] })
+    assert_equal [ "Select 5 cards from your Deck", "Select 1 card to add to your opponent's hand" ], options[:options_text]
+    assert_equal "Usar o Destiny Draw?", view.call({ type: :select_yesno, player: 0, description: Duel::Engine::DESTINY_DRAW_QUESTION })[:text]
+    chain = view.call({ type: :select_chain, player: 0, chains: [ { code: 74191942, controller: 0, location: 2, sequence: 0, description: painful | 1 } ] })
+    assert_equal "Select 1 card to add to your opponent's hand", chain[:chains].first[:text]
+    assert_nil view.call({ type: :select_yesno, player: 0, description: 30 })[:text]
+  end
+
   it "todas as etapas da batalha aparecem como battle" do
     assert_equal %w[battle battle end], [ 0x08, 0x40, 0x200 ].map { |phase| Duel::View.new(engine, 0).to_h(**state, phase:, prompt: nil)[:phase] }
   end

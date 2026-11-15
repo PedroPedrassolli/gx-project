@@ -11,6 +11,7 @@ module Duel
     TYPE_LINK = 0x4000000
     DEFAULT_FILES = %w[cards.cdb cards-unofficial.cdb].freeze
     QUERY = "SELECT id, alias, setcode, type, atk, def, level, race, attribute FROM datas WHERE id = ?".freeze
+    STRINGS = "SELECT #{(1..16).map { |number| "str#{number}" }.join(", ")} FROM texts WHERE id = ?".freeze
 
     Card = Data.define(:code, :alias_code, :setcodes, :type, :level, :lscale, :rscale,
                        :attack, :defense, :link_marker, :race, :attribute)
@@ -32,6 +33,15 @@ module Duel
 
     def find(code)
       @mutex.synchronize { card_for(code) }
+    end
+
+    # Os textos dos efeitos da carta (str1 a str16 do BabelCDB, em inglês): é o que a pergunta
+    # mostra quando a carta tem mais de um efeito ou opção. "" quando não tem.
+    def strings(code)
+      @mutex.synchronize do
+        @strings ||= {}
+        @strings[code] ||= @databases.lazy.map { |database| database.get_first_row(STRINGS, [ code ]) }.find(&:itself) || []
+      end
     end
 
     # Preenche a estrutura que a engine mandou no callback de leitura. Código que não
