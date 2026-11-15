@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, Navigate, useNavigate, useParams } from "react-router";
 import { ApiError } from "../api.ts";
 import { useSession } from "../account/session.ts";
+import { catalogQuery } from "../catalog/data.ts";
 import { useDecks } from "../decks/api.ts";
 import { PageNotice, SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
@@ -17,6 +18,12 @@ export function RoomPage() {
   const session = useSession();
   const user = session.data?.user;
   const client = useQueryClient();
+  // Enquanto a sala espera, chega o que o duelo vai usar: o catálogo (nome e imagem das
+  // cartas da mesa) e o código da tela do duelo. Quando o duelo começa, a mesa abre pronta.
+  useEffect(() => {
+    void client.prefetchQuery(catalogQuery);
+    void import("../duel/DuelPage.tsx");
+  }, [client]);
   const navigate = useNavigate();
   const leaveTo = (notice: string) => navigate("/salas", { state: { notice } });
   const mode = useRealtime(user?.id, (event, data) => {

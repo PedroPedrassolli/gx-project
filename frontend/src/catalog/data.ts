@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { request } from "../api.ts";
 import type { CardDetail, CardSummary, Pack } from "./cards.ts";
 
@@ -12,23 +12,25 @@ async function data<T>(path: string): Promise<T> {
 
 // Os índices saem uma vez por carga, não a cada tela: a carta pelo id (coleção e decks), a
 // carta pelo código da engine (a mesa só sabe o código) e o nome de cada pacote (o detalhe
-// da carta mostra onde ela sai).
+// da carta mostra onde ela sai). A sala busca o catálogo antes de o duelo abrir.
+export const catalogQuery = queryOptions({
+  queryKey: ["catalog"],
+  queryFn: async () => {
+    const [cards, packs] = await Promise.all([
+      data<CardSummary[]>("/api/cards"),
+      data<Pack[]>("/api/packs"),
+    ]);
+    const byId = new Map(cards.map((card) => [card.id, card]));
+    const byCode = new Map<number, CardSummary>();
+    for (const card of cards) if (card.code !== undefined) byCode.set(card.code, card);
+    const packNames = new Map(packs.map((pack) => [pack.id, pack.name]));
+    return { cards, packs, byId, byCode, packNames };
+  },
+  staleTime: HOUR,
+});
+
 export function useCatalog() {
-  return useQuery({
-    queryKey: ["catalog"],
-    queryFn: async () => {
-      const [cards, packs] = await Promise.all([
-        data<CardSummary[]>("/api/cards"),
-        data<Pack[]>("/api/packs"),
-      ]);
-      const byId = new Map(cards.map((card) => [card.id, card]));
-      const byCode = new Map<number, CardSummary>();
-      for (const card of cards) if (card.code !== undefined) byCode.set(card.code, card);
-      const packNames = new Map(packs.map((pack) => [pack.id, pack.name]));
-      return { cards, packs, byId, byCode, packNames };
-    },
-    staleTime: HOUR,
-  });
+  return useQuery(catalogQuery);
 }
 
 // Enquanto o catálogo carrega: índices vazios, sempre os mesmos.

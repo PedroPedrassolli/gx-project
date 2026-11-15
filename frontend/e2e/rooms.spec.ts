@@ -86,7 +86,12 @@ test.beforeEach(async ({ page }) => mockSession(page, { loggedIn: true }));
 
 test("mostra os lugares e as opções, e fica pronto com um deck", async ({ page }) => {
   await mockRoom(page);
+  // Enquanto a sala espera, o catálogo do duelo já vem.
+  const catalog = page.waitForRequest("**/api/cards");
+  await page.route("**/api/cards", (route) => route.fulfill({ json: { data: [] } }));
+  await page.route("**/api/packs", (route) => route.fulfill({ json: { data: [] } }));
   await page.goto("/salas/abc234");
+  await catalog;
 
   await expect(page.getByRole("heading", { level: 1, name: "Sala ABC234" })).toBeVisible();
   const seats = page.getByRole("list", { name: "Lugares" });
