@@ -10,7 +10,7 @@ module Duel
     BATTLE = 0x08 | 0x10 | 0x20 | 0x40 | 0x80
     # Listas de cartas dentro das perguntas, que podem trazer carta escondida do outro.
     PROMPT_LISTS = %i[summonable spsummonable repositionable msetable ssetable activatable attackable
-                      cards selectable unselectable chains].freeze
+                      cards must selectable unselectable chains].freeze
 
     def initialize(engine, viewer)
       @engine = engine
@@ -63,7 +63,8 @@ module Duel
       shown = prompt.to_h do |key, value|
         [ key, PROMPT_LISTS.include?(key) ? value.map { |card| with_text(hidden?(card) ? card.merge(code: 0) : card) } : value ]
       end
-      shown[:options_text] = shown[:options].map { |option| text(option) } if shown[:options]
+      # Só as opções do select_option são descrições; as do announce_number são números.
+      shown[:options_text] = shown[:options].map { |option| text(option) } if shown[:type].to_s == "select_option"
       with_text(shown)
     end
 
