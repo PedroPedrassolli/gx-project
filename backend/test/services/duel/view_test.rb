@@ -67,6 +67,13 @@ class Duel::ViewTest < ActiveSupport::TestCase
     assert_not view.call({ type: :announce_number, player: 0, options: [ 1 << 20 ] }).key?(:options_text)
   end
 
+  it "a dica do que escolher traz o texto quando é de uma carta" do
+    view = ->(hint) { Duel::View.new(engine, 0).to_h(**state, prompt: { type: :select_card, player: 0, hint:, cards: [] })[:prompt] }
+
+    assert_equal "Select 1 card to add to your opponent's hand", view.call((74191942 << 20) | 1)[:hint_text]
+    assert_nil view.call(502)[:hint_text]
+  end
+
   it "todas as etapas da batalha aparecem como battle" do
     assert_equal %w[battle battle end], [ 0x08, 0x40, 0x200 ].map { |phase| Duel::View.new(engine, 0).to_h(**state, phase:, prompt: nil)[:phase] }
   end

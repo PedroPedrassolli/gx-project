@@ -26,6 +26,22 @@ class Duel::MessageParserTest < ActiveSupport::TestCase
     end
   end
 
+  describe ".select_hint" do
+    def hint(player, data, type: 3) = Duel::MessageParser::Message.new(type: Duel::MessageParser::HINT, payload: [ type, player, data ].pack("CCQ<"))
+
+    let(:select_card) { { type: :select_card, player: 0 } }
+
+    it "pega o que a pergunta pede para escolher, da última dica para quem responde" do
+      assert_equal 502, subject.select_hint([ hint(0, 549), hint(1, 506), hint(0, 502) ], select_card)
+    end
+
+    it "ignora a dica zerada, a de outro tipo e a pergunta que tem texto próprio" do
+      assert_nil subject.select_hint([ hint(0, 502), hint(0, 0) ], select_card)
+      assert_nil subject.select_hint([ hint(0, 502, type: 2) ], select_card)
+      assert_nil subject.select_hint([ hint(0, 502) ], { type: :select_idlecmd, player: 0 })
+    end
+  end
+
   describe ".win" do
     it "lê quem venceu e o motivo" do
       assert_equal({ player: 1, reason: 2 }, subject.win(subject.split(buffer).first))

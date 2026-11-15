@@ -37,10 +37,26 @@ class Matches::GameTest < ActiveSupport::TestCase
     assert_includes match.responses.map(&:bytes), [ 0, 0x04, 2 ].pack("C*")
   end
 
+  # Partida com decks vazios, para testar só o que a partida faz com as mensagens.
+  def empty_match
+    match = Match.create!(mode: "1x1", banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current)
+    2.times { |team| match.players.create!(team:, seat: team, deck: { main: [], extra: [] }) }
+    match
+  end
+
+  it "a pergunta guarda a dica do que escolher" do
+    match = empty_match
+    hint = Duel::MessageParser::Message.new(type: Duel::MessageParser::HINT, payload: [ 3, 0, 502 ].pack("CCQ<"))
+    select_card = Duel::MessageParser::Message.new(type: 15, payload: [ 0, 0, 1, 1, 0 ].pack("CCL<L<L<"))
+    Duel::Session.any_instance.stubs(:start).returns([ hint, select_card ])
+    Matches::Game.new(match).start!
+
+    assert_equal [ "select_card", 502 ], match.reload.prompt.values_at("type", "hint")
+  end
+
   it "a mensagem de vitória encerra a partida; empate fica sem vencedor" do
     [ [ 1, 1 ], [ 2, nil ] ].each do |player, winner|
-      match = Match.create!(mode: "1x1", banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current)
-      2.times { |team| match.players.create!(team:, seat: team, deck: { main: [], extra: [] }) }
+      match = empty_match
       win = Duel::MessageParser::Message.new(type: Duel::MessageParser::WIN, payload: [ player, 0 ].pack("CC"))
       Duel::Session.any_instance.stubs(:start).returns([ win ])
       Duel::Session.any_instance.stubs(:finished?).returns(true)

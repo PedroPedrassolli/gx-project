@@ -66,6 +66,8 @@ module Matches
       end
       # A coluna jsonb guarda as chaves como texto: a pergunta que volta daqui fica com símbolos.
       prompt = Duel::MessageParser.prompt(messages.last) unless @session.finished?
+      hint = Duel::MessageParser.select_hint(messages, prompt) if prompt
+      prompt = prompt.merge(hint:) if hint
       @match.prompt = prompt
       @match.prompt_team = prompt&.fetch(:player)
       prompt
