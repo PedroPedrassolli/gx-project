@@ -49,6 +49,31 @@ Rack::Attack.throttle("reenvio de confirmação por IP", limit: 5, period: 1.hou
   client_ip.call(request) if request.post? && request.path == "/api/email_verification"
 end
 
+# Salas, partidas e tempo real (GXP-67; ADR 0012): limites folgados para gente de verdade (duas
+# pessoas na mesma casa dividem o IP) que barram robô. Cada pedido mexe no banco ou na engine,
+# e as mudanças saem pelo Ably, que tem cota no plano grátis.
+match_path = %r{\A/api/matches/\d+}
+
+# Criar, entrar, sair, ficar pronto e tirar alguém: 60 por minuto por IP.
+Rack::Attack.throttle("salas por IP", limit: 60, period: 1.minute) do |request|
+  client_ip.call(request) if request.post? && request.path.start_with?("/api/rooms")
+end
+
+# Jogadas e desistência: 240 por minuto por IP (4 por segundo; ninguém joga tão rápido).
+Rack::Attack.throttle("jogadas por IP", limit: 240, period: 1.minute) do |request|
+  client_ip.call(request) if request.post? && request.path.match?(match_path)
+end
+
+# Consultas da mesa: 240 por minuto por IP (sem tempo real, cada tela consulta a cada 2 s).
+Rack::Attack.throttle("mesa por IP", limit: 240, period: 1.minute) do |request|
+  client_ip.call(request) if request.get? && request.path.match?(match_path)
+end
+
+# Token do tempo real: 30 por minuto por IP (um por página aberta com tempo real).
+Rack::Attack.throttle("tempo real por IP", limit: 30, period: 1.minute) do |request|
+  client_ip.call(request) if request.post? && request.path == "/api/realtime/token"
+end
+
 Rack::Attack.throttled_responder = lambda do |_request|
   body = { error: { status: 429, message: "Muitas tentativas. Espere um pouco e tente de novo." } }
   [ 429, { "content-type" => "application/json" }, [ body.to_json ] ]

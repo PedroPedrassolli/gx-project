@@ -7,14 +7,23 @@ module Matches
       @room = room
     end
 
-    # A partida nova, ou nil se ainda falta alguém (ou outro pedido já começou o duelo).
+    # A partida nova, ou nil se ainda falta alguém, se um deck deixou de valer ou se outro
+    # pedido já começou o duelo.
     def call
       Room.transaction do
         @room.lock!
         players = @room.players.to_a
         next unless @room.waiting? && players.size == @room.seats && players.all? { |player| player.ready && player.deck_id }
 
-        decks = Deck.includes(deck_cards: :card).where(id: players.map(&:deck_id)).index_by(&:id)
+        decks = Deck.includes(:user, deck_cards: :card).where(id: players.map(&:deck_id)).index_by(&:id)
+        # O deck pode ter mudado depois do "pronto": vale o que ele é agora. Quem ficou com
+        # deck que não vale deixa de estar pronto, e o duelo espera (escopo 3.3).
+        invalid = players.reject { |player| Decks::Validator.for(decks.fetch(player.deck_id), banlist: @room.banlist).valid? }
+        if invalid.any?
+          invalid.each { |player| player.update!(ready: false) }
+          next
+        end
+
         match = Match.create!(room: @room, mode: @room.mode, banlist: @room.banlist, destiny_draw: @room.destiny_draw,
                               seed: Array.new(4) { SecureRandom.random_number(2**63) }, started_at: Time.current)
         # Quem começa sai no sorteio: a pedra, papel e tesoura do escopo (3.7) vem depois.
