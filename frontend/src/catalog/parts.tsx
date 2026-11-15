@@ -13,13 +13,20 @@ import { ATTRIBUTES, BANLIST, RARITIES, label } from "./labels.ts";
 
 // Peças da tela de cartas, usadas no catálogo, na coleção e no Deck Edit.
 
+// Atributo (com a bolinha da cor dele), nível e ATK/DEF. É um span: aparece também dentro
+// do botão da lista, onde parágrafo não pode entrar.
 export function Stats({ card }: { card: CardSummary }) {
   if (card.card_type !== "Monster") return null;
   return (
-    <p className="stats">
-      {label(ATTRIBUTES, card.attribute)} · ★ {card.level} · ATK {card.atk ?? "?"} / DEF{" "}
-      {card.def ?? "?"}
-    </p>
+    <span className="stats">
+      <span className={`attribute attribute-${card.attribute?.toLowerCase()}`}>
+        {label(ATTRIBUTES, card.attribute)}
+      </span>
+      <span>★ {card.level}</span>
+      <span>
+        ATK {card.atk ?? "?"} / DEF {card.def ?? "?"}
+      </span>
+    </span>
   );
 }
 

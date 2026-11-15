@@ -17,6 +17,14 @@
   --dorm-red: #d2444d;
   --dorm-yellow: #e6b940;
   --dorm-blue: #4a80dc;
+  /* A cor da moldura de cada tipo de carta (cards.ts, frame). */
+  --frame-normal: #d9b25f;
+  --frame-effect: #e0823f;
+  --frame-fusion: #a77be0;
+  --frame-ritual: #5b95e8;
+  --frame-synchro: #e6e6ee;
+  --frame-spell: #35b892;
+  --frame-trap: #d85a97;
   --radius: 10px;
   --gutter: clamp(1rem, 4vw, 2rem);
 
@@ -334,11 +342,27 @@ a:focus-visible {
   content: "";
 }
 
+/* Filtros: o nome em cima; tipo de carta, ordem, idioma e "Limpar" numa linha (que quebra
+   no celular); "Mais filtros" por último. */
 .filters {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
-  gap: 0.75rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  align-items: end;
   margin: 1.5rem 0;
+}
+
+.filters > .field:first-child {
+  flex: 1 1 100%;
+}
+
+.filters > .field:not(.wide) {
+  min-width: 11rem;
+}
+
+.filters .more {
+  flex: 1 1 100%;
+  order: 1;
 }
 
 .field {
@@ -359,10 +383,47 @@ a:focus-visible {
   font-size: 0.875rem;
 }
 
+/* Escolha (rádio ou caixa) como ficha: a marcada fica preenchida. No tipo de carta, cada
+   ficha tem a cor da moldura daquele tipo. O campo de verdade fica por cima da ficha,
+   transparente: o clique e o foco continuam nele. */
 .choice {
+  --chip: var(--color-accent);
+
+  position: relative;
   display: inline-flex;
-  gap: 0.35rem;
-  margin-right: 1rem;
+  margin: 0 0.4rem 0.4rem 0;
+  padding: 0.15rem 0.85rem;
+  border: 1px solid var(--color-field-border);
+  border-radius: 999px;
+}
+
+.choice input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border-radius: inherit;
+  appearance: none;
+  cursor: pointer;
+}
+
+.choice:has(input[value="Monster"]) {
+  --chip: var(--frame-effect);
+}
+
+.choice:has(input[value="Spell"]) {
+  --chip: var(--frame-spell);
+}
+
+.choice:has(input[value="Trap"]) {
+  --chip: var(--frame-trap);
+}
+
+.choice:has(input:checked) {
+  border-color: var(--chip);
+  background: var(--chip);
+  color: var(--color-bg);
 }
 
 input[type="search"],
@@ -446,35 +507,36 @@ button {
   list-style: none;
 }
 
-/* Cor da moldura de cada espécie de carta (cards.ts, frame). */
 .frame-normal {
-  --frame: #d9b25f;
+  --frame: var(--frame-normal);
 }
 
 .frame-effect {
-  --frame: #e0823f;
+  --frame: var(--frame-effect);
 }
 
 .frame-fusion {
-  --frame: #a77be0;
+  --frame: var(--frame-fusion);
 }
 
 .frame-ritual {
-  --frame: #5b95e8;
+  --frame: var(--frame-ritual);
 }
 
 .frame-synchro {
-  --frame: #e6e6ee;
+  --frame: var(--frame-synchro);
 }
 
 .frame-spell {
-  --frame: #35b892;
+  --frame: var(--frame-spell);
 }
 
 .frame-trap {
-  --frame: #d85a97;
+  --frame: var(--frame-trap);
 }
 
+/* Cada carta da lista com a moldura do seu tipo, um pouco da cor no fundo e o nome em
+   versaletes. A escolhida ganha o contorno dourado. */
 .card-tile {
   display: flex;
   gap: 0.6rem;
@@ -482,18 +544,27 @@ button {
   width: 100%;
   height: 100%;
   padding: 0.5rem 0.6rem;
-  border: 1px solid var(--color-border);
-  border-left: 6px solid var(--frame);
-  border-radius: 8px;
-  background: var(--color-surface);
+  border: 2px solid color-mix(in srgb, var(--frame) 65%, transparent);
+  border-radius: 6px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--frame) 14%, var(--color-surface)),
+    var(--color-surface) 55%
+  );
   color: var(--color-text);
   font: inherit;
   text-align: left;
 }
 
+.card-tile strong {
+  font-family: var(--font-title);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
 .card-tile[aria-current="true"] {
-  border-color: var(--color-accent);
-  border-left-color: var(--frame);
+  border-color: var(--frame);
+  box-shadow: 0 0 0 2px var(--color-accent);
 }
 
 .tile-text {
@@ -539,28 +610,87 @@ img[hidden] {
   font-size: 0.875rem;
 }
 
+/* Atributo, nível e ATK/DEF lado a lado; o atributo tem a bolinha da sua cor. */
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem 0.75rem;
+}
+
+.attribute::before {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  margin-right: 0.3em;
+  border-radius: 50%;
+  background: var(--attribute, var(--color-muted));
+  content: "";
+}
+
+.attribute-dark {
+  --attribute: #a274e0;
+}
+
+.attribute-light {
+  --attribute: #f0d060;
+}
+
+.attribute-earth {
+  --attribute: #b08a58;
+}
+
+.attribute-water {
+  --attribute: #4f9ae8;
+}
+
+.attribute-fire {
+  --attribute: #e8603f;
+}
+
+.attribute-wind {
+  --attribute: #56b878;
+}
+
+.attribute-divine {
+  --attribute: #e0b030;
+}
+
 .badge {
   justify-self: start;
   margin: 0.25rem 0;
   padding: 0 0.5rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: rgb(216 184 104 / 0.12);
   font-size: 0.8rem;
 }
 
+/* O detalhe é a carta de perto: o nome numa faixa da cor da moldura e o texto numa caixa
+   clara, como na carta. */
 .detail {
-  padding: 1rem 1.25rem;
-  border: 1px solid var(--color-border);
-  border-top: 8px solid var(--frame);
+  padding: 0 1rem 1rem;
+  border: 2px solid var(--frame);
   border-radius: var(--radius);
   background: var(--color-surface);
 }
 
 .detail h2 {
-  margin: 0;
+  margin: 0 -1rem 0.5rem;
+  padding: 0.45rem 1rem;
+  border-radius: calc(var(--radius) - 3px) calc(var(--radius) - 3px) 0 0;
+  background: var(--frame);
+  color: #1d1708;
+}
+
+.detail .stats {
+  margin: 0.25rem 0;
 }
 
 .detail .text {
+  padding: 0.6rem 0.75rem;
+  border-radius: 4px;
+  background: #efe6cf;
+  color: #231c0e;
   white-space: pre-line;
 }
 
@@ -707,17 +837,38 @@ img[hidden] {
   accent-color: var(--color-accent);
 }
 
-/* Progresso da coleção: total e por pacote. */
+/* Progresso da coleção: total e por pacote, com a barra dourada (accent-color). */
 .progress h2 {
   margin-top: 0;
+  font-family: var(--font-text);
   font-size: 1.125rem;
+  letter-spacing: 0;
+}
+
+.progress progress {
+  width: 100%;
+  max-width: 32rem;
+  height: 0.75rem;
 }
 
 .pack-progress {
   display: grid;
-  gap: 0.25rem;
-  padding-left: 1.25rem;
+  gap: 0.6rem;
+  max-width: 32rem;
+  padding: 0;
   color: var(--color-muted);
+  list-style: none;
+}
+
+.pack-progress li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 1rem;
+}
+
+.pack-progress progress {
+  height: 0.4rem;
 }
 
 /* Lista de decks. */
