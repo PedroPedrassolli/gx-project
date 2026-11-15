@@ -15,10 +15,10 @@ const at = (controller: number, location: number, sequence = 0, position = 0x1) 
   position,
 });
 
-test("o turno, a fase principal e a compra viram uma linha para cada lado", () => {
+test("o turno, a Batalha e a compra viram uma linha para cada lado", () => {
   assert.equal(line({ type: "turn", team: 1 }), "Novo turno: vez de Syrus.");
-  assert.equal(line({ type: "phase", phase: 0x08 }), "Fase: Batalha.");
-  assert.equal(line({ type: "phase", phase: 0x20 }), null);
+  assert.equal(line({ type: "phase", phase: 0x08 }), "Fase de Batalha.");
+  assert.equal(line({ type: "phase", phase: 0x04 }), null);
   assert.equal(line({ type: "draw", team: 0, codes: [46986414] }), "Você comprou Mago Negro.");
   assert.equal(line({ type: "draw", team: 1, count: 2 }), "Syrus comprou 2 cartas.");
 });

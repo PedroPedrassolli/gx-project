@@ -99,6 +99,19 @@ export function DuelPage() {
       <p className="duel-status" role="status">
         {status(state, names)}
       </p>
+      {selectedCard && detail.data ? (
+        <section className="card-detail duel-detail" aria-labelledby="detail-title">
+          <Detail card={detail.data} language={language} packs={packs} />
+          <button type="button" className="duel-detail-close" onClick={() => setSelected(null)}>
+            Fechar o detalhe
+          </button>
+        </section>
+      ) : (
+        <section className="duel-detail duel-detail-empty" aria-labelledby="detail-empty-title">
+          <h2 id="detail-empty-title">Carta</h2>
+          <p>Toque numa carta para ver o detalhe dela.</p>
+        </section>
+      )}
       {state.status === "dueling" && state.view.prompt && (
         <PromptPanel
           key={state.seq}
@@ -131,11 +144,6 @@ export function DuelPage() {
           language={language}
         />
       </div>
-      {selectedCard && detail.data && (
-        <section className="card-detail duel-detail" aria-labelledby="detail-title">
-          <Detail card={detail.data} language={language} packs={packs} />
-        </section>
-      )}
     </main>
   );
 }
