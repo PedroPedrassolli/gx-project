@@ -8,6 +8,7 @@ module Duel
 
     # Tipos de mensagem (MSG_* do ocgapi_constants.h) usados fora das perguntas.
     RETRY = 1
+    HINT = 2
     WIN = 5
     NEW_TURN = 40
     NEW_PHASE = 41
@@ -22,6 +23,14 @@ module Duel
       26 => :select_unselect_card, 132 => :rock_paper_scissors, 140 => :announce_race,
       141 => :announce_attrib, 142 => :announce_card, 143 => :announce_number
     }.freeze
+
+    # Dica do que escolher na pergunta seguinte (HINT_SELECTMSG): um texto do próprio jogo
+    # (ex.: 502, a carta para destruir) ou o aux.Stringid de uma carta.
+    SELECT_HINT = 3
+    # As perguntas que podem vir com essa dica; as outras têm texto próprio.
+    HINTED = %i[select_card select_tribute select_sum select_unselect_card select_counter select_disfield
+                select_option select_position sort_card announce_race announce_attrib announce_card
+                announce_number].freeze
 
     module_function
 
@@ -46,6 +55,16 @@ module Duel
 
       reader = ByteReader.new(message.payload)
       { type: name, player: reader.u8 }.merge(PromptFields.public_send(name, reader))
+    end
+
+    # O que a pergunta pede para escolher: a última dica de escolha para quem responde. A
+    # engine manda 0 quando a escolha anterior não aconteceu; aí não há dica.
+    def select_hint(messages, prompt)
+      return unless HINTED.include?(prompt[:type])
+
+      hints = messages.filter_map { |message| message.payload.unpack("CCQ<") if message.type == HINT }
+      _type, _player, data = hints.reverse.find { |type, player, _| type == SELECT_HINT && player == prompt[:player] }
+      data if data.to_i.positive?
     end
 
     # Quem venceu (2 = empate) e o motivo, como a engine informa.

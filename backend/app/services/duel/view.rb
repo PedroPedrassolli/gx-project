@@ -65,6 +65,7 @@ module Duel
       end
       # Só as opções do select_option são descrições; as do announce_number são números.
       shown[:options_text] = shown[:options].map { |option| text(option) } if shown[:type].to_s == "select_option"
+      shown[:hint_text] = text(shown[:hint]) if shown[:hint]
       with_text(shown)
     end
 
