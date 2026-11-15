@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_08_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_15_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -125,6 +125,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_08_140000) do
     t.index ["name"], name: "index_packs_on_name", unique: true
   end
 
+  create_table "room_players", force: :cascade do |t|
+    t.bigint "room_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "deck_id"
+    t.integer "seat", null: false
+    t.boolean "ready", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["deck_id"], name: "index_room_players_on_deck_id"
+    t.index ["room_id", "seat"], name: "index_room_players_on_room_id_and_seat", unique: true
+    t.index ["user_id"], name: "index_room_players_on_user_id", unique: true
+  end
+
+  create_table "rooms", force: :cascade do |t|
+    t.string "code", limit: 6, null: false
+    t.bigint "owner_id", null: false
+    t.boolean "public", default: true, null: false
+    t.string "mode", default: "1x1", null: false
+    t.integer "best_of", default: 1, null: false
+    t.boolean "banlist", default: true, null: false
+    t.boolean "destiny_draw", default: true, null: false
+    t.string "status", default: "waiting", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_rooms_on_code", unique: true
+    t.index ["owner_id"], name: "index_rooms_on_owner_id"
+    t.index ["status", "public", "updated_at"], name: "index_rooms_on_status_and_public_and_updated_at"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
@@ -168,5 +197,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_08_140000) do
   add_foreign_key "decks", "users"
   add_foreign_key "pack_cards", "cards"
   add_foreign_key "pack_cards", "packs"
+  add_foreign_key "room_players", "decks", on_delete: :nullify
+  add_foreign_key "room_players", "rooms"
+  add_foreign_key "room_players", "users"
+  add_foreign_key "rooms", "users", column: "owner_id"
   add_foreign_key "sessions", "users"
 end

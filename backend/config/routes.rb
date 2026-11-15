@@ -23,6 +23,12 @@ Rails.application.routes.draw do
     end
     resource :collection, only: :show
     post "realtime/token" => "realtime_tokens#create", as: :realtime_token
+    resources :rooms, only: %i[index show create], param: :code do
+      member do
+        post :join
+        post :leave
+      end
+    end
     resources :decks, only: %i[index show create update destroy] do
       collection do
         post :validate

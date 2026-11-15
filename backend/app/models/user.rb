@@ -12,6 +12,9 @@ class User < ApplicationRecord
   has_many :sessions, dependent: :destroy
   has_many :collection_cards, dependent: :delete_all
   has_many :decks, dependent: :destroy
+  # Sala de duelo: a vaga do jogador e as salas que ele criou (apagar a conta apaga as duas).
+  has_one :room_player, dependent: :delete
+  has_many :owned_rooms, class_name: "Room", foreign_key: :owner_id, inverse_of: :owner, dependent: :destroy
 
   normalizes :email, with: ->(email) { email.strip.downcase }
   normalizes :nickname, with: ->(nickname) { nickname.strip }
