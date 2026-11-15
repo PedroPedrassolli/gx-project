@@ -11,14 +11,23 @@ class Api::MatchesController < Api::BaseController
     render_error(:conflict, error.message)
   end
 
-  # GET /api/matches/:id
+  # GET /api/matches/:id. O prazo vencido encerra a partida aqui (não há processo esperando o
+  # relógio): quem consulta fica sabendo, e o outro recebe a mesa nova.
   def show
-    render json: { data: state(Matches::Game.new(@match)) }
+    game = Matches::Game.new(@match)
+    publish_to_others(game) if expire(game)
+    render json: { data: state(game) }
   end
 
   # POST /api/matches/:id/responses: { seq, response }. seq é quantas respostas o jogador
   # viu: se a partida andou desde então, 409 e a tela busca a mesa de novo.
   def respond
+    game = Matches::Game.new(@match)
+    if expire(game)
+      publish_to_others(game)
+      return render_error(:conflict, "O tempo acabou.")
+    end
+
     game = Match.transaction do
       # A partida travada: duas respostas ao mesmo tempo esperam uma pela outra.
       set_match(Match.lock)
@@ -32,7 +41,27 @@ class Api::MatchesController < Api::BaseController
     render json: { data: state(game) }
   end
 
+  # POST /api/matches/:id/surrender: quem desiste perde, e a sala volta a esperar.
+  def surrender
+    game = Match.transaction do
+      set_match(Match.lock)
+      Matches::Game.new(@match).tap { |game| game.surrender!(@player.team) }
+    end
+    publish_to_others(game)
+    render json: { data: state(game) }
+  end
+
   private
+
+  # Encerra a partida com o prazo vencido, travada, para duas consultas não encerrarem juntas.
+  def expire(game)
+    return false unless game.expired?
+
+    Match.transaction do
+      @match.lock!
+      game.expire!
+    end
+  end
 
   def set_match(scope = Match)
     @match = scope.includes(:players).find(params[:id])
@@ -44,9 +73,12 @@ class Api::MatchesController < Api::BaseController
                                        indexes: [], places: [], counts: [], order: []).to_h.symbolize_keys
   end
 
-  # A partida vista por um time: quem joga, quantas respostas já houve e a mesa.
+  # A partida vista por um time: quem joga, quantas respostas já houve, o relógio e a mesa.
   def state(game, team = @player.team)
-    { id: @match.id, status: @match.status, winner_team: @match.winner_team, seq: @match.responses.size, you: team,
+    { id: @match.id, status: @match.status, winner_team: @match.winner_team, finish_reason: @match.finish_reason,
+      seq: @match.responses.size, you: team, room_code: @match.room&.code,
+      deadline_at: @match.deadline_at&.iso8601, turn_time_left: @match.turn_time_left,
+      ends_at: (@match.started_at + Matches::Clock::DUEL).iso8601,
       players: @match.players.map { |player| { team: player.team, nickname: nicknames.fetch(player.user_id, "Duelista") } },
       view: game.view(team) }
   end

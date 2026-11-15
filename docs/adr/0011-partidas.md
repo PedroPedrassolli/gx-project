@@ -62,6 +62,16 @@ semente, os decks e a lista de respostas: a engine refaz o resto (ADR 0001).
     mesa: a compra do outro sem as cartas, a carta baixada sem código e a carta que muda de
     lugar só aparece se estava ou fica à vista. O ataque leva o código das cartas com a face
     para cima, lido da mesa logo depois da declaração (antes da batalha).
+14. **O tempo** (`Matches::Clock`, escopo 3.7): cada pergunta tem 90 s; o jogador da vez tem
+    ainda um banco de 5 min para o turno inteiro, que só gasta enquanto a pergunta é dele e
+    volta inteiro no turno seguinte; o duelo inteiro tem 60 min, e no fim ganha quem tem mais
+    PV (iguais, empate). Quem deixa o prazo passar perde, e isso cobre também quem cai e não
+    volta ("desconexão vira derrota depois do prazo"). Não há processo esperando o relógio:
+    a partida vencida se encerra na próxima consulta ou resposta (a tela de quem espera
+    consulta quando o tempo zera). Os números são o padrão do projeto e mudam num lugar só.
+15. **Desistir** (`POST /api/matches/:id/surrender`) encerra a partida com a vitória do
+    outro. Sair da sala no meio do duelo não vale: primeiro se desiste. Em qualquer fim, a
+    sala volta a esperar, com todos "não pronto": a revanche é ficar pronto de novo.
 
 ## Consequências
 

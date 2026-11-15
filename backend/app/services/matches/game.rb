@@ -30,7 +30,33 @@ module Matches
     def respond!(team, choice)
       raise NotYourTurn, "Não é a sua vez." unless @match.dueling? && @match.prompt_team == team
 
+      spend_turn_time(team)
       settle(answer(team, Duel::ResponseEncoder.encode(@match.prompt["type"], choice)))
+    end
+
+    # O prazo da pergunta venceu ou o duelo passou do limite.
+    def expired?(now = Time.current)
+      @match.dueling? && ((@match.deadline_at && now > @match.deadline_at) || now > @match.started_at + Clock::DUEL)
+    end
+
+    # Prazo vencido: quem devia responder perde. Passou do limite do duelo: ganha quem tem
+    # mais PV (iguais, empate). Devolve se a partida acabou agora.
+    def expire!(now = Time.current)
+      return false unless expired?(now)
+
+      if @match.deadline_at && now > @match.deadline_at
+        close(winner: 1 - @match.prompt_team, reason: "timeout")
+      else
+        lp = @session.with_engine { |engine| engine.query_field.map { |side| side[:lp] } }
+        close(winner: (lp.index(lp.max) unless lp.uniq.size == 1), reason: "time_limit")
+      end
+      true
+    end
+
+    def surrender!(team)
+      raise NotYourTurn, "O duelo já acabou." unless @match.dueling?
+
+      close(winner: 1 - team, reason: "surrender")
     end
 
     # A mesa vista por um time (Duel::View), com o que a partida guardou.
@@ -50,7 +76,39 @@ module Matches
 
         messages = answer(prompt[:player], bytes)
       end
+      start_clock if @match.dueling?
       @match.save!
+      reopen_room unless @match.dueling?
+    end
+
+    # A pergunta nova abre agora: o prazo é o da decisão ou o que sobra do banco do turno.
+    def start_clock
+      now = Time.current
+      @match.prompt_at = now
+      @match.deadline_at = Clock.deadline(now, turn_player: @match.prompt_team == @match.turn_team, bank: @match.turn_time_left)
+    end
+
+    # O jogador da vez gasta do banco do turno o tempo que levou para responder.
+    def spend_turn_time(team)
+      return unless team == @match.turn_team && @match.prompt_at
+
+      @match.turn_time_left = [ @match.turn_time_left - (Time.current - @match.prompt_at).to_i, 0 ].max
+    end
+
+    # Fim fora do duelo (prazo, limite, desistência): grava e reabre a sala.
+    def close(winner:, reason:)
+      @match.update!(status: "finished", winner_team: winner, finish_reason: reason, finished_at: Time.current,
+                     prompt: nil, prompt_team: nil, deadline_at: nil)
+      reopen_room
+    end
+
+    # A partida acabou: a sala volta a esperar, com todos "não pronto", para a revanche.
+    def reopen_room
+      room = @match.room
+      return unless room&.status == "dueling"
+
+      room.update!(status: "waiting")
+      room.players.update_all(ready: false)
     end
 
     def answer(team, bytes)
@@ -121,6 +179,7 @@ module Matches
     def new_turn(message)
       @match.turn += 1
       @match.turn_team = message.payload.getbyte(0)
+      @match.turn_time_left = Clock::TURN.to_i
     end
 
     # A resposta que o servidor dá sozinho, ou nil quando a pergunta é do jogador.
@@ -133,7 +192,8 @@ module Matches
 
     # 2 é empate: ninguém vence.
     def finish(win)
-      @match.assign_attributes(status: "finished", winner_team: (win[:player] unless win[:player] == 2), finished_at: Time.current)
+      @match.assign_attributes(status: "finished", winner_team: (win[:player] unless win[:player] == 2), finish_reason: "duel",
+                               finished_at: Time.current, deadline_at: nil)
     end
   end
 end
