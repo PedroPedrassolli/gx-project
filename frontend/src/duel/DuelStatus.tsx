@@ -155,8 +155,23 @@ function RewardsTable({ rewards }: { rewards: Rewards }) {
         <td>{signed(line.dp)}</td>
       </tr>
     ));
+  const challenges = rewards.challenges ?? [];
   return (
     <>
+      {challenges.length > 0 && (
+        <div className="new-challenges">
+          <p>
+            <Link to="/desafios">
+              {challenges.length === 1 ? "Desafio concluído" : "Desafios concluídos"}
+            </Link>
+          </p>
+          <ul>
+            {challenges.map((challenge) => (
+              <li key={challenge.number}>{challenge.label}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <table className="rewards">
         <caption>DP do duelo</caption>
         <tbody>

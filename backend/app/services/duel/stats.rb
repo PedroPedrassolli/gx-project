@@ -327,6 +327,7 @@ module Duel
       return if battle.nil? && @state["resolving"] == team
 
       dealer = 1 - team
+      add(dealer, "damage", amount)
       add(dealer, battle ? "battle_damage" : "effect_damage", amount)
       max(dealer, "max_hit", amount)
       @state["turn_damage"][dealer] += amount

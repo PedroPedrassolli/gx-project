@@ -9,7 +9,8 @@ module StarterDeckCards
         .select { |card| passcodes.include?(card["passcode"]) }
         .map do |card|
           { engine_code: card["passcode"], passcode: card["passcode"], name: card["nome"], card_type: card["tipo"],
-            monster_types: card["tipos"].to_a, source_revision: card["fonte"] }
+            card_attribute: card["atributo"], race: card["raca"], monster_types: card["tipos"].to_a, level: card["nivel"],
+            attack: card["atk"], defense: card["def"], source_revision: card["fonte"] }
         end
     end
   end

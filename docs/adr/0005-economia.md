@@ -102,9 +102,20 @@ farm de DP entre contas combinadas.
   3.000 DP por dia em duelos, 1.500 nas contas com menos de 7 dias. Os valores ficam em
   constantes até existir o admin (F7).
 - **Nível:** cada nível novo paga 400 DP, que também contam para o próximo nível.
+- **Desafios** (GXP-88, `Economy::Challenges`): os 104 do jogo, com o texto em português e a
+  condição de cada um, conferidos no fim do duelo com as estatísticas e com o deck usado
+  (`user_challenges` guarda os concluídos; cada um conta uma vez). Cada desafio concluído paga
+  2 DP em todo duelo (bônus 03). Decisões: "vencer" é vencer na engine (desistência e tempo não
+  concluem desafio, senão dois amigos trocariam desistências); os de contagem (1 a 24 e a
+  moeda) valem ganhando ou não; "deck" é o Deck Principal, a não ser quando o desafio fala do
+  Extra; "só com monstros de..." pede pelo menos um monstro; a série XYZ são as sete cartas (X,
+  Y, Z e as quatro fusões); o deck de 80 cartas do original virou o de 60, o máximo aqui. Três
+  ficam sem condição e aparecem como "Em breve": os dois de Match (F5) e o da trava de
+  Yata-Garasu (a fonte não diz como o jogo reconhece). Os pacotes que pedem "todos os
+  desafios" pedem os 101 que dá para concluir. A página `/desafios` mostra o progresso.
 - **Loja** (GXP-86): `GET /api/shop` traz o saldo, o nível e cada pacote com a dica de como
-  liberar (`Shop::Availability`, pelo `disponibilidade.yml`; missões, desafios e códigos ficam
-  bloqueados até o GXP-88, e a dica nunca mostra o código). `POST /api/shop/purchases` (1 ou 10
+  liberar (`Shop::Availability`, pelo `disponibilidade.yml`; missões e códigos ficam bloqueados
+  até o GXP-89, e a dica nunca mostra o código). `POST /api/shop/purchases` (1 ou 10
   pacotes, com a chave da compra) roda numa transação: jogador travado, pacote liberado,
   débito no razão (`compra:CHAVE`), sorteio (`Shop::Draw`: pesos 75, 18, 5 e 2 entre as
   raridades que o pacote tem) com a semente gravada em `pack_openings` e as cartas na coleção.

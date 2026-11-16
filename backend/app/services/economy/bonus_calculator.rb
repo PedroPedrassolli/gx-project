@@ -53,7 +53,7 @@ module Economy
     def basics(stats, add)
       won = stats[:result] == :win
       add.call("level", "Nível #{stats[:level]}", 2 * stats[:level])
-      add.call("challenges", "#{stats[:challenges]} desafios concluídos", 2 * stats[:challenges].to_i)
+      add.call("challenges", "Desafios concluídos (#{stats[:challenges]})", 2 * stats[:challenges].to_i)
       add.call("loss", "Derrota", 10) if stats[:result] == :loss
       add.call("draw", "Empate", 50) if stats[:result] == :draw
       add.call("turns", "#{stats[:turns]} turnos", (won ? 2 : 1) * stats[:turns])

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_16_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_010000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -260,6 +260,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_000000) do
     t.index ["key_hash"], name: "index_solid_cache_entries_on_key_hash", unique: true
   end
 
+  create_table "user_challenges", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "number", null: false
+    t.bigint "match_id"
+    t.datetime "created_at", null: false
+    t.index ["match_id"], name: "index_user_challenges_on_match_id"
+    t.index ["user_id", "number"], name: "index_user_challenges_on_user_id_and_number", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", null: false
     t.string "password_digest", null: false
@@ -299,4 +308,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_000000) do
   add_foreign_key "room_players", "users"
   add_foreign_key "rooms", "users", column: "owner_id"
   add_foreign_key "sessions", "users"
+  add_foreign_key "user_challenges", "matches", on_delete: :nullify
+  add_foreign_key "user_challenges", "users"
 end

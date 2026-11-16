@@ -73,6 +73,37 @@ class Economy::DuelRewardsTest < ActiveSupport::TestCase
                  rewards(jaden, played)["lines"].pluck("label") & [ "Corrente de 3 elos", "Invocou Gate Guardian", "Usou Illusion Gate" ]
   end
 
+  it "os desafios concluídos ficam com o jogador, aparecem no resultado e pagam 2 DP cada, em todo duelo" do
+    played = match
+    played.update!(stats: { "teams" => [ { "battle_damage" => 10_000, "max_chain" => 5 }, {} ], "state" => { "turn_lp" => [ 8000, 8000 ] } })
+    surrender(played)
+
+    assert_equal [ { "number" => 1, "label" => "Causar 10.000 ou mais de dano de batalha num duelo" }, { "number" => 21, "label" => "Formar uma corrente de 5 elos" } ],
+                 rewards(jaden, played)["challenges"]
+    assert_equal [ [ 1, played.id ], [ 21, played.id ] ], jaden.user_challenges.order(:number).pluck(:number, :match_id)
+    assert_includes rewards(jaden, played)["lines"], { "key" => "challenges", "label" => "Desafios concluídos (2)", "dp" => 4 }
+    assert_empty rewards(syrus, played)["challenges"]
+
+    surrender(match)
+    assert_empty rewards(jaden, Match.last)["challenges"]
+    assert_equal 4, rewards(jaden, Match.last)["lines"].find { |line| line["key"] == "challenges" }["dp"]
+  end
+
+  it "os desafios de vencer olham o deck usado e só valem na vitória da engine" do
+    played = match
+    surrender(played)
+    assert_empty jaden.user_challenges
+
+    again = match
+    again.update!(status: "finished", winner_team: 0, finish_reason: "duel", win_reason: 1, finished_at: Time.current)
+    Economy::DuelRewards.new(again, [ { lp: 8000, deck: 30 }, { lp: 0, deck: 30 } ]).call
+
+    # Sem dano sofrido (27), em 6 turnos (31), com o deck inicial, que só tem monstros Guerreiro
+    # (83) e nenhuma carta da banlist (99), e sem tributo nem invocação (101 a 103).
+    assert_equal [ 27, 31, 83, 99, 101, 102, 103 ], jaden.user_challenges.order(:number).pluck(:number)
+    assert_empty syrus.user_challenges
+  end
+
   it "quem apagou a conta fica de fora" do
     played = match
     syrus.destroy!

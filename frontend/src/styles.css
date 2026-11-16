@@ -1411,6 +1411,53 @@ input[type="file"]::file-selector-button {
 }
 
 /* Some da tela, mas o leitor de tela lê (título da mesa de duelo). */
+/* Os desafios (GXP-88): uma lista numerada; o concluído fica dourado, com a marca à direita. */
+.challenges {
+  padding-left: 2.25rem;
+}
+
+.challenges li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-muted);
+}
+
+.challenges li.done {
+  color: var(--color-text);
+}
+
+.challenges li.done::marker {
+  color: var(--color-accent);
+}
+
+.challenge-state {
+  float: right;
+  margin-left: 0.75rem;
+  color: var(--color-accent);
+  font-size: 0.875rem;
+}
+
+/* No resultado do duelo: os desafios que acabaram de sair, antes do DP. */
+.new-challenges {
+  max-width: 24rem;
+  margin: 0.75rem auto;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  font-family: var(--font-text);
+  font-size: 1rem;
+  text-align: left;
+
+  p {
+    margin: 0 0 0.25rem;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+}
+
 /* A loja (GXP-86): os pacotes numa grade de cartões do mesmo tamanho; o bloqueado fica
    apagado, com a dica de como liberar no lugar dos botões. */
 .shop-balance {

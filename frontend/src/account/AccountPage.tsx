@@ -63,6 +63,9 @@ export function AccountPage() {
         <dt>Nível</dt>
         <dd>{user.level}</dd>
       </dl>
+      <p>
+        <Link to="/desafios">Ver os meus desafios</Link>
+      </p>
 
       <h2>Seus dados</h2>
       <p>Baixe tudo o que guardamos sobre você: conta, coleção e decks, num arquivo JSON.</p>

@@ -22,6 +22,7 @@ Rails.application.routes.draw do
       get :export
     end
     resource :collection, only: :show
+    resources :challenges, only: :index
     resource :shop, only: :show, controller: "shop" do
       post :purchases, action: :purchase
     end
