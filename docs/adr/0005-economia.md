@@ -77,7 +77,26 @@ farm de DP entre contas combinadas.
   exatamente 5.730 (573), deck com menos de 10 (20) e vazio (100), Exodia (50), Contagem Final
   (50), Quadro do Destino (100) e Último Turno (50). As formas de vencer só contam quando o
   duelo acabou na engine: desistência e tempo não valem. Os que precisam das estatísticas do
-  duelo inteiro (dano, destruições, invocações...) vêm no GXP-87.
+  duelo inteiro (dano, destruições, invocações...) estão no item das estatísticas, abaixo.
+- **Estatísticas do duelo** (GXP-87, `Duel::Stats`): a cada jogada, as mensagens da engine
+  viram contas por time em `matches.stats` (dano de batalha, de efeito, direto e refletido;
+  invocações Normal, Virada, Especial, de Tributo, de Fusão e de Ritual; magias e armadilhas
+  ativadas; cartas destruídas, removidas, descartadas e devolvidas; corrente; marcadores de
+  magia; União; moeda; maior ATK). O robô de duelos confere, no fim de cada duelo, que o PV
+  contado bate com o da engine. Com elas entram os bônus 14, 19 e 24 a 50 do Anexo A, o golpe
+  final de Skull Servant (57) e os de invocar ou usar certas cartas (58 a 82, pelo nome no
+  catálogo). O uso de cartas (24 a 31) vale em qualquer vitória; os feitos (32 a 36 e 40 a 50),
+  ganhando ou não.
+  - **Quem fez:** a engine não diz de quem é o efeito que destruiu, removeu ou descartou uma
+    carta. Vale o dono do elo da corrente que está resolvendo; fora de corrente, o oponente do
+    dono da carta. Só contam cartas do oponente.
+  - **Magia ou armadilha ativada** é a carta que acabou de ser virada para cima (da mão ou
+    baixada) e entrou na corrente; o efeito de uma carta que já estava aberta não conta.
+  - **Moeda:** acerto é cair o lado que o jogador disse; na carta que não pergunta, cara. O
+    dado não entra (a fonte não diz o que é ganhar no dado).
+  - **Fora, por falta de regra na fonte:** "nenhuma zona de monstro livre para o oponente"
+    (51), "carta-chave do oponente" (52) e o "New Bonus" (83). Tag e Match (07, 09 e 16) vêm
+    com a F5 e a F6.
 - **Anti-farm** (`Economy::AntiFarm`): duelo com menos de 3 turnos ou de 2 minutos paga só 10
   DP; contra o mesmo oponente no dia (fuso de São Paulo), 100%, 50%, 25% e depois nada; teto de
   3.000 DP por dia em duelos, 1.500 nas contas com menos de 7 dias. Os valores ficam em

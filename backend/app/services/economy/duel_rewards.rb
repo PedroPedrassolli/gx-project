@@ -11,6 +11,7 @@ module Economy
     def initialize(match, field)
       @match = match
       @field = field
+      @duel = Duel::Stats.new(match.stats)
     end
 
     def call
@@ -39,10 +40,19 @@ module Economy
 
     def stats(player, user, opponent)
       side = @field[player.team]
+      duel = @duel.team(player.team)
       result = if @match.winner_team.nil? then :draw elsif @match.winner_team == player.team then :win else :loss end
       { result:, turns: @match.turn, level: user.level, opponent_level: opponent&.level || 1,
         engine_win: @match.finish_reason == "duel", win_reason: @match.win_reason, lp: side[:lp], deck: side[:deck],
-        opponent_turn: @match.turn_team != player.team }
+        opponent_turn: @match.turn_team != player.team, duel:, **card_names(duel) }
+    end
+
+    # Os nomes das cartas que pagam bônus, entre as que o time invocou e usou, e a do golpe
+    # final (as estatísticas guardam o código da engine).
+    def card_names(duel)
+      codes = [ *duel["summoned"], *duel["used"], duel["finisher"] ].compact
+      names = Card.where(engine_code: codes, name: BonusCalculator::CARD_NAMES).pluck(:engine_code, :name).to_h
+      { summoned: names.values_at(*duel["summoned"]).compact, used: names.values_at(*duel["used"]).compact, finisher: names[duel["finisher"]] }
     end
 
     def short? = @match.turn < AntiFarm::SHORT_TURNS || (@match.finished_at - @match.started_at) < AntiFarm::SHORT_TIME

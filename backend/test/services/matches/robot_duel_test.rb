@@ -41,7 +41,16 @@ class Matches::RobotDuelTest < ActiveSupport::TestCase
       answer(game, team, views[team][:prompt], robot, seed)
     end
     assert_equal "finished", match.status, "semente #{seed}: o duelo não acabou em #{MAX_RESPONSES} respostas"
+    assert_stats_follow_the_duel(match, seed)
     robot.seen
+  end
+
+  # As estatísticas (Duel::Stats) acompanham o duelo: o PV que elas contaram mensagem a
+  # mensagem é o da engine no fim.
+  def assert_stats_follow_the_duel(match, seed)
+    field = Duel::Session.new(id: "match-#{match.id}", seed: match.seed, decks: match.players.map { |player| player.deck.deep_symbolize_keys },
+                              responses: match.responses.map(&:bytes), destiny_draw: match.destiny_draw).with_engine(&:query_field)
+    assert_equal field.pluck(:lp), match.stats.dig("state", "lp"), "semente #{seed}: o PV das estatísticas não bate com o da engine"
   end
 
   # Só o nome de carta o robô não sabe se vale (a engine confere os opcodes): tenta outro.

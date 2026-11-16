@@ -146,6 +146,7 @@ module Matches
 
     def record(messages)
       log(Duel::Events.from(messages))
+      count(messages)
       messages.each do |message|
         case message.type
         when Duel::MessageParser::NEW_TURN then new_turn(message)
@@ -160,6 +161,16 @@ module Matches
       @match.prompt = prompt
       @match.prompt_team = prompt&.fetch(:player)
       prompt
+    end
+
+    # As estatísticas do duelo (GXP-87; Duel::Stats), para os bônus de DP e os desafios: conta
+    # as mensagens da jogada e olha o ATK dos monstros que ficaram na mesa.
+    def count(messages)
+      stats = Duel::Stats.new(@match.stats).update(messages)
+      @session.with_engine do |engine|
+        2.times { |team| stats.sample(team, engine.query_location(team, Duel::Query::MONSTERS)) }
+      end
+      @match.stats = stats.to_h
     end
 
     # Registra as mensagens de uma resposta e guarda o quadro quando ela é do turno pedido.
