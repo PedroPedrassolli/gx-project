@@ -34,8 +34,11 @@ class Economy::DuelRewardsTest < ActiveSupport::TestCase
     surrender(played)
 
     won = rewards(jaden, played)
-    assert_equal({ "level" => 2, "turns" => 12, "network_win" => 50, "duelist" => 90 }, won["lines"].to_h { |line| line.values_at("key", "dp") })
-    assert_equal [ 154, [], 154, 1 ], won.values_at("total", "cuts", "balance", "level")
+    # Ninguém jogou nada: o vencedor leva também os bônus de vencer sem magia, sem armadilha e sem
+    # Invocação-Especial (15, 15 e 10).
+    assert_equal({ "level" => 2, "turns" => 12, "network_win" => 50, "duelist" => 90, "no_spells" => 15, "no_traps" => 15, "no_special" => 10 },
+                 won["lines"].to_h { |line| line.values_at("key", "dp") })
+    assert_equal [ 194, [], 194, 1 ], won.values_at("total", "cuts", "balance", "level")
     assert_equal [ 18, 18 ], rewards(syrus, played).values_at("total", "balance")
     assert_equal [ "duel", "partida:#{played.id}", played ], jaden.dp_transactions.sole.then { |line| [ line.reason, line.key, line.ref ] }
   end
@@ -45,7 +48,7 @@ class Economy::DuelRewardsTest < ActiveSupport::TestCase
     assert_equal [ 10, [ "short" ] ], rewards(jaden, Match.last).then { |data| [ data["total"], data["cuts"].pluck("key") ] }
 
     surrender(match)
-    assert_equal [ 77, [ "same_opponent" ] ], rewards(jaden, Match.last).then { |data| [ data["total"], data["cuts"].pluck("key") ] }
+    assert_equal [ 97, [ "same_opponent" ] ], rewards(jaden, Match.last).then { |data| [ data["total"], data["cuts"].pluck("key") ] }
   end
 
   it "o DP ganho sobe o nível, e cada nível novo paga 400" do
@@ -54,7 +57,20 @@ class Economy::DuelRewardsTest < ActiveSupport::TestCase
     surrender(played)
 
     assert_equal [ { "key" => "level_up", "label" => "Subiu para o nível 2", "dp" => 400 } ], rewards(jaden, played)["level_ups"]
-    assert_equal [ 554, 2, 554, 1_544 ], [ rewards(jaden, played)["total"], jaden.reload.level, Economy::Ledger.balance(jaden), jaden.dp_earned ]
+    assert_equal [ 594, 2, 594, 1_584 ], [ rewards(jaden, played)["total"], jaden.reload.level, Economy::Ledger.balance(jaden), jaden.dp_earned ]
+  end
+
+  it "as contas do duelo viram bônus, com o nome das cartas invocadas e usadas" do
+    Card.insert_all!([ [ 1, "Gate Guardian" ], [ 2, "Illusion Gate" ], [ 3, "Skull Servant" ] ].map do |code, name|
+      { engine_code: code, name:, card_type: "Monster", monster_types: [], source_revision: 1 }
+    end)
+    played = match
+    played.update!(stats: { "teams" => [ { "summoned" => [ 1, 9 ], "used" => [ 2 ], "max_chain" => 3, "spells" => 1 }, {} ],
+                            "state" => { "last_hit" => { "team" => 0, "exact" => true, "code" => 3 }, "turn_lp" => [ 8000, 8000 ] } })
+    surrender(played)
+
+    assert_equal [ "Corrente de 3 elos", "Invocou Gate Guardian", "Usou Illusion Gate" ],
+                 rewards(jaden, played)["lines"].pluck("label") & [ "Corrente de 3 elos", "Invocou Gate Guardian", "Usou Illusion Gate" ]
   end
 
   it "quem apagou a conta fica de fora" do
@@ -63,6 +79,6 @@ class Economy::DuelRewardsTest < ActiveSupport::TestCase
     surrender(played)
 
     assert_nil played.players.find_by(team: 1).rewards
-    assert_equal 154, rewards(jaden, played)["total"]
+    assert_equal 194, rewards(jaden, played)["total"]
   end
 end
