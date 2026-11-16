@@ -18,6 +18,9 @@ const Catalog = lazy(() => import("./catalog/Catalog.tsx").then((m) => ({ defaul
 const CollectionPage = lazy(() =>
   import("./collection/CollectionPage.tsx").then((m) => ({ default: m.CollectionPage })),
 );
+const ChallengesPage = lazy(() =>
+  import("./challenges/ChallengesPage.tsx").then((m) => ({ default: m.ChallengesPage })),
+);
 const ShopPage = lazy(() => import("./shop/ShopPage.tsx").then((m) => ({ default: m.ShopPage })));
 const DecksPage = lazy(() =>
   import("./decks/DecksPage.tsx").then((m) => ({ default: m.DecksPage })),
@@ -77,6 +80,7 @@ createRoot(root).render(
             <Route path="cartas" element={<Catalog />} />
             <Route path="colecao" element={<CollectionPage />} />
             <Route path="loja" element={<ShopPage />} />
+            <Route path="desafios" element={<ChallengesPage />} />
             <Route path="decks" element={<DecksPage />} />
             <Route path="decks/:id" element={<DeckEditPage />} />
             <Route path="salas" element={<RoomsPage />} />

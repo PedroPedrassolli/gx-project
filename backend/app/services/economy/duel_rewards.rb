@@ -1,8 +1,8 @@
 module Economy
-  # O DP do fim do duelo (GXP-85; ADR 0005): para cada jogador com conta, os bônus, o
-  # anti-farm, o crédito no razão (chave partida:ID, então nunca paga duas vezes) e a subida de
-  # nível, que paga 400 por nível. O resumo fica no jogador da partida, para a tela de
-  # resultado. Roda na mesma transação que encerra a partida.
+  # O DP do fim do duelo (GXP-85; ADR 0005): para cada jogador com conta, os desafios que ele
+  # concluiu, os bônus, o anti-farm, o crédito no razão (chave partida:ID, então nunca paga
+  # duas vezes) e a subida de nível, que paga 400 por nível. O resumo fica no jogador da
+  # partida, para a tela de resultado. Roda na mesma transação que encerra a partida.
   class DuelRewards
     LEVEL_UP_DP = 400
     ZONE = "America/Sao_Paulo"
@@ -12,6 +12,7 @@ module Economy
       @match = match
       @field = field
       @duel = Duel::Stats.new(match.stats)
+      @challenges = ChallengeProgress.new(match)
     end
 
     def call
@@ -29,12 +30,15 @@ module Economy
     private
 
     def reward(player, user, opponent)
-      lines = BonusCalculator.lines(stats(player, user, opponent))
+      stats = stats(player, user, opponent)
+      progress = @challenges.complete(player, user, stats)
+      challenges = progress[:new].map { |number| { number:, label: Challenges.label(number) } }
+      lines = BonusCalculator.lines(stats.merge(challenges: progress[:total]))
       farm = AntiFarm.apply(lines.sum { |line| line[:dp] }, short: short?, earlier_today: earlier_today(user, opponent),
                                                              earned_today: earned_today(user), new_account: user.created_at > AntiFarm::NEW_ACCOUNT.ago)
       Ledger.post!(user, farm[:total], reason: "duel", key: "partida:#{@match.id}", ref: @match)
       level_ups = level_up(user.reload)
-      player.update!(rewards: { lines:, cuts: farm[:cuts], level_ups:, total: farm[:total] + level_ups.sum { |line| line[:dp] },
+      player.update!(rewards: { lines:, cuts: farm[:cuts], level_ups:, challenges:, total: farm[:total] + level_ups.sum { |line| line[:dp] },
                                 level: user.level, balance: Ledger.balance(user) })
     end
 
@@ -47,11 +51,12 @@ module Economy
         opponent_turn: @match.turn_team != player.team, duel:, **card_names(duel) }
     end
 
-    # Os nomes das cartas que pagam bônus, entre as que o time invocou e usou, e a do golpe
-    # final (as estatísticas guardam o código da engine).
+    # Os nomes das cartas que pagam bônus ou contam para desafio, entre as que o time invocou
+    # e usou, e a do golpe final (as estatísticas guardam o código da engine).
     def card_names(duel)
       codes = [ *duel["summoned"], *duel["used"], duel["finisher"] ].compact
-      names = Card.where(engine_code: codes, name: BonusCalculator::CARD_NAMES).pluck(:engine_code, :name).to_h
+      watched = BonusCalculator::CARD_NAMES + Challenges::CARD_NAMES
+      names = Card.where(engine_code: codes, name: watched).pluck(:engine_code, :name).to_h
       { summoned: names.values_at(*duel["summoned"]).compact, used: names.values_at(*duel["used"]).compact, finisher: names[duel["finisher"]] }
     end
 

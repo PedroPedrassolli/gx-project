@@ -14,6 +14,7 @@ class User < ApplicationRecord
   # A exclusão da conta (LGPD) leva o razão de DP junto (ADR 0005 item 1).
   has_many :dp_transactions, dependent: :delete_all
   has_many :pack_openings, dependent: :delete_all
+  has_many :user_challenges, dependent: :delete_all
   has_many :decks, dependent: :destroy
   # Sala de duelo: a vaga do jogador e as salas que ele criou (apagar a conta apaga as duas).
   has_one :room_player, dependent: :delete

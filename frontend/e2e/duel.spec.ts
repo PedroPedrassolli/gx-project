@@ -337,6 +337,7 @@ test("o resultado mostra o DP do duelo linha por linha, com os cortes e o saldo"
     ],
     cuts: [line("same_opponent", "2º duelo contra o mesmo oponente hoje", -32)],
     level_ups: [line("level_up", "Subiu para o nível 2", 400)],
+    challenges: [{ number: 26, label: "Empatar um duelo" }],
     total: 432,
     level: 2,
     balance: 1666,
@@ -354,6 +355,11 @@ test("o resultado mostra o DP do duelo linha por linha, com os cortes e o saldo"
     "Total+432 DP",
   ]);
   await expect(page.getByText("Saldo: 1.666 DP. Nível 2.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Desafio concluído" })).toHaveAttribute(
+    "href",
+    "/desafios",
+  );
+  await expect(page.getByText("Empatar um duelo")).toBeVisible();
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
 });
