@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_16_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_020000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -54,6 +54,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_010000) do
     t.text "text_pt"
     t.integer "image_code"
     t.index ["engine_code"], name: "index_cards_on_engine_code", unique: true
+  end
+
+  create_table "code_unlocks", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.index ["user_id", "code"], name: "index_code_unlocks_on_user_id_and_code", unique: true
   end
 
   create_table "collection_cards", force: :cascade do |t|
@@ -130,6 +137,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_010000) do
     t.datetime "emote_at"
     t.boolean "always_chain", default: false, null: false
     t.jsonb "rewards"
+    t.boolean "mission_win", default: false, null: false
     t.index ["match_id", "team"], name: "index_match_players_on_match_id_and_team", unique: true
     t.index ["user_id"], name: "index_match_players_on_user_id"
   end
@@ -172,6 +180,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_010000) do
     t.integer "win_reason"
     t.jsonb "stats"
     t.index ["room_id"], name: "index_matches_on_room_id"
+  end
+
+  create_table "mission_completions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "mission", null: false
+    t.string "period", null: false
+    t.bigint "card_id"
+    t.bigint "match_id"
+    t.datetime "created_at", null: false
+    t.index ["card_id"], name: "index_mission_completions_on_card_id"
+    t.index ["match_id"], name: "index_mission_completions_on_match_id"
+    t.index ["user_id", "mission", "period"], name: "index_mission_completions_on_user_id_and_mission_and_period", unique: true
   end
 
   create_table "pack_cards", force: :cascade do |t|
@@ -287,6 +307,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_010000) do
 
   add_foreign_key "banlist_entries", "banlists"
   add_foreign_key "banlist_entries", "cards"
+  add_foreign_key "code_unlocks", "users"
   add_foreign_key "collection_cards", "cards"
   add_foreign_key "collection_cards", "users"
   add_foreign_key "converter_group_cards", "cards"
@@ -299,6 +320,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_010000) do
   add_foreign_key "match_players", "users", on_delete: :nullify
   add_foreign_key "match_responses", "matches"
   add_foreign_key "matches", "rooms", on_delete: :nullify
+  add_foreign_key "mission_completions", "cards"
+  add_foreign_key "mission_completions", "matches", on_delete: :nullify
+  add_foreign_key "mission_completions", "users"
   add_foreign_key "pack_cards", "cards"
   add_foreign_key "pack_cards", "packs"
   add_foreign_key "pack_openings", "packs"

@@ -9,6 +9,8 @@ module Economy
     SHORT_DP = 10
     # Contra o mesmo oponente no mesmo dia: o 1º paga tudo, o 2º metade, o 3º um quarto.
     SAME_OPPONENT = [ 1, 0.5, 0.25, 0 ].freeze
+    # As vitórias contra o mesmo oponente no dia que contam para missão: as que ainda pagam DP.
+    MISSION_WINS = 3
     # Teto diário do DP vindo de duelos, pela metade nas contas com menos de 7 dias.
     DAILY_CAP = 3_000
     NEW_ACCOUNT = 7.days

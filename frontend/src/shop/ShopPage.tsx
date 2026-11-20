@@ -7,7 +7,7 @@ import { useCardLanguage } from "../catalog/language.ts";
 import { RARITIES, label } from "../catalog/labels.ts";
 import { SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
-import { buyPacks, shopKey, useShop, type DrawnCard, type ShopPack } from "./api.ts";
+import { buyPacks, redeemCode, shopKey, useShop, type DrawnCard, type ShopPack } from "./api.ts";
 
 const number = (value: number) => value.toLocaleString("pt-BR");
 
@@ -80,9 +80,74 @@ export function ShopPage() {
               </li>
             ))}
           </ul>
+          <SecretCode onUnlocked={() => client.invalidateQueries({ queryKey: shopKey })} />
         </>
       )}
     </main>
+  );
+}
+
+// Os símbolos do código secreto (escopo 3.4): os botões montam o código, para dar para
+// digitar no celular.
+const SYMBOLS = ["↑", "↓", "←", "→", "×", "○"];
+const SYMBOL_NAMES: Record<string, string> = {
+  "↑": "Cima",
+  "↓": "Baixo",
+  "←": "Esquerda",
+  "→": "Direita",
+  "×": "Xis",
+  "○": "Círculo",
+};
+
+function SecretCode({ onUnlocked }: { onUnlocked: () => void }) {
+  const [code, setCode] = useState("");
+  const redeem = useMutation({
+    mutationFn: () => redeemCode(code),
+    onSuccess: () => {
+      setCode("");
+      onUnlocked();
+    },
+  });
+  return (
+    <section aria-labelledby="secret-code-title" className="secret-code">
+      <h2 id="secret-code-title">Código secreto</h2>
+      <p className="hint">Alguns pacotes só aparecem para quem sabe o código.</p>
+      <p className="code-typed" role="status" aria-label="Código digitado">
+        {code || "…"}
+      </p>
+      <div className="code-keys" role="group" aria-label="Símbolos do código">
+        {SYMBOLS.map((symbol) => (
+          <button
+            key={symbol}
+            type="button"
+            aria-label={SYMBOL_NAMES[symbol]}
+            disabled={code.length >= 16}
+            onClick={() => setCode(code + symbol)}
+          >
+            {symbol}
+          </button>
+        ))}
+      </div>
+      <p className="actions">
+        <button
+          type="button"
+          className="cta"
+          disabled={code === "" || redeem.isPending}
+          onClick={() => redeem.mutate()}
+        >
+          Enviar o código
+        </button>
+        <button type="button" disabled={code === ""} onClick={() => setCode("")}>
+          Apagar
+        </button>
+      </p>
+      {redeem.data && <p role="status">Pacote liberado: {redeem.data.join(" e ")}.</p>}
+      {redeem.error && (
+        <p role="alert" className="form-error">
+          {redeem.error.message}
+        </p>
+      )}
+    </section>
   );
 }
 

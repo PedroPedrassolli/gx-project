@@ -54,6 +54,16 @@ end
 # e as mudanças saem pelo Ably, que tem cota no plano grátis.
 match_path = %r{\A/api/matches/\d+}
 
+# A loja: o código secreto não pode ser adivinhado na força bruta, e a compra e a conversão
+# não precisam de mais do que isso.
+Rack::Attack.throttle("códigos da loja por IP", limit: 10, period: 1.minute) do |request|
+  client_ip.call(request) if request.post? && request.path == "/api/shop/codes"
+end
+
+Rack::Attack.throttle("loja por IP", limit: 60, period: 1.minute) do |request|
+  client_ip.call(request) if request.post? && request.path.start_with?("/api/shop")
+end
+
 # Criar, entrar, sair, ficar pronto e tirar alguém: 60 por minuto por IP.
 Rack::Attack.throttle("salas por IP", limit: 60, period: 1.minute) do |request|
   client_ip.call(request) if request.post? && request.path.start_with?("/api/rooms")

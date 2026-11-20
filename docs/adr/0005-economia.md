@@ -114,13 +114,26 @@ farm de DP entre contas combinadas.
   Yata-Garasu (a fonte não diz como o jogo reconhece). Os pacotes que pedem "todos os
   desafios" pedem os 101 que dá para concluir. A página `/desafios` mostra o progresso.
 - **Loja** (GXP-86): `GET /api/shop` traz o saldo, o nível e cada pacote com a dica de como
-  liberar (`Shop::Availability`, pelo `disponibilidade.yml`; missões e códigos ficam bloqueados
-  até o GXP-89, e a dica nunca mostra o código). `POST /api/shop/purchases` (1 ou 10
+  liberar (`Shop::Availability`, pelo `disponibilidade.yml`; a dica nunca mostra o código, e
+  o catálogo público não traz as regras). `POST /api/shop/purchases` (1 ou 10
   pacotes, com a chave da compra) roda numa transação: jogador travado, pacote liberado,
   débito no razão (`compra:CHAVE`), sorteio (`Shop::Draw`: pesos 75, 18, 5 e 2 entre as
   raridades que o pacote tem) com a semente gravada em `pack_openings` e as cartas na coleção.
   A mesma chave devolve a mesma compra, sem cobrar de novo. A carta "nova" é a que o jogador
   ainda não tinha (só a primeira cópia dela na compra).
+- **Missões** (GXP-89, `Economy::Missions`, `db/seeds/missoes.yml`): contam as vitórias que
+  pagam DP de verdade, isto é, duelo que não é curto e até a 3ª vitória do dia contra o mesmo
+  oponente (`match_players.mission_win`). Assim, dois amigos trocando vitórias não fecham
+  missão. As de torneio liberam pacotes; a "carta da semana" dá a carta da vez, na ordem da
+  lista, uma por semana ISO; a de 10 vitórias seguidas sorteia uma carta da lista e repete
+  sempre (vitória que não conta não quebra nem soma a sequência). `mission_completions`
+  guarda cada uma com o período (`once`, a semana ou a partida), com índice único: a mesma
+  missão nunca paga duas vezes no mesmo período. A página `/desafios` mostra o progresso, e o
+  resultado do duelo mostra a missão concluída.
+- **Código secreto** (GXP-89, `Shop::Code`): os botões ↑ ↓ ← → × ○ da loja montam o código, e
+  `POST /api/shop/codes` libera os pacotes da regra "codigo" para quem acertou
+  (`code_unlocks`). Errar devolve 422 sem dizer nada do código; o Rack::Attack deixa 10
+  tentativas por minuto por IP.
 - **Resultado:** o resumo (linhas, cortes, subida de nível, total, nível e saldo) fica em
   `match_players.rewards`, com os textos prontos, e a mesa devolve o de quem consulta. O saldo
   e o nível também vão no usuário da sessão (topo da página no computador e a página da conta).

@@ -1,5 +1,7 @@
 # A loja (escopo 3.4; GXP-86): a prateleira do jogador e a compra de pacotes.
 class Api::ShopController < Api::BaseController
+  MAX_CODE = 64
+
   before_action :require_authentication
 
   rescue_from Economy::Ledger::InsufficientBalance do
@@ -31,5 +33,14 @@ class Api::ShopController < Api::BaseController
 
     openings = Shop::Purchase.new(current_user, Pack.find(params[:pack_id]), count:, key:).call
     render json: { data: { balance: Economy::Ledger.balance(current_user), openings: openings.map(&:cards) } }, status: :created
+  end
+
+  # POST /api/shop/codes: { code }. O código secreto que libera um pacote. A resposta de erro é
+  # a mesma para qualquer código que não existe, e as tentativas têm limite (Rack::Attack).
+  def code
+    packs = Shop::Code.redeem(current_user, params[:code].to_s.first(MAX_CODE))
+    return render_error(:unprocessable_content, "Esse código não libera nada.") if packs.empty?
+
+    render json: { data: { packs: } }, status: :created
   end
 end

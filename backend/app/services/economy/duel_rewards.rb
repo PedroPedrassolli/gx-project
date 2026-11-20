@@ -34,11 +34,13 @@ module Economy
       progress = @challenges.complete(player, user, stats)
       challenges = progress[:new].map { |number| { number:, label: Challenges.label(number) } }
       lines = BonusCalculator.lines(stats.merge(challenges: progress[:total]))
-      farm = AntiFarm.apply(lines.sum { |line| line[:dp] }, short: short?, earlier_today: earlier_today(user, opponent),
-                                                             earned_today: earned_today(user), new_account: user.created_at > AntiFarm::NEW_ACCOUNT.ago)
+      earlier = earlier_today(user, opponent)
+      farm = AntiFarm.apply(lines.sum { |line| line[:dp] }, short: short?, earlier_today: earlier, earned_today: earned_today(user),
+                                                             new_account: user.created_at > AntiFarm::NEW_ACCOUNT.ago)
+      missions = missions(player, user, stats[:result] == :win && !short? && earlier < AntiFarm::MISSION_WINS)
       Ledger.post!(user, farm[:total], reason: "duel", key: "partida:#{@match.id}", ref: @match)
       level_ups = level_up(user.reload)
-      player.update!(rewards: { lines:, cuts: farm[:cuts], level_ups:, challenges:, total: farm[:total] + level_ups.sum { |line| line[:dp] },
+      player.update!(rewards: { lines:, cuts: farm[:cuts], level_ups:, challenges:, missions:, total: farm[:total] + level_ups.sum { |line| line[:dp] },
                                 level: user.level, balance: Ledger.balance(user) })
     end
 
@@ -49,6 +51,15 @@ module Economy
       { result:, turns: @match.turn, level: user.level, opponent_level: opponent&.level || 1,
         engine_win: @match.finish_reason == "duel", win_reason: @match.win_reason, lp: side[:lp], deck: side[:deck],
         opponent_turn: @match.turn_team != player.team, duel:, **card_names(duel) }
+    end
+
+    # A vitória que conta para missão fica marcada no jogador da partida, e as missões que
+    # chegaram ao objetivo com ela são concluídas (Economy::Missions).
+    def missions(player, user, counts)
+      return [] unless counts
+
+      player.update!(mission_win: true)
+      Missions.new(user).award(@match)
     end
 
     # Os nomes das cartas que pagam bônus ou contam para desafio, entre as que o time invocou

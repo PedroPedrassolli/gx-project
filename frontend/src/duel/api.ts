@@ -70,6 +70,7 @@ export type Rewards = {
   cuts: RewardLine[];
   level_ups: RewardLine[];
   challenges?: { number: number; label: string }[]; // os desafios concluídos neste duelo
+  missions?: { name: string; card: string | null; packs: string[] }[]; // as missões concluídas
   total: number;
   level: number;
   balance: number;

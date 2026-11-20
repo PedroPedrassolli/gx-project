@@ -79,6 +79,20 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     end
   end
 
+  it "barra o 11º código secreto e a 61ª compra do mesmo IP dentro de 1 minuto" do
+    at_noon do
+      10.times { post codes_api_shop_path, params: { code: "↑↑" }, as: :json }
+      _(response.status).must_equal 401
+      post codes_api_shop_path, params: { code: "↑↑" }, as: :json
+      _(response.status).must_equal 429
+
+      50.times { post purchases_api_shop_path, as: :json }
+      _(response.status).must_equal 401
+      post purchases_api_shop_path, as: :json
+      _(response.status).must_equal 429
+    end
+  end
+
   it "barra a 241ª jogada e a 241ª consulta da mesa do mesmo IP, cada uma no seu contador" do
     at_noon do
       240.times { post responses_api_match_path(1), as: :json }

@@ -1,8 +1,8 @@
 require "test_helper"
 
 class Shop::AvailabilityTest < ActiveSupport::TestCase
-  def check(rule, level: 1, day: "terca", total: { owned: 30, cards: 100 }, packs: { "Pack A" => { owned: 1, cards: 4 } }, challenges: 7)
-    Shop::Availability.new(level:, day:, total:, packs:, challenges:).call(rule)
+  def check(rule, level: 1, day: "terca", total: { owned: 30, cards: 100 }, packs: { "Pack A" => { owned: 1, cards: 4 } }, challenges: 7, **more)
+    Shop::Availability.new(level:, day:, total:, packs:, challenges:, **more).call(rule)
   end
 
   it "sempre, nível e dia da semana (ou o nível que libera todo dia)" do
@@ -32,10 +32,17 @@ class Shop::AvailabilityTest < ActiveSupport::TestCase
     assert check(rule, challenges: 101)[:available]
   end
 
-  it "missão e código ainda não existem: bloqueados, com a dica; qualquer uma junta as dicas" do
-    assert_equal "Conclua uma missão (em breve).", check({ "regra" => "missao", "missao" => "torneio_slifer_red" })[:hint]
-    assert_equal "Digite o código secreto na loja (em breve).", check({ "regra" => "codigo", "codigo" => "segredo" })[:hint]
+  it "missão: libera para quem concluiu; código: para quem já digitou, e a dica não mostra o código" do
+    mission = { "regra" => "missao", "missao" => "torneio_slifer_red" }
+    assert_equal({ available: false, hint: "Conclua a missão Torneio Slifer Red." }, check(mission))
+    assert check(mission, missions: [ "torneio_slifer_red" ])[:available]
 
+    code = { "regra" => "codigo", "codigo" => "↑ ↑ ↓ ↓" }
+    assert_equal({ available: false, hint: "Digite o código secreto na loja." }, check(code))
+    assert check(code, codes: [ "↑↑↓↓" ])[:available]
+  end
+
+  it "qualquer uma das regras libera, e a dica junta as que faltam" do
     any = { "regra" => "qualquer", "regras" => [ { "regra" => "porcentagem_do_total", "porcentagem" => 90 }, { "regra" => "todos_os_desafios" },
                                                 { "regra" => "nivel", "nivel" => 50 } ] }
     assert_equal "Tenha 90% de todas as cartas do jogo (você tem 30%), ou conclua todos os desafios (você tem 7 de 101), ou chegue ao nível 50.",
