@@ -36,6 +36,7 @@ mudar o projeto sem quebrar nada.
 | `backend` | `bin/rails dados:jogo` | Baixa de novo da Yugipedia os dados do jogo para `db/seeds/jogo` (uns 3 minutos; veja o README da pasta) |
 | `backend` | `bin/rails dados:cobertura` | Cruza o pool com os scripts da engine e as imagens do YGOPRODeck (depois de atualizar a engine ou os dados) |
 | `backend` | `bin/rails catalogo:importar` | Grava no banco o catálogo dos YAML (cartas, pacotes, banlist e conversor); pode rodar de novo |
+| `backend` | `bin/rails banco:fechar_api` | Liga o RLS em toda tabela e tira os privilégios dos papéis da API de dados do Supabase; o workflow *Banco de produção* roda depois das migrações |
 | `frontend` | `npm test` / `npm run lint` / `npm run typecheck` / `npm run format:check` | Unitários, ESLint, tipos e Prettier |
 | `frontend` | `npm run test:e2e` | Playwright + axe contra o build de produção |
 | `backend` + `frontend` | `DATABASE_URL=postgres:///gx_e2e RAILS_ENV=test bin/rails db:prepare e2e:preparar`, depois `DATABASE_URL=postgres:///gx_e2e npm run test:e2e:full` | Duelo de ponta a ponta com dois navegadores e o Rails de verdade, num banco só dele (a porta 3000 precisa estar livre) |
@@ -94,4 +95,8 @@ mudar o projeto sem quebrar nada.
   Os do Brevo (`BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY` e `MAIL_FROM`) vão no GitHub, e o workflow
   *E-mail na Vercel* copia para a Vercel e publica de novo. A `BACKUP_PASSPHRASE` fica só no
   GitHub: é a senha que criptografa o backup semanal (veja o README).
+- **Tabela nova no banco**: o Supabase publica o schema `public` na API de dados dele. O
+  workflow *Banco de produção* fecha a tabela sozinho depois da migração (`banco:fechar_api`,
+  GXP-92). Não crie política de RLS nem use a API do Supabase: o Rails conecta como dono das
+  tabelas, e o dono não passa pelo RLS.
 - Não apague dados permanentemente (branches, issues, cards, imagens, deploys) sem o Pedro pedir.

@@ -159,6 +159,16 @@ gasta perto do dobro.
   num lugar só, o secret do GitHub; o workflow *Banco de produção* copia para a Vercel
   (Production, Sensitive) pela API, com o `VERCEL_TOKEN`. Assim dá para fazer tudo pelo
   celular.
+- **API de dados do Supabase fechada (GXP-92):** o Supabase publica o schema `public` na API
+  de dados dele (REST e GraphQL). Quem tem a chave anon, que o Supabase trata como pública,
+  lê e grava qualquer tabela sem RLS. O aviso chegou por e-mail em 20/11/2026: nenhuma das
+  23 tabelas tinha RLS. A chave nunca esteve no repositório nem no site, mas não dá para
+  depender disso. O projeto não usa essa API, então o workflow *Banco de produção*, depois
+  das migrações, roda `banco:fechar_api`: RLS ligado, sem política, em toda tabela do
+  `public`, e nenhum privilégio para `anon` e `authenticated`, nas tabelas de hoje e nas que
+  vierem. O Rails conecta como `postgres`, dono das tabelas, e o dono não passa pelo RLS. No
+  painel do Supabase, a Data API e o cadastro do Supabase Auth ficam desligados: o projeto
+  não usa nenhum dos dois.
 
 ## Alternativas descartadas
 
