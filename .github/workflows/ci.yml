@@ -28,6 +28,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: actionlint
         env:
@@ -44,6 +46,14 @@ jobs:
             [ -s actionlint.log ] && echo "::error title=actionlint::$(tr '\n' ' ' < actionlint.log)"
             exit 1
           fi
+
+      # Auditoria de segurança dos workflows: permissões largas, token gravado no disco,
+      # texto de PR virando código. As exceções têm o motivo ao lado do "zizmor: ignore".
+      - name: zizmor
+        env:
+          VERSION: 1.32.0
+        # O pipx já vem no runner e roda a versão fixada sem mexer no Python do sistema.
+        run: pipx run "zizmor==$VERSION" --offline --min-severity medium --format github .github/workflows
 
   backend:
     name: Backend (Rails)
@@ -66,6 +76,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           submodules: recursive
 
       - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1.338.0
@@ -141,6 +152,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           submodules: recursive
 
       - name: Construir a imagem
@@ -205,6 +217,8 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:

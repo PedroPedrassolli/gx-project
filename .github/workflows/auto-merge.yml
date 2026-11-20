@@ -15,7 +15,9 @@
 name: Auto-merge
 
 on:
-  workflow_run:
+  # Precisa da escrita depois da CI de um PR. Seguro aqui: o job nunca roda código do PR e
+  # recusa PR de fork.
+  workflow_run: # zizmor: ignore[dangerous-triggers]
     workflows: [CI]
     types: [completed]
   pull_request:
