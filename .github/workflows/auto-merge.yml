@@ -107,10 +107,11 @@ jobs:
             --subject "$title (#$number)" --body "Mesclado automaticamente: CI aprovada."
           echo "::notice title=Auto-merge::PR #$number mesclado."
 
-          # Mudou migração ou dados do catálogo? O push do merge não dispara o workflow do
-          # banco (mesma regra do GitHub), então ele é chamado aqui.
+          # Mudou migração, dados do catálogo ou o fechamento da API de dados? O push do
+          # merge não dispara o workflow do banco (mesma regra do GitHub), então ele é
+          # chamado aqui.
           files=$(gh api "repos/$REPO/pulls/$number/files" --paginate --jq '.[].filename')
-          if grep -qE '^backend/db/(migrate|seeds)/' <<<"$files"; then
+          if grep -qE '^backend/(db/(migrate|seeds)/|app/services/supabase/|lib/tasks/banco\.rake)' <<<"$files"; then
             gh workflow run banco.yml --repo "$REPO" --ref main
             echo "::notice title=Auto-merge::Banco de produção disparado."
           fi

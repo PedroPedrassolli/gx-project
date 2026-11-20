@@ -1,6 +1,7 @@
 name: Banco de produção
 
-# Roda as migrações e grava o catálogo no Supabase quando a main muda o que vai para o banco.
+# Roda as migrações, fecha a API de dados do Supabase e grava o catálogo quando a main muda
+# o que vai para o banco.
 # O PR mesclado pelo auto-merge não dispara o push (o GitHub não encadeia workflows do
 # GITHUB_TOKEN): nesse caso, o próprio auto-merge chama este workflow.
 # Usa o pooler em modo sessão (porta 5432): ele aceita IPv4, como o runner do GitHub, e a
@@ -15,7 +16,11 @@ name: Banco de produção
 on:
   push:
     branches: [main]
-    paths: ["backend/db/migrate/**", "backend/db/seeds/**"]
+    paths:
+      - "backend/db/migrate/**"
+      - "backend/db/seeds/**"
+      - "backend/app/services/supabase/**"
+      - "backend/lib/tasks/banco.rake"
   workflow_dispatch:
 
 permissions:
@@ -88,6 +93,17 @@ jobs:
         if: steps.secret.outputs.pronto == 'true'
         working-directory: backend
         run: bin/rails db:migrate
+
+      # O Supabase publica o schema public na API de dados dele (REST e GraphQL). A tarefa
+      # liga o RLS em toda tabela e tira os privilégios de anon e authenticated, inclusive
+      # das tabelas que as migrações acabaram de criar (GXP-92). O Rails, dono das tabelas,
+      # não é afetado. Se a tarefa falhar, o passo falha (a atribuição guarda o erro).
+      - name: API de dados fechada
+        if: steps.secret.outputs.pronto == 'true'
+        working-directory: backend
+        run: |
+          resultado=$(bin/rails banco:fechar_api)
+          echo "::notice title=API de dados::$resultado"
 
       - name: Catálogo
         if: steps.secret.outputs.pronto == 'true'
