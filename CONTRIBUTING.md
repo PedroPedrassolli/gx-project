@@ -76,6 +76,11 @@ mudar o projeto sem quebrar nada.
 - **Merge pelo `GITHUB_TOKEN` não dispara workflows**: por isso o `auto-merge.yml` move o
   card do Jira sozinho.
 - Workflows disparados por `workflow_run` ou `status` só usam a versão que está na `main`.
+- **Workflows conferidos pela CI** com o actionlint e o zizmor (segurança). Localmente:
+  `pipx run zizmor==1.32.0 --offline --min-severity medium .github/workflows`. Todo
+  `actions/checkout` leva `persist-credentials: false`, a permissão de escrita fica no job
+  que usa, e texto que vem de PR ou de saída de passo entra no script por `env`, nunca com
+  `${{ }}` dentro do `run`.
 - **Actions fixadas pelo SHA do commit**, com a versão num comentário. Não troque por `@v7`:
   uma tag pode ser movida para outro código. O Dependabot atualiza o SHA e o comentário juntos.
 - **TypeScript 7:** o `typescript-eslint` ainda pede menos que 6.1

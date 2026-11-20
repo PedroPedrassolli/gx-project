@@ -70,8 +70,8 @@ jobs:
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
           # O token pode estar salvo com qualquer um dos dois nomes.
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN || secrets.JIRA_API_KEY }}
-        run: >-
-          .github/scripts/jira-transition.sh
-          "${{ steps.card.outputs.key }}"
-          "${{ steps.card.outputs.target }}"
-          "${{ steps.card.outputs.allowed }}"
+          # As saídas entram por variável, nunca direto no script.
+          KEY: ${{ steps.card.outputs.key }}
+          TARGET: ${{ steps.card.outputs.target }}
+          ALLOWED: ${{ steps.card.outputs.allowed }}
+        run: .github/scripts/jira-transition.sh "$KEY" "$TARGET" "$ALLOWED"

@@ -17,9 +17,9 @@ on:
   # termina. Por isso o gatilho é "status" e não "deployment_status".
   status:
 
+# Só leitura no workflow; cada job pede a escrita de issues que usa.
 permissions:
   contents: read
-  issues: write
 
 env:
   SITE: https://gx-project-two.vercel.app
@@ -34,6 +34,9 @@ jobs:
        contains(github.event.branches.*.name, 'main'))
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
     # Uma verificação por vez. Fica no job (e não no workflow) porque cada deploy gera
     # vários avisos de status: os que são pulados não podem cancelar o que importa.
     concurrency:
@@ -148,6 +151,9 @@ jobs:
       contains(github.event.branches.*.name, 'main')
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
     concurrency:
       group: deploy-failed
       cancel-in-progress: false
