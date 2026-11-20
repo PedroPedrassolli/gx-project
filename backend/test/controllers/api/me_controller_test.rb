@@ -33,7 +33,7 @@ class Api::MeControllerTest < ActionDispatch::IntegrationTest
       _(response.headers["Content-Disposition"]).must_include "filename=\"gx-project-meus-dados.json\""
       file = JSON.parse(response.body)
       _(file["exported_at"]).must_equal "2026-11-08T12:00:00.000-03:00"
-      _(file["account"].keys).must_equal %w[email email_verified_at nickname age_group role terms_accepted_at created_at]
+      _(file["account"].keys).must_equal %w[email email_verified_at nickname age_group role terms_accepted_at created_at level dp_earned]
       _(file["account"]["email"]).must_equal "jaden@example.com"
       _(file["sessions"].size).must_equal 1
       _(file["collection"].sum { |card| card["quantity"] }).must_equal 55
@@ -43,6 +43,30 @@ class Api::MeControllerTest < ActionDispatch::IntegrationTest
       _(file["decks"].first["cards"]).must_include({ "card" => "D.D. Assailant", "section" => "main", "quantity" => 1, "destiny" => true })
       _(response.body).wont_include "password"
       _(response.body).wont_include "Syrus"
+    end
+
+    it "traz também o DP, os pacotes, as partidas, os desafios, as missões e os códigos (F4)" do
+      card = Card.find_by!(name: "D.D. Assailant")
+      pack = Pack.create!(name: "Pacote de teste", position: 99, price: 50, cards_per_pack: 1, source_revision: 1)
+      Economy::Ledger.post!(user, 100, reason: "duel", key: "teste:1", note: "duelo")
+      user.pack_openings.create!(pack:, purchase_key: "k1", position: 0, seed: 1, cards: [ { id: card.id, rarity: "common", new: true } ])
+      match = Match.create!(mode: "1x1", banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current,
+                            status: "finished", winner_team: 0, finished_at: Time.current)
+      match.players.create!(team: 0, seat: 0, user:, deck: { main: [], extra: [] }, rewards: { total: 42 })
+      user.user_challenges.create!(number: 26, match:)
+      user.mission_completions.create!(mission: "carta_da_semana", period: "2026-W46", card:, match:)
+      user.code_unlocks.create!(code: "↑↑↓↓")
+      log_in
+
+      get export_api_me_path
+
+      file = JSON.parse(response.body)
+      _(file["dp"].map { |row| row.slice("amount", "balance_after", "reason") }).must_equal [ { "amount" => 100, "balance_after" => 100, "reason" => "duel" } ]
+      _(file["pack_openings"].map { |row| row.slice("pack", "cards") }).must_equal [ { "pack" => "Pacote de teste", "cards" => [ "D.D. Assailant" ] } ]
+      _(file["matches"].map { |row| row.slice("result", "dp") }).must_equal [ { "result" => "vitória", "dp" => 42 } ]
+      _(file["challenges"].map { |row| row.slice("number", "label") }).must_equal [ { "number" => 26, "label" => "Empatar um duelo" } ]
+      _(file["missions"].map { |row| row.slice("mission", "period", "card") }).must_equal [ { "mission" => "Carta da semana", "period" => "2026-W46", "card" => "D.D. Assailant" } ]
+      _(file["secret_codes"].map { |row| row["code"] }).must_equal [ "↑↑↓↓" ]
     end
   end
 

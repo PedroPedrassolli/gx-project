@@ -338,6 +338,10 @@ test("o resultado mostra o DP do duelo linha por linha, com os cortes e o saldo"
     cuts: [line("same_opponent", "2º duelo contra o mesmo oponente hoje", -32)],
     level_ups: [line("level_up", "Subiu para o nível 2", 400)],
     challenges: [{ number: 26, label: "Empatar um duelo" }],
+    missions: [
+      { name: "Torneio Slifer Red", card: null, packs: ["Test of Luck", "Power of the Heroes"] },
+      { name: "Carta da semana", card: "Toon Kingdom", packs: [] },
+    ],
     total: 432,
     level: 2,
     balance: 1666,
@@ -355,6 +359,13 @@ test("o resultado mostra o DP do duelo linha por linha, com os cortes e o saldo"
     "Total+432 DP",
   ]);
   await expect(page.getByText("Saldo: 1.666 DP. Nível 2.")).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Missão concluída: Torneio Slifer Red" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Pacotes liberados na loja: Test of Luck e Power of the Heroes."),
+  ).toBeVisible();
+  await expect(page.getByText("Você ganhou a carta Toon Kingdom.")).toBeVisible();
   await expect(page.getByRole("link", { name: "Desafio concluído" })).toHaveAttribute(
     "href",
     "/desafios",

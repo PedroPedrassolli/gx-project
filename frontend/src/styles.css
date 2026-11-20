@@ -1411,6 +1411,82 @@ input[type="file"]::file-selector-button {
 }
 
 /* Some da tela, mas o leitor de tela lê (título da mesa de duelo). */
+/* As missões: cartões do mesmo tamanho; a concluída ganha a borda dourada. */
+.missions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.missions li {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0.35rem;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+
+  h3,
+  p {
+    margin: 0;
+  }
+
+  p {
+    color: var(--color-muted);
+    font-size: 0.9375rem;
+  }
+}
+
+.missions li.done {
+  border-color: var(--color-accent);
+}
+
+.missions + .hint {
+  margin-bottom: 2rem;
+}
+
+.mission-progress {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+
+  progress {
+    width: 100%;
+  }
+}
+
+/* O código secreto da loja: seis teclas iguais numa linha. */
+.secret-code {
+  max-width: 24rem;
+  margin-top: 2rem;
+}
+
+.code-typed {
+  min-height: 2.5rem;
+  margin: 0 0 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--color-field-border);
+  border-radius: var(--radius);
+  font-size: 1.25rem;
+  letter-spacing: 0.25em;
+}
+
+.code-keys {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+
+  button {
+    padding: 0.5rem 0;
+    font-size: 1.25rem;
+  }
+}
+
 /* Os desafios (GXP-88): uma lista numerada; o concluído fica dourado, com a marca à direita. */
 .challenges {
   padding-left: 2.25rem;
@@ -1430,9 +1506,16 @@ input[type="file"]::file-selector-button {
   color: var(--color-accent);
 }
 
+/* O texto à esquerda e a marca à direita, na mesma linha mesmo quando o texto quebra. */
+.challenge-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
 .challenge-state {
-  float: right;
-  margin-left: 0.75rem;
+  flex: none;
   color: var(--color-accent);
   font-size: 0.875rem;
 }

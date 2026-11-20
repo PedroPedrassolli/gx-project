@@ -99,3 +99,37 @@ test("comprar abre o pacote: as cartas aparecem uma por uma, com a raridade e as
   expect(sent).toHaveLength(1);
   expect(sent[0]).toMatchObject({ pack_id: 10, count: 1 });
 });
+
+test("o código secreto se monta nos botões e libera o pacote", async ({ page }) => {
+  await mockShop(page);
+  const sent: unknown[] = [];
+  await page.route("**/api/shop/codes", (route) => {
+    const body = route.request().postDataJSON();
+    sent.push(body);
+    if (body.code === "↑↓") {
+      return route.fulfill({ status: 201, json: { data: { packs: ["Midday Constellation"] } } });
+    }
+    return route.fulfill({
+      status: 422,
+      json: { error: { status: 422, message: "Esse código não libera nada." } },
+    });
+  });
+  await page.goto("/loja");
+
+  const send = page.getByRole("button", { name: "Enviar o código" });
+  await expect(send).toBeDisabled();
+  await page.getByRole("button", { name: "Xis" }).click();
+  await send.click();
+  await expect(page.getByRole("alert")).toHaveText("Esse código não libera nada.");
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
+
+  await page.getByRole("button", { name: "Apagar" }).click();
+  await page.getByRole("button", { name: "Cima" }).click();
+  await page.getByRole("button", { name: "Baixo" }).click();
+  await expect(page.getByLabel("Código digitado")).toHaveText("↑↓");
+  await send.click();
+  await expect(page.getByText("Pacote liberado: Midday Constellation.")).toBeVisible();
+  await expect(page.getByLabel("Código digitado")).toHaveText("…");
+  expect(sent).toEqual([{ code: "×" }, { code: "↑↓" }]);
+});

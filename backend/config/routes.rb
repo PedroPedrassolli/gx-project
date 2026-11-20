@@ -25,7 +25,9 @@ Rails.application.routes.draw do
     resources :challenges, only: :index
     resource :shop, only: :show, controller: "shop" do
       post :purchases, action: :purchase
+      post :codes, action: :code
     end
+    resources :missions, only: :index
     post "realtime/token" => "realtime_tokens#create", as: :realtime_token
     resources :matches, only: :show do
       post :responses, on: :member, action: :respond

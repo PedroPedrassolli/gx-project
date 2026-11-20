@@ -55,6 +55,29 @@ class Api::ShopControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ 600, 0 ], [ Economy::Ledger.balance(user), user.pack_openings.count ]
   end
 
+  it "o código secreto libera o pacote; código errado tem sempre a mesma resposta" do
+    pack = Pack.find_by!(name: "Pack B")
+    pack.update!(availability: { "regra" => "qualquer", "regras" => [ { "regra" => "nivel", "nivel" => 10 }, { "regra" => "codigo", "codigo" => "↑ ↑ ↓ ↓" } ] })
+    post codes_api_shop_path, params: { code: "↓↓↑↑" }, as: :json
+    assert_equal [ 422, "Esse código não libera nada." ], [ response.status, response.parsed_body.dig("error", "message") ]
+    post codes_api_shop_path, params: {}, as: :json
+    assert_equal [ 422, 0 ], [ response.status, user.code_unlocks.count ]
+
+    2.times { post codes_api_shop_path, params: { code: " ↑↑ ↓↓ " }, as: :json }
+    assert_equal [ 201, [ "Pack B" ], [ "↑↑↓↓" ] ], [ response.status, response.parsed_body.dig("data", "packs"), user.code_unlocks.pluck(:code) ]
+    get api_shop_path
+    assert_equal [ true, nil ], response.parsed_body.dig("data", "packs").second.values_at("available", "hint")
+  end
+
+  it "o pacote de missão libera para quem concluiu a missão" do
+    get api_shop_path
+    assert_equal [ false, "Conclua a missão Torneio Slifer Red." ], response.parsed_body.dig("data", "packs").last.values_at("available", "hint")
+
+    user.mission_completions.create!(mission: "torneio_slifer_red", period: "once")
+    get api_shop_path
+    assert_equal true, response.parsed_body.dig("data", "packs").last["available"]
+  end
+
   it "sem login, nada" do
     delete api_session_path, as: :json
     get api_shop_path

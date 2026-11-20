@@ -64,7 +64,7 @@ export function AccountPage() {
         <dd>{user.level}</dd>
       </dl>
       <p>
-        <Link to="/desafios">Ver os meus desafios</Link>
+        <Link to="/desafios">Ver as missões e os desafios</Link>
       </p>
 
       <h2>Seus dados</h2>

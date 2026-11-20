@@ -25,6 +25,14 @@ export function useShop(enabled: boolean) {
   });
 }
 
+// O código secreto: devolve os nomes dos pacotes que ele libera.
+export async function redeemCode(code: string) {
+  const response = await request<{ data: { packs: string[] } }>("POST", "/api/shop/codes", {
+    code,
+  });
+  return response.data.packs;
+}
+
 // A chave da compra: a mesma chave devolve a mesma compra (clique duplo, rede que repete).
 export async function buyPacks(pack: ShopPack, count: 1 | 10, key: string) {
   const body = { pack_id: pack.id, count, key };

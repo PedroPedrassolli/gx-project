@@ -61,9 +61,11 @@ module Catalog
                             text_pt: card.text_pt, packs: packs.presence, source: format(SOURCE, card.source_revision) }.compact)
     end
 
+    # Sem a regra de liberação: ela fica só no servidor (a loja diz a cada jogador o que falta),
+    # e a regra "codigo" traz o código secreto (GXP-89).
     def pack_row(pack)
       { id: pack.id, name: pack.name, position: pack.position, price: pack.price, cards_per_pack: pack.cards_per_pack,
-        availability: pack.availability, card_count: pack_rarities(pack.id).size }
+        card_count: pack_rarities(pack.id).size }
     end
 
     def banlist_row(banlist)

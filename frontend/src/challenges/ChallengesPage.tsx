@@ -7,11 +7,22 @@ import { usePageTitle } from "../pageTitle.ts";
 
 type Challenge = { number: number; label: string; done: boolean; possible: boolean };
 type Challenges = { done: number; total: number; challenges: Challenge[] };
+type Mission = {
+  id: string;
+  name: string;
+  goal: string;
+  reward: string;
+  progress: number;
+  target: number;
+  done: boolean;
+  repeats: boolean;
+};
 
-// Os desafios (escopo 3.5; GXP-88): os 104 do jogo, na ordem, com os concluídos marcados.
-// Cada um conta uma vez, e cada desafio concluído paga 2 DP em todo duelo.
+// As missões e os desafios (escopo 3.5; GXP-88 e GXP-89). As missões contam vitórias e
+// liberam pacotes ou dão cartas; os desafios são os 104 do jogo, na ordem, cada um conta uma
+// vez e cada desafio concluído paga 2 DP em todo duelo.
 export function ChallengesPage() {
-  usePageTitle("Desafios");
+  usePageTitle("Missões e desafios");
   const session = useSession();
   const user = session.data?.user;
   const [onlyMissing, setOnlyMissing] = useState(false);
@@ -21,15 +32,55 @@ export function ChallengesPage() {
     enabled: Boolean(user),
   });
 
+  const missions = useQuery({
+    queryKey: ["missions"],
+    queryFn: async () => (await request<{ data: Mission[] }>("GET", "/api/missions")).data,
+    enabled: Boolean(user),
+  });
+
   if (session.isSuccess && !user) {
-    return <SignInFirst title="Desafios" reason="para ver os seus desafios" />;
+    return (
+      <SignInFirst
+        title="Missões e desafios"
+        reason="para ver as suas missões e os seus desafios"
+      />
+    );
   }
   const data = challenges.data;
   const list = data?.challenges.filter((challenge) => !onlyMissing || !challenge.done) ?? [];
 
   return (
     <main className="page narrow">
-      <h1>Desafios</h1>
+      <h1>Missões e desafios</h1>
+      {missions.data && (
+        <section aria-labelledby="missions-title">
+          <h2 id="missions-title">Missões</h2>
+          <ul className="missions">
+            {missions.data.map((mission) => (
+              <li key={mission.id} className={mission.done ? "done" : undefined}>
+                <h3>{mission.name}</h3>
+                <p>
+                  {mission.goal}. {mission.reward}.
+                </p>
+                <p className="mission-progress">
+                  <progress value={mission.progress} max={mission.target} aria-hidden="true" />
+                  <span>
+                    {mission.done
+                      ? mission.repeats
+                        ? "Concluída nesta semana"
+                        : "Concluída"
+                      : `${mission.progress} de ${mission.target}`}
+                  </span>
+                </p>
+              </li>
+            ))}
+          </ul>
+          <p className="hint">
+            Conta a vitória de um duelo com pelo menos 3 turnos e 2 minutos, até 3 por dia contra o
+            mesmo oponente.
+          </p>
+        </section>
+      )}
       {data && (
         <>
           <section aria-labelledby="progress-title" className="progress">
@@ -58,10 +109,12 @@ export function ChallengesPage() {
                 value={challenge.number}
                 className={challenge.done ? "done" : undefined}
               >
-                <span>{challenge.label}</span>
-                <span className="challenge-state">
-                  {challenge.done ? "Concluído" : challenge.possible ? "" : "Em breve"}
-                </span>
+                <div className="challenge-row">
+                  <span>{challenge.label}</span>
+                  <span className="challenge-state">
+                    {challenge.done ? "Concluído" : challenge.possible ? "" : "Em breve"}
+                  </span>
+                </div>
               </li>
             ))}
           </ol>

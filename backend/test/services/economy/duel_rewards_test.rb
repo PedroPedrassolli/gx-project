@@ -104,6 +104,20 @@ class Economy::DuelRewardsTest < ActiveSupport::TestCase
     assert_empty syrus.user_challenges
   end
 
+  it "a vitória que conta para missão: não é de duelo curto e é no máximo a 3ª do dia contra o mesmo oponente" do
+    Economy::Missions.any_instance.expects(:award).times(2).returns([ { name: "Torneio Slifer Red", card: nil, packs: [ "Test of Luck" ] } ])
+    surrender(match(turns: 2))
+    assert_equal [ false, [] ], [ Match.last.players.find_by!(user: jaden).mission_win, rewards(jaden, Match.last)["missions"] ]
+
+    # O duelo curto também é um duelo do dia contra ele: depois dele, contam mais dois.
+    2.times { surrender(match) }
+    assert_equal [ true, false ], Match.last.players.order(:team).pluck(:mission_win)
+    assert_equal [ { "name" => "Torneio Slifer Red", "card" => nil, "packs" => [ "Test of Luck" ] } ], rewards(jaden, Match.last)["missions"]
+
+    surrender(match)
+    assert_equal [ false, [] ], [ Match.last.players.find_by!(user: jaden).mission_win, rewards(jaden, Match.last)["missions"] ]
+  end
+
   it "quem apagou a conta fica de fora" do
     played = match
     syrus.destroy!

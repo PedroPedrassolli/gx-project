@@ -36,7 +36,7 @@ module Shop
       by_rarity = @pack.pack_cards.pluck(:rarity, :card_id).group_by(&:first).transform_values { |rows| rows.map(&:last) }
       drawn = Array.new(@count) { Draw.call(by_rarity, @pack.cards_per_pack, rng) }
       mark_new(drawn)
-      add_to_collection(drawn.flatten)
+      CollectionCard.add!(@user, drawn.flatten.pluck(:id).tally)
       drawn.each_with_index.map do |cards, position|
         @user.pack_openings.create!(pack: @pack, purchase_key: @key, position:, seed:, cards:)
       end
@@ -46,13 +46,6 @@ module Shop
     def mark_new(drawn)
       seen = @user.collection_cards.where(card_id: drawn.flatten.pluck(:id)).pluck(:card_id).to_set
       drawn.flatten.each { |card| card[:new] = seen.add?(card[:id]).present? }
-    end
-
-    def add_to_collection(cards)
-      now = Time.current
-      rows = cards.pluck(:id).tally.map { |card_id, quantity| { user_id: @user.id, card_id:, quantity:, obtained_at: now } }
-      CollectionCard.upsert_all(rows, unique_by: %i[user_id card_id], record_timestamps: true,
-                                      on_duplicate: Arel.sql("quantity = collection_cards.quantity + EXCLUDED.quantity, updated_at = EXCLUDED.updated_at"))
     end
   end
 end

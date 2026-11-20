@@ -158,6 +158,18 @@ function RewardsTable({ rewards }: { rewards: Rewards }) {
   const challenges = rewards.challenges ?? [];
   return (
     <>
+      {rewards.missions?.map((mission) => (
+        <div key={mission.name} className="new-challenges">
+          <p>
+            <Link to="/desafios">Missão concluída: {mission.name}</Link>
+          </p>
+          <p>
+            {mission.card
+              ? `Você ganhou a carta ${mission.card}.`
+              : `Pacotes liberados na loja: ${mission.packs.join(" e ")}.`}
+          </p>
+        </div>
+      ))}
       {challenges.length > 0 && (
         <div className="new-challenges">
           <p>
