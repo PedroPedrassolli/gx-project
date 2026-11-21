@@ -9,9 +9,16 @@ module Economy
   # turno do oponente), duel (as contas do time, de Duel::Stats#team) e summoned, used e
   # finisher (os nomes das cartas invocadas, usadas e a do golpe final).
   #
-  # Ficam de fora: Tag e Match (F5 e F6), "nenhuma zona de monstro livre" e "carta-chave do
-  # oponente" (a fonte não diz como o jogo decide) e o "New Bonus" (sem condição na fonte).
+  # Ficam de fora: Tag (o projeto não terá dupla), Match (melhor de 3, mais tarde), "nenhuma
+  # zona de monstro livre" e "carta-chave do oponente" (a fonte não diz como o jogo decide) e o
+  # "New Bonus" (sem condição na fonte).
+  #
+  # Os dois prêmios do começo são do GX Project, não do jogo de referência: o Pedro pediu em
+  # 20/11/2026 um DP bem mais fácil, também para quem perde (antes, a derrota pagava uns 20 a
+  # 30 DP, menos que o pacote mais barato).
   module BonusCalculator
+    DUEL_PRIZE = 300
+    WIN_PRIZE = 200
     # Os motivos de vitória da engine (ygopro-core e constant.lua dos scripts).
     LP_ZERO = 1
     DECK_OUT = 2
@@ -49,9 +56,11 @@ module Economy
       lines
     end
 
-    # Bônus 02 a 11: o que todo duelo paga.
+    # Os prêmios do GX Project e os bônus 02 a 11: o que todo duelo paga.
     def basics(stats, add)
       won = stats[:result] == :win
+      add.call("prize", "Prêmio do duelo", DUEL_PRIZE)
+      add.call("win_prize", "Prêmio da vitória", WIN_PRIZE) if won
       add.call("level", "Nível #{stats[:level]}", 2 * stats[:level])
       add.call("challenges", "Desafios concluídos (#{stats[:challenges]})", 2 * stats[:challenges].to_i)
       add.call("loss", "Derrota", 10) if stats[:result] == :loss

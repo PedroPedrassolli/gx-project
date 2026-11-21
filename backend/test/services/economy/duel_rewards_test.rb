@@ -34,30 +34,38 @@ class Economy::DuelRewardsTest < ActiveSupport::TestCase
     surrender(played)
 
     won = rewards(jaden, played)
-    # Ninguém jogou nada: o vencedor leva também os bônus de vencer sem magia, sem armadilha e sem
-    # Invocação-Especial (15, 15 e 10).
-    assert_equal({ "level" => 2, "turns" => 12, "network_win" => 50, "duelist" => 90, "no_spells" => 15, "no_traps" => 15, "no_special" => 10 },
+    # Os prêmios do GX Project e, como ninguém jogou nada, os bônus de vencer sem magia, sem
+    # armadilha e sem Invocação-Especial (15, 15 e 10).
+    assert_equal({ "prize" => 300, "win_prize" => 200, "level" => 2, "turns" => 12, "network_win" => 50, "duelist" => 90,
+                   "no_spells" => 15, "no_traps" => 15, "no_special" => 10 },
                  won["lines"].to_h { |line| line.values_at("key", "dp") })
-    assert_equal [ 194, [], 194, 1 ], won.values_at("total", "cuts", "balance", "level")
-    assert_equal [ 18, 18 ], rewards(syrus, played).values_at("total", "balance")
-    assert_equal [ "duel", "partida:#{played.id}", played ], jaden.dp_transactions.sole.then { |line| [ line.reason, line.key, line.ref ] }
+    # 694 DP sobem o Jaden para o nível 3 (a cada 300), e cada nível novo paga 100.
+    assert_equal [ 894, [], 894, 3 ], won.values_at("total", "cuts", "balance", "level")
+    # Quem perde leva o prêmio do duelo e os bônus de sempre: dá para uns três pacotes.
+    assert_equal({ "prize" => 300, "level" => 2, "loss" => 10, "turns" => 6 }, rewards(syrus, played)["lines"].to_h { |line| line.values_at("key", "dp") })
+    assert_equal [ 418, 418, 2 ], rewards(syrus, played).values_at("total", "balance", "level")
+    assert_equal [ [ "duel", "partida:#{played.id}", 694 ], [ "level_up", "nivel:3", 200 ] ],
+                 jaden.dp_transactions.order(:id).map { |line| [ line.reason, line.key, line.amount ] }
   end
 
-  it "duelo curto e o segundo contra o mesmo oponente no dia pagam menos" do
+  it "duelo curto paga só 10, e jogar de novo com a mesma pessoa no dia paga tudo" do
     surrender(match(turns: 2))
     assert_equal [ 10, [ "short" ] ], rewards(jaden, Match.last).then { |data| [ data["total"], data["cuts"].pluck("key") ] }
 
-    surrender(match)
-    assert_equal [ 97, [ "same_opponent" ] ], rewards(jaden, Match.last).then { |data| [ data["total"], data["cuts"].pluck("key") ] }
+    # O 4º duelo do dia contra o Syrus paga a soma inteira das linhas, sem corte.
+    3.times { surrender(match) }
+    data = rewards(jaden, Match.last)
+    assert_equal [ [], data["lines"].sum { |line| line["dp"] } ], [ data["cuts"], data["total"] - data["level_ups"].sum { |line| line["dp"] } ]
   end
 
-  it "o DP ganho sobe o nível, e cada nível novo paga 400" do
-    jaden.update!(dp_earned: 990)
+  it "o DP de duelo sobe o nível, cada nível novo paga 100, e esse DP não conta para o nível" do
+    jaden.update!(dp_earned: 290)
     played = match
     surrender(played)
 
-    assert_equal [ { "key" => "level_up", "label" => "Subiu para o nível 2", "dp" => 400 } ], rewards(jaden, played)["level_ups"]
-    assert_equal [ 594, 2, 594, 1_584 ], [ rewards(jaden, played)["total"], jaden.reload.level, Economy::Ledger.balance(jaden), jaden.dp_earned ]
+    # 290 + 694 = 984 DP ganhos: nível 4, três níveis de uma vez.
+    assert_equal [ { "key" => "level_up", "label" => "Subiu para o nível 4", "dp" => 300 } ], rewards(jaden, played)["level_ups"]
+    assert_equal [ 994, 4, 994, 984 ], [ rewards(jaden, played)["total"], jaden.reload.level, Economy::Ledger.balance(jaden), jaden.dp_earned ]
   end
 
   it "as contas do duelo viram bônus, com o nome das cartas invocadas e usadas" do
@@ -104,18 +112,14 @@ class Economy::DuelRewardsTest < ActiveSupport::TestCase
     assert_empty syrus.user_challenges
   end
 
-  it "a vitória que conta para missão: não é de duelo curto e é no máximo a 3ª do dia contra o mesmo oponente" do
-    Economy::Missions.any_instance.expects(:award).times(2).returns([ { name: "Torneio Slifer Red", card: nil, packs: [ "Test of Luck" ] } ])
+  it "a vitória conta para missão sempre que o duelo não é curto, mesmo contra a mesma pessoa" do
+    Economy::Missions.any_instance.expects(:award).times(4).returns([ { name: "Torneio Slifer Red", card: nil, packs: [ "Test of Luck" ] } ])
     surrender(match(turns: 2))
     assert_equal [ false, [] ], [ Match.last.players.find_by!(user: jaden).mission_win, rewards(jaden, Match.last)["missions"] ]
 
-    # O duelo curto também é um duelo do dia contra ele: depois dele, contam mais dois.
-    2.times { surrender(match) }
+    4.times { surrender(match) }
     assert_equal [ true, false ], Match.last.players.order(:team).pluck(:mission_win)
     assert_equal [ { "name" => "Torneio Slifer Red", "card" => nil, "packs" => [ "Test of Luck" ] } ], rewards(jaden, Match.last)["missions"]
-
-    surrender(match)
-    assert_equal [ false, [] ], [ Match.last.players.find_by!(user: jaden).mission_win, rewards(jaden, Match.last)["missions"] ]
   end
 
   it "quem apagou a conta fica de fora" do
@@ -124,6 +128,6 @@ class Economy::DuelRewardsTest < ActiveSupport::TestCase
     surrender(played)
 
     assert_nil played.players.find_by(team: 1).rewards
-    assert_equal 194, rewards(jaden, played)["total"]
+    assert_equal 894, rewards(jaden, played)["total"]
   end
 end

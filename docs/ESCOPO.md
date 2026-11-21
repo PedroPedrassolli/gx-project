@@ -104,12 +104,12 @@
 - **Conversor:** de 10 a 99 cartas repetidas (nunca uma carta que está num deck sem cópia sobrando) → 1 carta do grupo da quantidade, igual à tabela do jogo.
 
 ### 3.5 Economia (DP, nível e desafios)
-- **DP no fim de cada duelo:** soma dos bônus do Anexo A, calculada a partir das estatísticas do duelo. A tela de resultado mostra linha por linha.
-- **Nível:** inspirado no jogo de referência, onde o nível acompanha o DP ganho e os pacotes liberam entre os níveis 21 e 50: sobe 1 nível a cada 1.000 DP **ganhos** (não gastos), do 1 ao 99, com o valor no admin (ADR 0005).
+- **DP no fim de cada duelo:** soma dos bônus do Anexo A, calculada a partir das estatísticas do duelo, mais dois prêmios do projeto (20/11/2026: o Pedro pediu tudo bem mais fácil, também para quem perde): 300 para todo duelo e mais 200 para quem vence. A tela de resultado mostra linha por linha.
+- **Nível:** inspirado no jogo de referência, onde o nível acompanha o DP ganho e os pacotes liberam entre os níveis 21 e 50: sobe 1 nível a cada 300 DP **ganhos em duelos** (não gastos), do 1 ao 99 (o nível 50 chega em uns 25 duelos). Cada nível novo paga 100 DP, que não contam para o próximo nível (ADR 0005).
 - **Desafios:** os 104, avaliados no fim do duelo pelas estatísticas e pela composição do deck. O progresso fica visível no perfil.
 - **Missões:** liberam o que no jogo saía por minigame, torneio, história ou download: os 8 pacotes que não têm outra regra (quatro torneios) e as 18 cartas que não saem em pacote (carta da semana e visitante do abismo). Lista e números padrão em `backend/db/seeds/missoes.yml`, com os valores no admin.
 - **Razão de DP** (`dp_transactions`): todo crédito e débito tem motivo e saldo. O saldo nunca é editado direto.
-- **Anti-farm** (valores no admin): teto diário de DP vindo de salas (sugestão: 3.000); contra o mesmo oponente no mesmo dia: 100% → 50% → 25% → 0; duelo com menos de 3 turnos ou menos de 2 min só paga a derrota (10 DP); contas com menos de 7 dias têm metade do teto; limite de cadastros por IP.
+- **Anti-farm** (valores no admin): duelo com menos de 3 turnos ou menos de 2 min paga só 10 DP; teto diário de 15.000 DP vindo de duelos; limite de cadastros por IP. O corte por jogar de novo com a mesma pessoa no dia e a metade do teto nas contas novas saíram em 20/11/2026: o projeto é para jogar com a família e os amigos.
 
 ### 3.6 Modos e matchmaking
 | Modo | Entrada | Formato |
@@ -377,5 +377,5 @@ Fontes: Yugipedia (CC BY-SA, dar crédito), guias do GameFAQs e Supercheats (só
 - [x] O que cada pacote de UMD/nota de prova deve exigir aqui? Pela fonte: os dois pacotes de UMD também saem no jogo por "todos os desafios", e fica essa regra.
 - [x] Como liberar os 8 pacotes que no jogo dependem de minigame, torneio ou história? Por missões (3.5): cada pacote ficou com o torneio que o jogo já dava como alternativa.
 - [x] Como conseguir aqui as cartas que no jogo saem só por DLC (13) ou num minigame (5)? Por missões (3.5): a carta da semana, na ordem dos downloads, e o visitante do abismo.
-- [x] Você lembra quanto DP sobe um nível? Regra inspirada no jogo: 1 nível a cada 1.000 DP ganhos (3.5).
+- [x] Você lembra quanto DP sobe um nível? Regra inspirada no jogo: 1 nível a cada 1.000 DP ganhos (3.5). Em 20/11/2026 ficou a cada 300, a pedido do Pedro.
 - [x] Você lembra das chances por raridade dos pacotes? Decisão nossa: pesos 75, 18, 5 e 2 (3.4).

@@ -335,7 +335,7 @@ test("o resultado mostra o DP do duelo linha por linha, com os cortes e o saldo"
       line("turns", "6 turnos", 12),
       line("network_win", "Vitória em rede", 50),
     ],
-    cuts: [line("same_opponent", "2º duelo contra o mesmo oponente hoje", -32)],
+    cuts: [line("daily_cap", "Teto de 15.000 DP por dia em duelos", -32)],
     level_ups: [line("level_up", "Subiu para o nível 2", 400)],
     challenges: [{ number: 26, label: "Empatar um duelo" }],
     missions: [
@@ -354,7 +354,7 @@ test("o resultado mostra o DP do duelo linha por linha, com os cortes e o saldo"
     "Nível 1+2 DP",
     "6 turnos+12 DP",
     "Vitória em rede+50 DP",
-    "2º duelo contra o mesmo oponente hoje−32 DP",
+    "Teto de 15.000 DP por dia em duelos−32 DP",
     "Subiu para o nível 2+400 DP",
     "Total+432 DP",
   ]);
