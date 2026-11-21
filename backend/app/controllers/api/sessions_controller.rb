@@ -26,6 +26,6 @@ class Api::SessionsController < Api::BaseController
 
   def current_duel
     match = current_user && Match.current_for(current_user)
-    { match_id: match.id, room_code: match.room.code } if match
+    { match_id: match.id, room_code: match.room&.code } if match
   end
 end

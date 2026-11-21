@@ -29,6 +29,9 @@ module Characters
     # Quem vem depois na ordem (nil depois do último).
     def after(character) = all[character.position]
 
+    # Quem vem antes na ordem (nil antes do primeiro).
+    def before(character) = (all[character.position - 2] if character.position > 1)
+
     def load
       data = YAML.safe_load_file(FILE)
       groups = data["grupos"].to_h { |group| [ group["id"], Group.new(id: group["id"], name: group["nome"], skill: group["computador"]) ] }

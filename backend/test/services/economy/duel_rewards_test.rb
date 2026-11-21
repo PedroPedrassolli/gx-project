@@ -2,6 +2,7 @@ require "test_helper"
 
 class Economy::DuelRewardsTest < ActiveSupport::TestCase
   include StarterDeckCards
+  include CharacterCards
 
   def player(name, **attributes)
     User.create!(email: "#{name.downcase}@example.com", password: "duelista123", nickname: name, age_group: "18+", **attributes)
@@ -46,6 +47,22 @@ class Economy::DuelRewardsTest < ActiveSupport::TestCase
     assert_equal [ 418, 418, 2 ], rewards(syrus, played).values_at("total", "balance", "level")
     assert_equal [ [ "duel", "partida:#{played.id}", 694 ], [ "level_up", "nivel:3", 200 ] ],
                  jaden.dp_transactions.order(:id).map { |line| [ line.reason, line.key, line.amount ] }
+  end
+
+  it "contra o computador: o bônus do personagem na vitória; desistir paga como duelo curto" do
+    load_character_cards("chumley")
+    duel = ->(winner) do
+      Match.create!(mode: "1x1", banlist: false, destiny_draw: true, seed: [ 1, 2, 3, 4 ], started_at: 10.minutes.ago, turn: 6).tap do |played|
+        played.players.create!(team: 0, seat: 0, user: jaden, deck: { main: [], extra: [] })
+        played.players.create!(team: 1, seat: 1, character: "chumley", deck: { main: [], extra: [] })
+        Matches::Game.new(played).surrender!(1 - winner)
+      end
+    end
+
+    won = rewards(jaden, duel.call(0))
+    assert_equal [ "character", "Vitória contra Chumley", 60 ], won["lines"].find { |line| line["key"] == "character" }.values_at("key", "label", "dp")
+    assert_not won["lines"].any? { |line| line["key"] == "network_win" }
+    assert_equal [ 10, [ "short" ] ], rewards(jaden, duel.call(1)).then { |data| [ data["total"], data["cuts"].pluck("key") ] }
   end
 
   it "duelo curto paga só 10, e jogar de novo com a mesma pessoa no dia paga tudo" do

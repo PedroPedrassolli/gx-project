@@ -29,6 +29,12 @@ class Economy::BonusCalculatorTest < ActiveSupport::TestCase
     assert_includes labels, "Oponente de nível 12"
   end
 
+  it "contra o computador: sem vitória em rede, e o bônus do personagem no lugar do Duelista" do
+    assert_equal({ "level" => 2, "turns" => 12, "character" => 840 }, dp(character: { name: "Yugi", bonus: 840 }))
+    assert_includes labels(character: { name: "Yugi", bonus: 840 }), "Vitória contra Yugi"
+    assert_equal({ "level" => 2, "loss" => 10, "turns" => 6 }, dp(result: :loss, character: { name: "Yugi", bonus: 840 }))
+  end
+
   it "derrota e empate: o próprio bônus e 1 por turno; 2 por desafio concluído" do
     assert_equal({ "level" => 4, "loss" => 10, "turns" => 6 }, dp(result: :loss, level: 2))
     assert_equal({ "level" => 2, "challenges" => 14, "draw" => 50, "turns" => 6 }, dp(result: :draw, challenges: 7))

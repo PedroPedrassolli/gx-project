@@ -129,14 +129,20 @@ class Api::MatchesController < Api::BaseController
       always_chain: @match.players.find { |player| player.team == team }&.always_chain,
       # No fim, o DP que o jogador ganhou, linha por linha (GXP-85; Economy::DuelRewards).
       rewards: @match.players.find { |player| player.team == team }&.rewards,
+      # Contra o computador: o personagem (ADR 0013).
+      character: @match.bot&.character,
       players:, view: game.view(team) }
   end
 
+  # O nome do personagem no lugar do computador; quem apagou a conta vira "Duelista".
   def players
-    @match.players.map { |player| { team: player.team, nickname: nicknames.fetch(player.user_id, "Duelista") }.merge(emote_json(player)) }
+    @match.players.map do |player|
+      nickname = player.character ? Characters::Roster.find(player.character)&.name : nicknames[player.user_id]
+      { team: player.team, nickname: nickname || "Duelista" }.merge(emote_json(player))
+    end
   end
 
-  # Os apelidos numa consulta só; quem apagou a conta vira "Duelista".
+  # Os apelidos numa consulta só.
   def nicknames
     @nicknames ||= User.where(id: @match.players.map(&:user_id)).pluck(:id, :nickname).to_h
   end

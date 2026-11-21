@@ -134,6 +134,9 @@ class Api::RoomsController < Api::BaseController
   # Durante o duelo, o jogador não troca de sala. O duelo com o prazo vencido (os dois saíram
   # da mesa) acaba aqui, por tempo, e não prende ninguém (escopo 3.7: desconexão vira derrota).
   def in_duel?
+    # Contra personagem também: termina ou desiste antes de entrar numa sala.
+    return true if Match.against_character(current_user)
+
     room = current_user.room_player&.room
     return false if room.nil? || room.waiting?
 

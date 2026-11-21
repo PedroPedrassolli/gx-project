@@ -41,6 +41,16 @@ class Api::SessionsControllerTest < ActionDispatch::IntegrationTest
       get api_session_path
       _(response.parsed_body["duel"]).must_be_nil
     end
+
+    it "no duelo contra personagem, a partida vem sem sala" do
+      match = Match.create!(banlist: false, destiny_draw: true, seed: [ 1, 2, 3, 4 ], started_at: Time.current)
+      match.players.create!(team: 0, seat: 0, user:, deck: {})
+      match.players.create!(team: 1, seat: 1, character: "chumley", deck: {})
+      log_in
+      get api_session_path
+
+      _(response.parsed_body["duel"]).must_equal({ "match_id" => match.id, "room_code" => nil })
+    end
   end
 
   describe "POST /api/session" do

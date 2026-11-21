@@ -253,6 +253,12 @@ class Api::RoomsControllerTest < ActionDispatch::IntegrationTest
     owner.post leave_api_room_path(room.code), as: :json
     assert_equal [ 422, "Desista do duelo antes de sair da sala." ], [ owner.response.status, owner.response.parsed_body.dig("error", "message") ]
     assert room.reload.players.exists?(user: jaden)
+
+    # No duelo contra personagem também: não cria sala nem entra numa.
+    match = Match.create!(banlist: false, destiny_draw: true, seed: [ 1, 2, 3, 4 ], started_at: Time.current)
+    match.players.create!(team: 0, seat: 0, user: syrus, deck: {})
+    guest.post api_rooms_path, as: :json
+    assert_equal [ 422, "Você está num duelo." ], [ guest.response.status, guest.response.parsed_body.dig("error", "message") ]
   end
 
   it "duelo com o prazo vencido não prende ninguém: acaba por tempo e o jogador cria outra sala" do

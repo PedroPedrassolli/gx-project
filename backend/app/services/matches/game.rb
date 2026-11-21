@@ -125,10 +125,12 @@ module Matches
       reopen_room
     end
 
-    # O DP do fim do duelo (GXP-85; Economy::DuelRewards), com a mesa como acabou.
+    # O DP do fim do duelo (GXP-85; Economy::DuelRewards), com a mesa como acabou, e a vitória
+    # contra o personagem (Characters::Victory).
     def reward
       field = @session.with_engine { |engine| engine.query_field }
       Economy::DuelRewards.new(@match, field).call
+      Characters::Victory.new(@match).call
     end
 
     # A partida acabou: a sala volta a esperar, com todos "não pronto", para a revanche.
