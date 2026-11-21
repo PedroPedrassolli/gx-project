@@ -1,4 +1,5 @@
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { preconnect } from "react-dom";
 import { request } from "../api.ts";
 import { IMAGES_SITE, type CardDetail, type CardSummary, type Pack } from "./cards.ts";
@@ -55,12 +56,29 @@ export function usePackRarities(pack: string) {
   });
 }
 
-export function useCardDetail(id: number) {
-  return useQuery({
+const cardDetailQuery = (id: number) =>
+  queryOptions({
     queryKey: ["card", id],
     queryFn: () => data<CardDetail>(`/api/cards/${id}`),
-    enabled: id > 0,
     retry: false,
     staleTime: HOUR,
   });
+
+export function useCardDetail(id: number) {
+  return useQuery({ ...cardDetailQuery(id), enabled: id > 0 });
+}
+
+// Busca em segundo plano o detalhe das cartas que podem ser tocadas (as da mesa), para o
+// texto já estar aqui no toque (GXP-107). O que já veio não é pedido de novo, e o pouco de
+// espera deixa a jogada que trouxe as cartas terminar primeiro.
+export function usePrefetchCardDetails(ids: number[]) {
+  const client = useQueryClient();
+  const key = ids.join(",");
+  useEffect(() => {
+    if (!key) return;
+    const timer = setTimeout(() => {
+      for (const id of key.split(",")) void client.prefetchQuery(cardDetailQuery(Number(id)));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [client, key]);
 }

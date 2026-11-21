@@ -151,6 +151,35 @@ test("clicar numa carta mostra o detalhe dela", async ({ page }) => {
   await expect(page.getByText("O mago supremo.")).toBeVisible();
 });
 
+test("a carta tocada abre na hora; o texto das cartas da mesa já vem buscado", async ({ page }) => {
+  await mockMatch(page);
+  // O texto do dragão demora: a carta aparece antes, com o nome e os números.
+  await page.route("**/api/cards/2", async (route) => {
+    await new Promise((done) => setTimeout(done, 3000));
+    await route.fulfill({
+      json: { data: { ...CARDS[1], text: "Um dragão lendário.", source: "https://yugipedia.com" } },
+    });
+  });
+  const asked = new Set<string>();
+  page.on("request", (request) => {
+    const path = new URL(request.url()).pathname;
+    if (/^\/api\/cards\/\d+$/.test(path)) asked.add(path);
+  });
+  await page.goto("/duelo/5");
+
+  // Ninguém tocou em nada: as cartas à vista (mão, campo e cemitério) já foram pedidas.
+  await expect
+    .poll(() => [...asked].sort())
+    .toEqual(["/api/cards/1", "/api/cards/2", "/api/cards/3"]);
+  await page
+    .getByRole("list", { name: "Monstros de JadenYuki" })
+    .getByRole("button", { name: /Blue-Eyes White Dragon/ })
+    .click();
+  await expect(page.getByRole("heading", { name: "Blue-Eyes White Dragon" })).toBeVisible();
+  await expect(page.getByText("Carregando o texto…")).toBeVisible();
+  await expect(page.getByText("Um dragão lendário.")).toBeVisible();
+});
+
 test("sem tempo real, o fim do duelo aparece na próxima consulta", async ({ page }) => {
   const match = await mockMatch(page);
   await page.goto("/duelo/5");

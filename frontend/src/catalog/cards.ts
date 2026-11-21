@@ -28,7 +28,7 @@ export type CardDetail = CardSummary & {
   text_pt?: string;
   text_pt_unofficial?: boolean; // o português é tradução nossa, não a oficial
   packs?: { id: number; rarity: string }[];
-  source: string;
+  source?: string; // sem ele, a carta ainda é só o resumo do catálogo (o detalhe está chegando)
 };
 
 // O texto da carta no idioma escolhido e o aviso que vai embaixo dele, quando há: sem

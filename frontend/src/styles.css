@@ -625,13 +625,30 @@ button {
   height: auto;
 }
 
-.detail-image {
-  display: block;
+/* A miniatura fica por baixo, esticada, enquanto a imagem grande não chega. */
+.detail-image-box {
+  position: relative;
   width: 100%;
   max-width: 268px;
-  height: auto;
   margin: 1rem auto;
+}
+
+.detail-image,
+.detail-image-thumb {
+  display: block;
+  width: 100%;
   border-radius: 10px;
+}
+
+.detail-image {
+  position: relative;
+  height: auto;
+}
+
+.detail-image-thumb {
+  position: absolute;
+  inset: 0;
+  height: 100%;
 }
 
 img[hidden] {
