@@ -107,8 +107,8 @@
 ### 3.4 Loja, pacotes e conversor
 - Pacotes, preço, conteúdo, raridade por carta e regra de disponibilidade **iguais ao jogo de referência** (dados levantados na F0).
 - Regras de disponibilidade suportadas: sempre; dia da semana, com nível que libera todos os dias; nível mínimo; % de outro pacote; % de todas as cartas; código secreto; desafio concluído; qualquer uma de várias regras. Pacote bloqueado aparece com a dica de como liberar. A regra de cada pacote está em `backend/db/seeds/jogo/disponibilidade.yml` (ADR 0006).
-- Compra de 1 ou 10 pacotes. O sorteio é feito no servidor, com semente registrada, e cada abertura fica guardada. Toda a compra roda numa transação, com chave de idempotência.
-- Probabilidade por raridade: o jogo de referência não informa (Anexo B). Cada carta do pacote sorteia primeiro a raridade, com os pesos comum 75, rara 18, super rara 5 e ultra rara 2 (padrão, no admin), só entre as raridades que o pacote tem, e depois uma carta dessa raridade (ADR 0005).
+- Compra de 1 ou 10 pacotes, abertos um por vez. O sorteio é feito no servidor, com semente registrada, e cada abertura fica guardada. Toda a compra roda numa transação, com chave de idempotência.
+- Probabilidade por raridade: o jogo de referência não informa (Anexo B). Cada carta do pacote sorteia primeiro a raridade, com os pesos comum 75, rara 18, super rara 5 e ultra rara 2 (padrão, no admin), só entre as raridades que o pacote tem, e depois uma carta dessa raridade. A última carta do pacote é a de raridade aumentada: sai rara ou melhor (ADR 0005).
 - **Conversor:** de 10 a 99 cartas repetidas (nunca uma carta que está num deck sem cópia sobrando) → 1 carta do grupo da quantidade, igual à tabela do jogo.
 
 ### 3.5 Economia (DP, nível e desafios)

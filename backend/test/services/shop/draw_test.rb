@@ -15,6 +15,25 @@ class Shop::DrawTest < ActiveSupport::TestCase
     end
   end
 
+  it "a última carta do pacote sai rara ou melhor, nos pesos 18, 5 e 2, e vem marcada" do
+    lasts = Array.new(5_000) { |seed| Shop::Draw.call(BY_RARITY, 5, Random.new(seed)).last }
+    shares = lasts.pluck(:rarity).tally.transform_values { |count| count / 50.0 }
+
+    assert_nil shares["common"]
+    { "rare" => 72, "super_rare" => 20, "ultra_rare" => 8 }.each do |rarity, share|
+      assert_in_delta share, shares[rarity], 3.0, rarity
+    end
+    assert(lasts.all? { |card| card[:rare_slot] })
+  end
+
+  it "só a última carta é a garantida; num pacote sem rara, ela sai comum e sem marca" do
+    assert_equal [ nil, nil, nil, nil, true ], Shop::Draw.call(BY_RARITY, 5, Random.new(3)).pluck(:rare_slot)
+
+    only_common = Shop::Draw.call({ "common" => [ 1 ] }, 5, Random.new(3))
+    assert_equal [ "common" ] * 5, only_common.pluck(:rarity)
+    assert_nil only_common.last[:rare_slot]
+  end
+
   it "só sorteia entre as raridades que o pacote tem" do
     cards = Shop::Draw.call({ "rare" => [ 3 ], "ultra_rare" => [ 5 ] }, 500, Random.new(1))
 
