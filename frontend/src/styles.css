@@ -473,6 +473,13 @@ button {
   cursor: pointer;
 }
 
+/* Botão desativado: apagado e sem a mãozinha, para ninguém tentar o que não faz sentido
+   agora (GXP-117). O motivo, quando não é óbvio, aparece em texto ao lado. */
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .reset {
   align-self: end;
 }
@@ -1784,6 +1791,13 @@ input[type="file"]::file-selector-button {
   h2 {
     color: var(--color-muted);
   }
+}
+
+/* Por que o botão ao lado está desativado (GXP-117): o baú, a linha do deck no máximo. */
+.chest-reason,
+.row-max {
+  color: var(--color-muted);
+  font-size: 0.8125rem;
 }
 
 .pack-price,

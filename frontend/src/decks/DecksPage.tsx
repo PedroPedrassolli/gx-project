@@ -10,6 +10,9 @@ import { usePageTitle } from "../pageTitle.ts";
 type Created = { data: Deck; meta?: { warnings: string[] } };
 
 // Os decks do jogador: abrir, criar um vazio ou importar de um arquivo (escopo 3.3).
+// O mesmo limite do servidor (Deck::LIMIT_PER_USER): no limite, criar e importar desativam.
+const DECK_LIMIT = 50;
+
 export function DecksPage() {
   usePageTitle("Decks");
   const session = useSession();
@@ -50,6 +53,7 @@ export function DecksPage() {
   if (session.isSuccess && !user) {
     return <SignInFirst title="Decks" reason="para montar seus decks" />;
   }
+  const atLimit = (decks.data?.length ?? 0) >= DECK_LIMIT;
 
   return (
     <main className="page">
@@ -63,12 +67,18 @@ export function DecksPage() {
         <button
           type="button"
           className="cta"
-          disabled={create.isPending}
+          disabled={create.isPending || atLimit}
+          aria-describedby={atLimit ? "deck-limit" : undefined}
           onClick={() => create.mutate()}
         >
           Criar deck novo
         </button>
       </p>
+      {atLimit && (
+        <p id="deck-limit" className="hint">
+          Você chegou ao limite de {DECK_LIMIT} decks: apague um para criar ou importar outro.
+        </p>
+      )}
       {decks.data && (
         <ul className="deck-list">
           {decks.data.map((deck) => (
@@ -108,7 +118,8 @@ export function DecksPage() {
         <button
           type="submit"
           className="cta"
-          disabled={importDeck.isPending || content.trim() === ""}
+          disabled={importDeck.isPending || content.trim() === "" || atLimit}
+          aria-describedby={atLimit ? "deck-limit" : undefined}
         >
           Importar
         </button>

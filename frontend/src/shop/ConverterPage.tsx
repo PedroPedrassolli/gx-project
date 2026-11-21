@@ -38,6 +38,8 @@ export function ConverterPage() {
   const data = converter.data;
   const total = Object.values(chosen).reduce((sum, quantity) => sum + quantity, 0);
   const ready = data !== undefined && total >= data.min && total <= data.max;
+  // Quanto ainda cabe até o máximo: no máximo, "+" e "Todas" desativam (GXP-117).
+  const room = data ? data.max - total : 0;
   const rows = (data?.cards ?? [])
     .map((row) => ({ ...row, card: catalog.data?.byId.get(row.card_id) }))
     .filter((row): row is typeof row & { card: CardSummary } => row.card !== undefined)
@@ -90,7 +92,7 @@ export function ConverterPage() {
                 ? "Nenhuma carta escolhida."
                 : `${total} ${total === 1 ? "carta escolhida" : "cartas escolhidas"}.`}
               {data && total > 0 && total < data.min && ` Faltam ${data.min - total}.`}
-              {data && total > data.max && ` Passou ${total - data.max} do máximo.`}
+              {data && total >= data.max && ` Chegou ao máximo de ${data.max}.`}
             </p>
             <p className="actions">
               <button
@@ -148,7 +150,7 @@ export function ConverterPage() {
                     <button
                       type="button"
                       aria-label={`Uma a mais de ${name}`}
-                      disabled={count >= spare}
+                      disabled={count >= spare || room <= 0}
                       onClick={() => choose(card.id, count + 1)}
                     >
                       +
@@ -157,8 +159,8 @@ export function ConverterPage() {
                       type="button"
                       className="converter-all"
                       aria-label={`Todas as ${spare} repetidas de ${name}`}
-                      disabled={count >= spare}
-                      onClick={() => choose(card.id, spare)}
+                      disabled={count >= spare || room <= 0}
+                      onClick={() => choose(card.id, Math.min(spare, count + room))}
                     >
                       Todas
                     </button>

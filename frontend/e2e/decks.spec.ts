@@ -208,11 +208,17 @@ test("põe cartas do baú no deck, até 3 cópias, e mostra o detalhe", async ({
   await expect(chest.getByRole("status")).toHaveText("3 cartas");
 
   await chest.getByRole("button", { name: "Pôr Mago Negro no Main Deck" }).click();
-  await chest.getByRole("button", { name: "Pôr Mago Negro no Main Deck" }).click();
   await expect(page.getByRole("button", { name: "Main Deck (4)" })).toBeVisible();
-  await expect(chest.getByRole("listitem").filter({ hasText: "Mago Negro" })).toContainText(
-    "Tenho 3 · no deck 3",
-  );
+  const magician = chest.getByRole("listitem").filter({ hasText: "Mago Negro" });
+  await expect(magician).toContainText("Tenho 3 · no deck 3");
+  // Na terceira cópia, os dois botões desativam e o baú diz por quê; a linha do deck também.
+  await expect(chest.getByRole("button", { name: "Pôr Mago Negro no Main Deck" })).toBeDisabled();
+  await expect(chest.getByRole("button", { name: "Pôr Mago Negro no Side Deck" })).toBeDisabled();
+  await expect(magician).toContainText("Já tem 3 no deck.");
+  await expect(
+    page.getByRole("button", { name: "Pôr mais uma cópia de Mago Negro" }),
+  ).toBeDisabled();
+  await expect(page.getByText("(já tem 3 no deck)")).toBeVisible();
 
   await chest
     .getByRole("button", { name: "Pôr Elemental HERO Flame Wingman no Extra Deck" })
@@ -284,4 +290,23 @@ test("arrasta carta do baú para o Side e uma linha do deck de volta para o baú
     .filter({ hasText: "Pote da Ganância" })
     .dragTo(chest);
   await expect(page.getByRole("button", { name: "Main Deck (2)" })).toBeVisible();
+});
+
+test("no limite de 50 decks, criar e importar desativam e a página diz por quê", async ({
+  page,
+}) => {
+  await mockDeckApi(page);
+  const many = Array.from({ length: 50 }, (_, i) => ({
+    id: 100 + i,
+    name: `Deck ${i + 1}`,
+    updated_at: deck.updated_at,
+    counts: { main: 40, extra: 0, side: 0 },
+  }));
+  await page.route("**/api/decks", (route) => route.fulfill({ json: { data: many } }));
+  await page.goto("/decks");
+
+  await expect(page.getByRole("button", { name: "Criar deck novo" })).toBeDisabled();
+  await expect(page.getByText("Você chegou ao limite de 50 decks")).toBeVisible();
+  await page.getByLabel("Lista do deck").fill("3 Dark Magician");
+  await expect(page.getByRole("button", { name: "Importar" })).toBeDisabled();
 });

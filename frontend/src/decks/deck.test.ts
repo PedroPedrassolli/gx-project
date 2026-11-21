@@ -1,7 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { CardSummary } from "../catalog/cards.ts";
-import { deckErrors, editDeck, sectionCount, type DeckRow } from "./deck.ts";
+import {
+  addBlocked,
+  deckErrors,
+  deckSizeProblem,
+  editDeck,
+  sectionCount,
+  type DeckRow,
+} from "./deck.ts";
 
 // Cartas 1 a 21 são monstros comuns; 100 é de Fusão; 50 está proibida e 51 é limitada.
 const cards = new Map<number, CardSummary>(
@@ -102,4 +109,39 @@ test("mover passa uma cópia para outra seção", () => {
   });
 
   assert.deepEqual(rows, [row(1, "main", 1, true), row(1, "side", 1)]);
+});
+
+test("o baú diz por que não dá para pôr mais uma: 3 cópias no deck ou a seção cheia", () => {
+  const three = [row(1, "main", 2), row(1, "side", 1)];
+  assert.equal(addBlocked(three, 1, "main"), "Já tem 3 no deck.");
+  assert.equal(addBlocked(three, 1, "side"), "Já tem 3 no deck.");
+
+  const full = Array.from({ length: 20 }, (_, i) => row(i + 1, "main", 3));
+  assert.equal(addBlocked(full, 21, "main"), "Main Deck cheio.");
+  assert.equal(addBlocked(full, 21, "side"), undefined);
+  // A banlist depende da sala, e o deck pode ser rascunho: proibida e repetida entram.
+  assert.equal(addBlocked([], 50, "main"), undefined);
+});
+
+test("seção cheia não cresce, nem pelo botão, nem arrastando, nem mandando do Side", () => {
+  const full = Array.from({ length: 20 }, (_, i) => row(i + 1, "main", 3));
+  const withSide = [...full, row(21, "side", 1)];
+
+  assert.deepEqual(editDeck(full, { type: "add", cardId: 21, section: "main" }), full);
+  assert.deepEqual(
+    editDeck(withSide, { type: "move", cardId: 21, from: "side", to: "main" }),
+    withSide,
+  );
+});
+
+test("a contagem já diz quando o deck não duela, antes de ir ao servidor", () => {
+  assert.equal(deckSizeProblem({ main: 40, extra: 15, side: 15 }), undefined);
+  assert.equal(
+    deckSizeProblem({ main: 3, extra: 0, side: 0 }),
+    "O Main Deck tem 3 cartas: precisa ter de 40 a 60.",
+  );
+  assert.equal(
+    deckSizeProblem({ main: 40, extra: 0, side: 16 }),
+    "O Side Deck tem 16 cartas: pode ter até 15.",
+  );
 });

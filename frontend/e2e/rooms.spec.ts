@@ -47,6 +47,12 @@ const DECKS = [
     updated_at: "2026-11-14T12:00:00Z",
     counts: { main: 3, extra: 0, side: 0 },
   },
+  {
+    id: 9,
+    name: "Proibidas",
+    updated_at: "2026-11-14T12:00:00Z",
+    counts: { main: 40, extra: 0, side: 0 },
+  },
 ];
 
 // API falsa das salas, sem tempo real (o token responde 503): a tela consulta a sala.
@@ -66,14 +72,14 @@ async function mockRoom(page: Page, room: Room = ROOM) {
   });
   await page.route("**/api/rooms/ABC234/ready", (route) => {
     const body = route.request().postDataJSON();
-    if (body.deck_id === "8") {
+    if (body.deck_id === "9") {
       return route.fulfill({
         status: 422,
         json: {
           error: {
             status: 422,
             message: "Este deck não vale nesta sala.",
-            fields: { deck: ["Main Deck: tem 3 cartas, precisa de 40 a 60."] },
+            fields: { deck: ["Pot of Greed está proibida."] },
           },
         },
       });
@@ -118,15 +124,46 @@ test("mostra os lugares e as opções, e fica pronto com um deck", async ({ page
   expect(results.violations).toEqual([]);
 });
 
-test("deck que não vale na sala mostra o que falta", async ({ page }) => {
+test("sem deck ou com deck incompleto, 'Estou pronto' desativa e diz o que falta", async ({
+  page,
+}) => {
   await mockRoom(page);
   await page.goto("/salas/ABC234");
+  const ready = page.getByRole("button", { name: "Estou pronto" });
+  await expect(ready).toBeDisabled();
+  await expect(page.getByText("Escolha um deck para ficar pronto.")).toBeVisible();
+
   await page.getByLabel("Deck", { exact: true }).selectOption("Vazio");
+  await expect(ready).toBeDisabled();
+  await expect(page.getByText("O Main Deck tem 3 cartas: precisa ter de 40 a 60.")).toBeVisible();
+});
+
+test("deck que o servidor recusa na sala mostra o que falta", async ({ page }) => {
+  await mockRoom(page);
+  await page.goto("/salas/ABC234");
+  await page.getByLabel("Deck", { exact: true }).selectOption("Proibidas");
   await page.getByRole("button", { name: "Estou pronto" }).click();
 
   const alert = page.getByRole("alert");
   await expect(alert).toContainText("Este deck não vale nesta sala.");
-  await expect(alert).toContainText("Main Deck: tem 3 cartas, precisa de 40 a 60.");
+  await expect(alert).toContainText("Pot of Greed está proibida.");
+});
+
+test("sala cheia: quem chega pelo link não tem como entrar, e a sala diz por quê", async ({
+  page,
+}) => {
+  await mockRoom(page, {
+    ...ROOM,
+    owner_id: 2,
+    players: [
+      { ...ME, user_id: 2, nickname: "Syrus" },
+      { ...ME, seat: 1, user_id: 3, nickname: "Chumley" },
+    ],
+  });
+  await page.goto("/salas/ABC234");
+
+  await expect(page.getByRole("button", { name: "Entrar na sala" })).toBeDisabled();
+  await expect(page.getByText("A sala está cheia.")).toBeVisible();
 });
 
 test("sem tempo real, quem chega aparece na próxima consulta", async ({ page }) => {

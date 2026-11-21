@@ -77,8 +77,10 @@ test("a prateleira mostra o saldo, o preço, o selo de novo e a dica dos bloquea
   await expect(locked).toContainText("Chegue ao nível 27.");
   await expect(locked).not.toContainText("Novo");
   await expect(locked.getByRole("button")).toHaveCount(0);
-  // 10 pacotes custam 500: o saldo não dá.
+  // 10 pacotes custam 500: o saldo não dá, e a prateleira diz quanto falta.
   await expect(page.getByRole("button", { name: "Comprar 10 (500 DP)" })).toBeDisabled();
+  await expect(page.getByText("Faltam 380 DP para comprar 10.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Comprar 1", exact: true })).toBeEnabled();
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
 });

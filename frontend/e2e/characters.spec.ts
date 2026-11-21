@@ -143,6 +143,31 @@ test("o motivo da recusa aparece no modal, e Cancelar fecha", async ({ page }) =
   await expect(page).toHaveURL(/\/personagens$/);
 });
 
+test("deck incompleto não começa o duelo: o modal diz o que falta e leva ao Deck Edit", async ({
+  page,
+}) => {
+  await mockSession(page, { loggedIn: true });
+  await mockCharacters(page, {
+    decks: [
+      {
+        id: 5,
+        name: "Rascunho",
+        updated_at: "2026-11-21T12:00:00Z",
+        counts: { main: 12, extra: 0, side: 0 },
+      },
+    ],
+  });
+  await page.goto("/personagens?duelar=syrus");
+
+  const dialog = page.getByRole("dialog", { name: "Duelar contra Syrus" });
+  await expect(dialog.getByRole("button", { name: "Começar o duelo" })).toBeDisabled();
+  await expect(dialog).toContainText("O Main Deck tem 12 cartas: precisa ter de 40 a 60.");
+  await expect(dialog.getByRole("link", { name: "Abrir no Deck Edit" })).toHaveAttribute(
+    "href",
+    "/decks/5",
+  );
+});
+
 test("bloqueado não abre pelo endereço; sem deck, manda montar um", async ({ page }) => {
   await mockSession(page, { loggedIn: true });
   await mockCharacters(page, { decks: [] });

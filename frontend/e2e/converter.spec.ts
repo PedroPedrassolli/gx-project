@@ -88,3 +88,19 @@ test("sem repetidas, manda para a loja; a loja leva ao conversor", async ({ page
   await expect(page).toHaveURL("/loja/conversor");
   await expect(page.getByText("Você ainda não tem cartas repetidas para trocar.")).toBeVisible();
 });
+
+test("não passa do máximo: Todas completa até 99 e o + desativa", async ({ page }) => {
+  await mockConverter(page, [
+    { card_id: 1, quantity: 70 },
+    { card_id: 2, quantity: 40 },
+  ]);
+  await page.goto("/loja/conversor");
+
+  await page.getByRole("button", { name: "Todas as 70 repetidas de Mago Negro" }).click();
+  await page.getByRole("button", { name: "Todas as 40 repetidas de Pote da Ganância" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "escolhidas" })).toHaveText(
+    "99 cartas escolhidas. Chegou ao máximo de 99.",
+  );
+  await expect(page.getByRole("button", { name: "Uma a mais de Pote da Ganância" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Converter 99 cartas" })).toBeEnabled();
+});
