@@ -36,8 +36,16 @@ const REASONS: Record<string, (loser: string) => string> = {
 export function DuelStatus(props: Props) {
   const { state } = props;
   const finished = state.status === "finished";
+  // No fim, o resultado fica abaixo da mesa: a página rola até ele, para o jogador ver o DP,
+  // as missões e os desafios sem procurar.
+  const area = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!finished) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    area.current?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+  }, [finished]);
   return (
-    <div className={finished ? "duel-status-area duel-result" : "duel-status-area"}>
+    <div ref={area} className={finished ? "duel-status-area duel-result" : "duel-status-area"}>
       {/* O mesmo aviso anuncia a vez e, no fim, o resultado: o leitor de tela só lê o que
           muda dentro de uma região que já estava na página. */}
       <div className="duel-status" role="status">

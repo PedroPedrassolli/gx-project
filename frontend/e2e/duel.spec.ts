@@ -359,6 +359,8 @@ test("o resultado mostra o DP do duelo linha por linha, com os cortes e o saldo"
     "Total+432 DP",
   ]);
   await expect(page.getByText("Saldo: 1.666 DP. Nível 2.")).toBeVisible();
+  // A página rola até o resultado: não precisa procurar embaixo da mesa.
+  await expect(page.getByRole("table", { name: "DP do duelo" })).toBeInViewport();
   await expect(
     page.getByRole("link", { name: "Missão concluída: Torneio Slifer Red" }),
   ).toBeVisible();
