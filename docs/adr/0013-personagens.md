@@ -43,7 +43,14 @@ aqui deve ser possível vencer."
    validação do jogador, olhando só a mesa que um jogador veria do lado dele (`Duel::View`).
    Joga por regras simples (invocar o mais forte, atacar o que vence, ativar a armadilha no
    ataque ou na invocação do oponente) e, quando a regra não sabe o que fazer, escolhe ao acaso
-   entre as opções válidas, como o robô dos testes.
+   entre as opções válidas, como o robô dos testes (`Bots::RandomPlayer`, que saiu de
+   `test/support` para `app/`). Nos alunos, 20% das escolhas são ao acaso de propósito e só 60%
+   das armadilhas saem na hora; nos chefes, 7% e 90%; nas lendas, nenhuma e todas.
+8. **No `Matches::Game`:** o lugar do computador é um `match_players` sem conta e com o
+   `character` preenchido. Depois de cada resposta, o jogo responde sozinho tudo o que é do
+   computador até a pergunta voltar para o jogador. Se a engine recusar a jogada dele, ele
+   tenta ao acaso (até 50 vezes); se nada valer, desiste e o jogador vence (não deveria
+   acontecer; fica no log).
 
 ## Consequências
 

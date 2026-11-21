@@ -2,13 +2,18 @@ module Matches
   # O duelo de uma partida na engine (ADR 0011): a Duel::Session com a semente, os decks e as
   # respostas do banco. Guarda na partida o turno, a fase e a pergunta da vez, e responde
   # sozinho o que não precisa de jogador: a cadeia sem opção (escopo 3.7: só pergunta quem
-  # pode responder, a não ser que o jogador peça "sempre perguntar") e a zona da carta que vai
-  # para o campo (Matches::AutoPlace).
+  # pode responder, a não ser que o jogador peça "sempre perguntar"), a zona da carta que vai
+  # para o campo (Matches::AutoPlace) e, no duelo contra personagem, tudo o que é do
+  # computador (Bots::Player; ADR 0013).
   class Game
     # "Não encadear" (-1), a resposta da cadeia sem opção.
     PASS = [ -1 ].pack("l<")
     # Quantos eventos a partida guarda para o log da mesa (GXP-65).
     MAX_EVENTS = 50
+    # Quantas jogadas o computador tenta numa pergunta antes de desistir do duelo: quando a
+    # engine recusa a da regra dele, ele tenta ao acaso entre as opções válidas (declarar o
+    # nome de uma carta pode precisar de várias).
+    BOT_TRIES = 50
 
     # cache: onde ficam as engines vivas; o replay passa um só dele (Matches::Replay).
     def initialize(match, cache: Duel::Session::CACHE)
@@ -86,11 +91,8 @@ module Matches
 
     def settle(messages)
       loop do
-        prompt = record(messages)
-        bytes = automatic(prompt)
-        break unless bytes
-
-        messages = answer(prompt[:player], bytes)
+        messages = reply(record(messages))
+        break unless messages
       end
       start_clock if @match.dueling?
       @match.save!
@@ -240,6 +242,52 @@ module Matches
       @match.turn += 1
       @match.turn_team = message.payload.getbyte(0)
       @match.turn_time_left = Clock.turn_bank(@match.decision_seconds)
+    end
+
+    # As mensagens depois da resposta automática ou da do computador; nil quando a pergunta
+    # espera um jogador ou o duelo acabou.
+    def reply(prompt)
+      bytes = automatic(prompt)
+      return answer(prompt[:player], bytes) if bytes
+
+      bot_reply(prompt) if prompt && bot?(prompt[:player])
+    end
+
+    def bot?(team) = @match.players.any? { |player| player.team == team && player.character.present? }
+
+    # O computador responde com a mesa que ele vê (a mesma da tela do jogador daquele lado),
+    # pela mesma validação do jogador.
+    def bot_reply(prompt)
+      team = prompt[:player]
+      table = view(team)
+      choice = bot(team).choose(table)
+      BOT_TRIES.times do
+        return answer(team, Duel::ResponseEncoder.encode(prompt[:type], choice))
+      rescue Duel::ResponseEncoder::InvalidChoice, Duel::Session::InvalidResponse
+        choice = bot(team).guess(table[:prompt])
+      end
+      bot_gives_up(team, prompt)
+    end
+
+    # Um computador por time, enquanto a partida está carregada: ele lembra o alvo do ataque
+    # entre uma pergunta e a seguinte. O jeito de jogar vem do grupo do personagem.
+    def bot(team)
+      @bots ||= {}
+      @bots[team] ||= begin
+        player = @match.players.find { |item| item.team == team }
+        deck = player.deck.deep_symbolize_keys
+        Bots::Player.new(team:, skill: Characters::Roster.find(player.character)&.skill || 3,
+                         random: Random.new(@match.seed.first + @match.responses.size), codes: deck[:main] + deck[:extra])
+      end
+    end
+
+    # Nenhuma jogada valeu: o computador desiste e o jogador vence. Não deveria acontecer; o log
+    # diz em qual pergunta foi.
+    def bot_gives_up(team, prompt)
+      Rails.logger.error("Partida #{@match.id}: o computador desistiu na pergunta #{prompt[:type]}.")
+      @match.assign_attributes(status: "finished", winner_team: 1 - team, finish_reason: "surrender", finished_at: Time.current,
+                               deadline_at: nil, prompt: nil, prompt_team: nil)
+      nil
     end
 
     # A resposta que o servidor dá sozinho, ou nil quando a pergunta é do jogador.

@@ -200,4 +200,37 @@ class Matches::GameTest < ActiveSupport::TestCase
     assert_nil second[:prompt]
     assert_equal first[:sides][0][:hand].size, second[:sides][0][:hand].count { |card| card[:hidden] }
   end
+
+  # O computador no lugar 0 (Chumley), com 40 monstros normais; o outro lado é um jogador.
+  def bot_match
+    match = Match.create!(mode: "1x1", banlist: false, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current)
+    match.players.create!(team: 0, seat: 0, character: "chumley", deck: { main: [ CHAMBERLAIN ] * 40, extra: [] })
+    match.players.create!(team: 1, seat: 1, deck: { main: [ CHAMBERLAIN ] * 40, extra: [] })
+    match
+  end
+
+  it "o computador joga o turno dele sozinho e deixa a pergunta para o jogador" do
+    match = bot_match
+    Matches::Game.new(match).start!
+
+    assert_equal [ 1, 2 ], [ match.prompt_team, match.turn ]
+    assert_equal 1, Matches::Game.new(match).view(1)[:sides][0][:monsters].compact.size
+  end
+
+  it "quando a engine recusa a jogada do computador, ele tenta ao acaso entre as válidas" do
+    Bots::Player.any_instance.stubs(:choose).returns({ command: "voar" })
+    match = bot_match
+    Matches::Game.new(match).start!
+
+    assert_equal 1, match.prompt_team
+  end
+
+  it "o computador desiste quando nenhuma jogada vale, e o jogador vence" do
+    Bots::Player.any_instance.stubs(:choose).returns({ command: "voar" })
+    Bots::Player.any_instance.stubs(:guess).returns({ command: "voar" })
+    match = bot_match
+    Matches::Game.new(match).start!
+
+    assert_equal [ "finished", 1, "surrender", nil ], [ match.status, match.winner_team, match.finish_reason, match.prompt ]
+  end
 end
