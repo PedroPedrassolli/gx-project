@@ -1845,6 +1845,15 @@ input[type="file"]::file-selector-button {
   }
 }
 
+/* A carta de raridade aumentada (a última do pacote) já brilha virada. */
+.drawn.back.rare-slot {
+  box-shadow: 0 0 0.6rem color-mix(in srgb, var(--color-accent) 55%, transparent);
+
+  .drawn-tags {
+    color: var(--color-accent);
+  }
+}
+
 .drawn-name {
   display: -webkit-box;
   min-height: 2.6em;

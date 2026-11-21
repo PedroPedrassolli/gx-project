@@ -14,7 +14,8 @@ export type ShopPack = {
 
 export type Shop = { balance: number; level: number; packs: ShopPack[] };
 
-export type DrawnCard = { id: number; rarity: string; new: boolean };
+// rare_slot: a carta de raridade aumentada do pacote (a última), que sai rara ou melhor.
+export type DrawnCard = { id: number; rarity: string; new: boolean; rare_slot?: boolean };
 
 export const shopKey = ["shop"];
 

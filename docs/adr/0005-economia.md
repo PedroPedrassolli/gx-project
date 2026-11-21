@@ -52,6 +52,9 @@ farm de DP entre contas combinadas.
    fonte não traz as chances do jogo, então cada carta do pacote sorteia primeiro a
    raridade, com os pesos comum 75, rara 18, super rara 5 e ultra rara 2 (padrão, no
    admin), só entre as raridades que o pacote tem, e depois uma carta dessa raridade.
+   A última carta de cada pacote é a de raridade aumentada, como no jogo: sorteia só entre
+   rara, super rara e ultra rara (18, 5 e 2), quando o pacote tem alguma, e vem marcada
+   (`rare_slot`) para a abertura avisar (pedido do Pedro em 21/11/2026; GXP-108).
    Comprar 1 ou 10 pacotes é uma transação só, com uma chave.
 8. **Conversor** (`Shop::Converter`): uma transação, com o sorteio do mesmo jeito (semente
    gravada). Nunca consome a cópia que um deck usa sem cópia sobrando (escopo, 3.4).
