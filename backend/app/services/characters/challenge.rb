@@ -13,21 +13,26 @@ module Characters
     end
 
     def call
-      Match.transaction do
-        # Dois toques seguidos no botão esperam um pelo outro: só um duelo começa.
-        @user.lock!
-        check!
-        match = Match.create!(mode: "1x1", banlist: false, destiny_draw: true, decision_seconds: nil, duel_minutes: nil, turn_time_left: 0,
-                              seed: Array.new(4) { SecureRandom.random_number(2**63) }, started_at: Time.current)
-        player, bot = [ 0, 1 ].shuffle(random: SecureRandom)
-        match.players.create!(user: @user, team: player, seat: player, deck: Decks::Snapshot.of(@deck))
-        match.players.create!(character: @character.id, team: bot, seat: bot, deck: bot_deck)
-        Matches::Game.new(match).start!
-        match
-      end
+      match = Match.transaction { create_match }
+      # Duelo novo é a hora de tirar do banco os replays vencidos, como no duelo de sala.
+      Matches::Cleanup.call
+      match
     end
 
     private
+
+    def create_match
+      # Dois toques seguidos no botão esperam um pelo outro: só um duelo começa.
+      @user.lock!
+      check!
+      match = Match.create!(mode: "1x1", banlist: false, destiny_draw: true, decision_seconds: nil, duel_minutes: nil, turn_time_left: 0,
+                            seed: Array.new(4) { SecureRandom.random_number(2**63) }, started_at: Time.current)
+      player, bot = [ 0, 1 ].shuffle(random: SecureRandom)
+      match.players.create!(user: @user, team: player, seat: player, deck: Decks::Snapshot.of(@deck))
+      match.players.create!(character: @character.id, team: bot, seat: bot, deck: bot_deck)
+      Matches::Game.new(match).start!
+      match
+    end
 
     def check!
       raise Refused, "Vença #{Roster.before(@character).name} para liberar #{@character.name}." unless Progress.new(@user).unlocked?(@character)

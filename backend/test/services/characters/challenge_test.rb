@@ -26,6 +26,14 @@ class Characters::ChallengeTest < ActiveSupport::TestCase
     assert_equal Card.where(name: "Master of Oz").pick(:engine_code), bot.deck["extra"].first
   end
 
+  it "tira do banco os replays vencidos, como o duelo de sala" do
+    load_character_cards("chumley")
+    old = Match.create!(banlist: false, destiny_draw: true, seed: [ 1, 2, 3, 4 ], started_at: 40.days.ago, status: "finished", finished_at: 31.days.ago)
+    challenge
+
+    assert_not Match.exists?(old.id)
+  end
+
   it "recusa o personagem ainda bloqueado" do
     error = assert_raises(Characters::Challenge::Refused) { challenge(Characters::Roster.find("syrus")) }
 
