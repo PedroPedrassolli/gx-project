@@ -141,6 +141,9 @@ class Api::MatchesControllerTest < ActionDispatch::IntegrationTest
     outsider = session_for(player("Chazz"))
     outsider.get replay_api_match_path(match)
     assert_equal 404, outsider.response.status
+    # Turno que não é número (até um hash na URL) cai no primeiro, sem erro 500.
+    session.get "#{replay_api_match_path(match)}?turn[a]=1"
+    assert_equal [ 200, 1 ], [ session.response.status, session.response.parsed_body.dig("data", "turn") ]
   end
 
   it "a frase vai para o outro na hora, aparece na mesa por alguns segundos e tem limite" do

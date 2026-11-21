@@ -106,6 +106,30 @@ class RackAttackTest < ActionDispatch::IntegrationTest
     end
   end
 
+  it "barra o 11º duelo contra personagem do mesmo IP dentro de 1 minuto: cada um liga a engine" do
+    at_noon do
+      10.times { post duels_api_character_path("chumley"), as: :json }
+      _(response.status).must_equal 401
+      post duels_api_character_path("chumley"), as: :json
+      _(response.status).must_equal 429
+    end
+  end
+
+  it "barra a 61ª escrita de deck do mesmo IP dentro de 1 minuto, e a 11ª exportação da conta na hora" do
+    at_noon do
+      30.times { post validate_api_decks_path, as: :json }
+      30.times { patch api_deck_path(1), as: :json }
+      _(response.status).must_equal 401
+      post import_api_decks_path, as: :json
+      _(response.status).must_equal 429
+
+      10.times { get export_api_me_path }
+      _(response.status).must_equal 401
+      get export_api_me_path
+      _(response.status).must_equal 429
+    end
+  end
+
   it "barra o 31º token do tempo real do mesmo IP dentro de 1 minuto" do
     at_noon do
       30.times { post api_realtime_token_path, as: :json }

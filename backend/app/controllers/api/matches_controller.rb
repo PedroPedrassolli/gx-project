@@ -47,7 +47,7 @@ class Api::MatchesController < Api::BaseController
     return render_error(:conflict, "O replay fica pronto quando o duelo acaba.") if @match.dueling?
 
     replay = Matches::Replay.new(@match)
-    turn = params[:turn].to_i.clamp(1, [ replay.turns, 1 ].max)
+    turn = (integer_param(params[:turn]) || 1).clamp(1, [ replay.turns, 1 ].max)
     expires_in 1.day, public: false
     render json: { data: { id: @match.id, turn:, turns: replay.turns, you: @player.team, winner_team: @match.winner_team,
                            finish_reason: @match.finish_reason, players:, frames: replay.frames(@player.team, turn) } }

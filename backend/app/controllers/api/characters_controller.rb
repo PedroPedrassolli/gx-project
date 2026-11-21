@@ -15,7 +15,7 @@ class Api::CharactersController < Api::BaseController
   # a partida (a tela vai para a mesa).
   def duel
     character = Characters::Roster.find(params[:id].to_s) || raise(ActiveRecord::RecordNotFound)
-    deck = current_user.decks.find(params[:deck_id])
+    deck = current_user.decks.find(params[:deck_id].to_s)
     match = Characters::Challenge.new(current_user, character, deck).call
     render json: { data: { match_id: match.id } }, status: :created
   rescue Characters::Challenge::Refused => error

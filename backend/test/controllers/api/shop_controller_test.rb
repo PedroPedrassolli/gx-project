@@ -13,6 +13,16 @@ class Api::ShopControllerTest < ActionDispatch::IntegrationTest
 
   def buy(count: 1, key: "compra-0001", pack: pack_a) = post(purchases_api_shop_path, params: { pack_id: pack.id, count:, key: }, as: :json)
 
+  it "compra com entrada hostil responde o erro certo, nunca 500, e não cobra nada" do
+    Economy::Ledger.post!(user, 300, reason: "duel", key: "partida:1")
+
+    post purchases_api_shop_path, params: { pack_id: pack_a.id, count: { a: 1 }, key: "compra-0001" }, as: :json
+    assert_response :unprocessable_content
+    post purchases_api_shop_path, params: { pack_id: [ pack_a.id ], count: 1, key: "compra-0002" }, as: :json
+    assert_response :not_found
+    assert_equal 300, Economy::Ledger.balance(user)
+  end
+
   it "a prateleira traz o saldo, o nível e cada pacote, com a dica dos bloqueados" do
     Economy::Ledger.post!(user, 300, reason: "duel", key: "partida:1")
     get api_shop_path

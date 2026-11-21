@@ -64,5 +64,8 @@ class Api::CharactersControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     post duels_api_character_path("chumley"), params: { deck_id: syrus.decks.sole.id }, as: :json
     assert_response :not_found
+    # Lista no lugar do id não vira várias buscas (era erro 500).
+    post duels_api_character_path("chumley"), params: { deck_id: [ jaden.decks.sole.id ] }, as: :json
+    assert_response :not_found
   end
 end
