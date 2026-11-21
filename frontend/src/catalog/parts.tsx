@@ -1,6 +1,7 @@
 import type { ReactNode, SyntheticEvent } from "react";
 import {
   IMAGE_WIDTHS,
+  cardText,
   displayName,
   frame,
   imageUrl,
@@ -127,7 +128,7 @@ export function Detail({
   packs: Map<number, string>;
 }) {
   const other = language === "pt" ? card.name : card.name_pt;
-  const text = language === "pt" ? (card.text_pt ?? card.text) : card.text;
+  const { text, note } = cardText(card, language);
   return (
     <article className={`detail frame-${frame(card)}`}>
       <h2 id="detail-title">{displayName(card, language)}</h2>
@@ -149,9 +150,7 @@ export function Detail({
       <Stats card={card} />
       {card.banlist && <p className="badge">{label(BANLIST, card.banlist)}</p>}
       <p className="text">{text}</p>
-      {language === "pt" && !card.text_pt && (
-        <p className="muted">Sem texto em português: este é o texto em inglês.</p>
-      )}
+      {note && <p className="muted">{note}</p>}
       {card.name_in_game && <p className="muted">No jogo: {card.name_in_game}</p>}
       {card.packs && (
         <>

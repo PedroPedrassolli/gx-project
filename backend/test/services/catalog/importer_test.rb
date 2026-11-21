@@ -23,15 +23,35 @@ describe Catalog::Importer do
                     "monster_types" => [ "Flip", "Effect" ], "level" => 3, "attack" => 200, "defense" => 500,
                     "name_pt" => "Assaltante Noturno" })
     _(card(200).text).must_equal "Destroy it."
-    _(card(200).slice(:card_type, :property, :monster_types, :text_pt))
-      .must_equal({ "card_type" => "Trap", "property" => "Normal", "monster_types" => [], "text_pt" => nil })
+    _(card(200).slice(:card_type, :property, :monster_types))
+      .must_equal({ "card_type" => "Trap", "property" => "Normal", "monster_types" => [] })
   end
 
-  it "mostra o texto da época da carta pré-errata, sem o português, que é do texto atual" do
+  it "mostra o texto da época da carta pré-errata com a nossa tradução, não o português do texto atual" do
     importer.run
 
-    _(card(110).slice(:text, :text_pt, :name_pt)).must_equal({ "text" => "FLIP: Destroy 1 monster.", "text_pt" => nil,
-                                                               "name_pt" => "Assaltante Noturno" })
+    _(card(110).slice(:text, :text_pt, :text_pt_unofficial, :name_pt))
+      .must_equal({ "text" => "FLIP: Destroy 1 monster.", "text_pt" => "VIRE: destrua 1 monstro.",
+                    "text_pt_unofficial" => true, "name_pt" => "Assaltante Noturno" })
+  end
+
+  it "usa o português oficial e, sem ele, a nossa tradução, marcada como não oficial" do
+    importer.run
+
+    _(card(500).slice(:text_pt, :text_pt_unofficial)).must_equal({ "text_pt" => "Texto da engrenagem.", "text_pt_unofficial" => false })
+    _(card(200).slice(:text_pt, :text_pt_unofficial)).must_equal({ "text_pt" => "Destrua-o.", "text_pt_unofficial" => true })
+  end
+
+  it "troca o português oficial quebrado pela nossa tradução" do
+    importer.run
+
+    _(card(700).slice(:text_pt, :text_pt_unofficial)).must_equal({ "text_pt" => "Texto impresso.", "text_pt_unofficial" => true })
+  end
+
+  it "ignora a tradução de um texto em inglês que mudou: fica o inglês até alguém traduzir de novo" do
+    importer.run
+
+    _(card(900).slice(:text_pt, :text_pt_unofficial)).must_equal({ "text_pt" => nil, "text_pt_unofficial" => false })
   end
 
   it "guarda a imagem: a do passcode, a da carta oficial na pré-errata e a da impressão" do
