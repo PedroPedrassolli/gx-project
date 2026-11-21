@@ -1,8 +1,8 @@
 # Dados do jogo de referência
 
 Cartas, pacotes, deck inicial, conversor, desafios e banlist do jogo de referência, tirados da
-Yugipedia em 07/11/2026 pelo `bin/rails dados:jogo`. Só o `disponibilidade.yml` é escrito à
-mão. As decisões estão no [ADR 0006](../../../../docs/adr/0006-dados-do-jogo.md).
+Yugipedia em 07/11/2026 pelo `bin/rails dados:jogo`. O `disponibilidade.yml` e o
+`personagens.yml` são escritos à mão. As decisões estão no [ADR 0006](../../../../docs/adr/0006-dados-do-jogo.md).
 
 | Arquivo | O que tem | Anexo B |
 | --- | --- | --- |
@@ -14,6 +14,7 @@ mão. As decisões estão no [ADR 0006](../../../../docs/adr/0006-dados-do-jogo.
 | `desafios.yml` | os 104 desafios, com o texto original em inglês | 6 |
 | `banlist.yml` | banlist padrão do jogo | 8 |
 | `extras.yml` | cartas que saem por DLC e num minigame | 1 |
+| `personagens.yml` | os personagens da F5 na ordem, com o deck de cada um, as trocas e a carta-símbolo (escrito à mão, a partir das listas da Yugipedia; ADR 0013) | — |
 | `cobertura.yml` | o pool cruzado com a engine e as imagens: as exceções à regra geral, com a decisão de cada carta (gerado por `bin/rails dados:cobertura`) | GXP-7 |
 
 Os itens 9 (Destiny Draw) e 10 (PV do Tag) estão no ADR 0001.

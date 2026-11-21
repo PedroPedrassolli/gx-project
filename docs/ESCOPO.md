@@ -148,15 +148,16 @@
 - Valores do anti-farm e flags (ligar/desligar loja e personagens).
 
 ### 3.10 Duelos contra personagens (F5)
-- Personagens do anime controlados pelo computador, cada um com o deck dele: o do jogo de referência (os personagens do GX estão nele) ou, para as lendas de Duel Monsters, o do anime adaptado às cartas do pool. A lista e a fonte de cada deck ficam num YAML versionado.
-- **O deck é embaralhado a cada duelo**, como o de qualquer jogador. O computador não trapaceia: não vê a mão nem o deck do jogador e responde às mesmas perguntas da engine.
-- **Ordem para liberar:** do mais fácil ao mais difícil. Vencer um personagem libera o próximo. O último é o mais duro, mas dá para vencer.
-- Lista (escolha provisória, 20/11/2026): alunos da Academia (Chumley, Syrus, Blair, Bastion, Alexis, Chazz), chefes do GX (Crowler, Zane, Aster, Jesse, Jaden) e lendas de Duel Monsters (Joey, Kaiba e o Yugi como chefe final). Os vilões do GX ficam para depois, se o Pedro quiser.
-- **Prêmio:** o DP do duelo, como contra um amigo, e, na primeira vitória contra cada personagem, a carta-símbolo dele (ex.: vencer o Yugi dá um Mago Negro).
-- A dificuldade vem do deck e de como o computador joga (primeiro com escolhas simples, depois mais espertas), nunca de cartas a mais ou de ver o que o jogador tem.
+- Personagens do anime controlados pelo computador, cada um com o deck dele no jogo de referência (os do GX estão nele). Yugi, Kaiba e Joey não estão: usam o deck deles em outro jogo da série, com as cartas fora do pool trocadas. A lista, a fonte de cada deck e as trocas ficam em `db/seeds/jogo/personagens.yml` (ADR 0013).
+- **O deck é embaralhado a cada duelo**, como o de qualquer jogador. O computador não trapaceia: vê só a mesa que um jogador veria (Duel::View) e responde às mesmas perguntas da engine, pela mesma validação.
+- **Ordem para liberar:** vencer um personagem libera o próximo. O último é o mais duro, mas dá para vencer.
+- Lista (21/11/2026): alunos da Academia (Chumley, Syrus, Blair, Alexis, Chazz, Bastion), chefes (Zane, Crowler, Jesse, Aster, Jaden) e lendas de Duel Monsters (Joey, Kaiba e o Yugi por último). Os vilões do GX ficam para depois, se o Pedro quiser.
+- **Prêmio:** o DP do duelo, como contra um amigo (sem o "vitória em rede"), mais um bônus na vitória que cresce com a ordem (60 DP no primeiro, 840 no Yugi). Na primeira vitória contra cada personagem, a carta-símbolo dele (ex.: vencer o Yugi dá um Mago Negro). Desistir ou deixar o tempo passar contra o computador paga como duelo curto.
+- A dificuldade vem do deck e de como o computador joga: os alunos erram de propósito às vezes, os chefes menos e as lendas jogam o melhor que sabem. Nunca de cartas a mais ou de ver o que o jogador tem.
+- Sem banlist nos dois lados: os decks dos personagens no jogo de referência também não seguem a dele.
 
 ### 3.9 Fora do escopo
-- IA e singleplayer.
+- Computador que aprende ou que trapaceia (o da 3.10 segue regras simples, com a mesa que um jogador veria).
 - Torneios, espectador e ranking público (ficam para a v2).
 - Dinheiro real.
 - Chat livre.

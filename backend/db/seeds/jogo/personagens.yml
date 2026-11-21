@@ -1,0 +1,554 @@
+# Personagens para duelar contra o computador, na ordem em que são liberados (escopo 3.10;
+# ADR 0013). Escrito à mão, a partir das listas de deck da Yugipedia.
+# grupos: computador é o jeito de jogar (1 erra de propósito às vezes, 3 joga o melhor que sabe).
+# deck: o deck do personagem no jogo de referência, com o nome e o nível (1 a 10) que ele tem lá.
+#   Yugi, Kaiba e Joey não estão no jogo de referência: o deck é o deles em outro jogo da série.
+#   fonte: revisão da página do personagem (yugipedia.com/index.php?oldid=N).
+#   trocas: carta da lista que não está no pool e a que entrou no lugar.
+# carta_simbolo: o prêmio da primeira vitória contra o personagem.
+# Dados da Yugipedia (CC BY-SA), reorganizados. Veja o README desta pasta.
+grupos:
+  - { id: alunos, nome: "Alunos da Academia", computador: 1 }
+  - { id: chefes, nome: "Chefes", computador: 2 }
+  - { id: lendas, nome: "Lendas de Duel Monsters", computador: 3 }
+personagens:
+  - id: chumley
+    nome: "Chumley"
+    grupo: alunos
+    descricao: "Slifer Vermelho. Coalas e cangurus que se fundem num gigante."
+    carta_simbolo: "Master of Oz"
+    deck:
+      nome: "Oz Show"
+      nivel: 2
+      fonte: 5896142
+      principal:
+        - { nome: "Big Koala", quantidade: 3 }
+        - { nome: "Frenzied Panda", quantidade: 2 }
+        - { nome: "Des Kangaroo", quantidade: 3 }
+        - { nome: "Des Koala", quantidade: 3 }
+        - { nome: "Gyaku-Gire Panda", quantidade: 2 }
+        - { nome: "King of the Swamp", quantidade: 3 }
+        - { nome: "Maji-Gire Panda", quantidade: 2 }
+        - { nome: "Morphing Jar", quantidade: 1 }
+        - { nome: "Ancient Rules", quantidade: 2 }
+        - { nome: "Ayers Rock Sunrise", quantidade: 1 }
+        - { nome: "De-Fusion", quantidade: 1 }
+        - { nome: "Dian Keto the Cure Master", quantidade: 1 }
+        - { nome: "Giant Trunade", quantidade: 1 }
+        - { nome: "Heavy Storm", quantidade: 1 }
+        - { nome: "Monster Reborn", quantidade: 1 }
+        - { nome: "Mystical Space Typhoon", quantidade: 1 }
+        - { nome: "Polymerization", quantidade: 3 }
+        - { nome: "Premature Burial", quantidade: 1 }
+        - { nome: "Scapegoat", quantidade: 1 }
+        - { nome: "Wild Nature's Release", quantidade: 1 }
+        - { nome: "Beast Soul Swap", quantidade: 2 }
+        - { nome: "Birthright", quantidade: 2 }
+        - { nome: "Destruction Punch", quantidade: 2 }
+        - { nome: "Mirror Force", quantidade: 1 }
+        - { nome: "Torrential Tribute", quantidade: 1 }
+      extra:
+        - { nome: "Master of Oz", quantidade: 3 }
+  - id: syrus
+    nome: "Syrus"
+    grupo: alunos
+    descricao: "Slifer Vermelho. Veículos que se fundem em máquinas maiores."
+    carta_simbolo: "Super Vehicroid Jumbo Drill"
+    deck:
+      nome: "Cool Vehicle"
+      nivel: 3
+      fonte: 5399148
+      principal:
+        - { nome: "Ambulanceroid", quantidade: 2 }
+        - { nome: "Decoyroid", quantidade: 2 }
+        - { nome: "Drillroid", quantidade: 3 }
+        - { nome: "Gyroid", quantidade: 3 }
+        - { nome: "Rescueroid", quantidade: 2 }
+        - { nome: "Steamroid", quantidade: 3 }
+        - { nome: "Submarineroid", quantidade: 3 }
+        - { nome: "Fissure", quantidade: 1 }
+        - { nome: "Heavy Storm", quantidade: 1 }
+        - { nome: "Limiter Removal", quantidade: 1 }
+        - { nome: "Monster Reborn", quantidade: 1 }
+        - { nome: "Mystical Space Typhoon", quantidade: 1 }
+        - { nome: "Nobleman of Crossout", quantidade: 1 }
+        - { nome: "Polymerization", quantidade: 2 }
+        - { nome: "Power Bond", quantidade: 1 }
+        - { nome: "Premature Burial", quantidade: 1 }
+        - { nome: "Shield Crush", quantidade: 1 }
+        - { nome: "Smashing Ground", quantidade: 1 }
+        - { nome: "Swords of Revealing Light", quantidade: 1 }
+        - { nome: "Bottomless Trap Hole", quantidade: 1 }
+        - { nome: "Cyber Summon Blaster", quantidade: 2 }
+        - { nome: "Magic Cylinder", quantidade: 1 }
+        - { nome: "Mirror Force", quantidade: 1 }
+        - { nome: "Sakuretsu Armor", quantidade: 1 }
+        - { nome: "Torrential Tribute", quantidade: 1 }
+        - { nome: "Widespread Ruin", quantidade: 1 }
+        - { nome: "Wonder Garage", quantidade: 1 }
+      extra:
+        - { nome: "Ambulance Rescueroid", quantidade: 3 }
+        - { nome: "Steam Gyroid", quantidade: 3 }
+        - { nome: "Super Vehicroid Jumbo Drill", quantidade: 3 }
+  - id: blair
+    nome: "Blair"
+    grupo: alunos
+    descricao: "Apaixonada: rouba os monstros do oponente."
+    carta_simbolo: "Maiden in Love"
+    deck:
+      nome: "Maiden in Love - Break-Up"
+      nivel: 5
+      fonte: 5688254
+      principal:
+        - { nome: "D.D. Warrior Lady", quantidade: 1 }
+        - { nome: "Maiden in Love", quantidade: 3 }
+        - { nome: "Marshmallon", quantidade: 1 }
+        - { nome: "Nova Summoner", quantidade: 3 }
+        - { nome: "Shining Angel", quantidade: 3 }
+        - { nome: "The Unhappy Girl", quantidade: 3 }
+        - { nome: "Chaos-End Master", quantidade: 2 }
+        - { nome: "Frequency Magician", quantidade: 2 }
+        - { nome: "Hanewata", quantidade: 3 }
+        - { nome: "Brain Control", quantidade: 1 }
+        - { nome: "Change of Heart", quantidade: 1 }
+        - { nome: "Creature Swap", quantidade: 2 }
+        - { nome: "Fissure", quantidade: 1 }
+        - { nome: "Giant Trunade", quantidade: 1 }
+        - { nome: "Happy Marriage", quantidade: 2 }
+        - { nome: "Mind Control", quantidade: 3 }
+        - { nome: "Monster Reborn", quantidade: 1 }
+        - { nome: "Mystical Space Typhoon", quantidade: 1 }
+        - { nome: "Premature Burial", quantidade: 1 }
+        - { nome: "Smashing Ground", quantidade: 1 }
+        - { nome: "Snatch Steal", quantidade: 1 }
+        - { nome: "Swords of Revealing Light", quantidade: 1 }
+        - { nome: "Mirror Force", quantidade: 1 }
+        - { nome: "Royal Decree", quantidade: 2 }
+        - { nome: "Wall of Revealing Light", quantidade: 1 }
+      extra:
+        - { nome: "Ally of Justice Catastor", quantidade: 2 }
+        - { nome: "Black Rose Dragon", quantidade: 2 }
+        - { nome: "Brionac, Dragon of the Ice Barrier", quantidade: 1 }
+        - { nome: "Flamvell Uruquizas", quantidade: 1 }
+        - { nome: "Goyo Guardian", quantidade: 3 }
+        - { nome: "Iron Chain Dragon", quantidade: 1 }
+        - { nome: "Magical Android", quantidade: 2 }
+        - { nome: "Psychic Lifetrancer", quantidade: 2 }
+        - { nome: "Queen of Thorns", quantidade: 1 }
+  - id: alexis
+    nome: "Alexis"
+    grupo: alunos
+    descricao: "Obelisco Azul. Bailarinas cibernéticas."
+    carta_simbolo: "Cyber Blader"
+    deck:
+      nome: "Cyber Guardian"
+      nivel: 6
+      fonte: 5896139
+      principal:
+        - { nome: "Blade Skater", quantidade: 2 }
+        - { nome: "Command Knight", quantidade: 2 }
+        - { nome: "Cyber Gymnast", quantidade: 2 }
+        - { nome: "Cyber Prima", quantidade: 2 }
+        - { nome: "D.D. Warrior Lady", quantidade: 1 }
+        - { nome: "Etoile Cyber", quantidade: 2 }
+        - { nome: "Giant Rat", quantidade: 3 }
+        - { nome: "Marshmallon", quantidade: 1 }
+        - { nome: "Morphing Jar", quantidade: 1 }
+        - { nome: "Sangan", quantidade: 1 }
+        - { nome: "The Earth - Hex-Sealed Fusion", quantidade: 2 }
+        - { nome: "Warrior Lady of the Wasteland", quantidade: 3 }
+        - { nome: "Creature Swap", quantidade: 3 }
+        - { nome: "Giant Trunade", quantidade: 1 }
+        - { nome: "Ground Collapse", quantidade: 3 }
+        - { nome: "Heavy Storm", quantidade: 1 }
+        - { nome: "Monster Reborn", quantidade: 1 }
+        - { nome: "Mystical Space Typhoon", quantidade: 1 }
+        - { nome: "Polymerization", quantidade: 2 }
+        - { nome: "Premature Burial", quantidade: 1 }
+        - { nome: "Reinforcement of the Army", quantidade: 2 }
+        - { nome: "Swords of Revealing Light", quantidade: 1 }
+        - { nome: "Mirror Force", quantidade: 1 }
+        - { nome: "Torrential Tribute", quantidade: 1 }
+      extra:
+        - { nome: "Cyber Blader", quantidade: 3 }
+  - id: chazz
+    nome: "Chazz"
+    grupo: alunos
+    descricao: "Obelisco Azul. Dragões armados que sobem de nível."
+    carta_simbolo: "Armed Dragon LV7"
+    deck:
+      nome: "Thoroughbred Comrades"
+      nivel: 6
+      fonte: 5896141
+      principal:
+        - { nome: "Armed Dragon LV10", quantidade: 1 }
+        - { nome: "Armed Dragon LV3", quantidade: 3 }
+        - { nome: "Armed Dragon LV5", quantidade: 3 }
+        - { nome: "Armed Dragon LV7", quantidade: 2 }
+        - { nome: "Flying Kamakiri 1", quantidade: 3 }
+        - { nome: "Masked Dragon", quantidade: 3 }
+        - { nome: "Morphing Jar", quantidade: 1 }
+        - { nome: "Sangan", quantidade: 1 }
+        - { nome: "Brain Control", quantidade: 1 }
+        - { nome: "Creature Swap", quantidade: 2 }
+        - { nome: "Giant Trunade", quantidade: 1 }
+        - { nome: "Heavy Storm", quantidade: 1 }
+        - { nome: "Level Down!?", quantidade: 1 }
+        - { nome: "Level Up!", quantidade: 2 }
+        - { nome: "Monster Reborn", quantidade: 1 }
+        - { nome: "My Body as a Shield", quantidade: 2 }
+        - { nome: "Mystical Space Typhoon", quantidade: 1 }
+        - { nome: "Pot of Avarice", quantidade: 2 }
+        - { nome: "Premature Burial", quantidade: 1 }
+        - { nome: "Shrink", quantidade: 2 }
+        - { nome: "Stamping Destruction", quantidade: 3 }
+        - { nome: "Swords of Revealing Light", quantidade: 1 }
+        - { nome: "Interdimensional Matter Transporter", quantidade: 2 }
+        - { nome: "Mirror Force", quantidade: 1 }
+        - { nome: "Torrential Tribute", quantidade: 1 }
+  - id: bastion
+    nome: "Bastion"
+    grupo: alunos
+    descricao: "Rá Amarelo. Hidrogênio e oxigênio viram um dragão."
+    carta_simbolo: "Water Dragon"
+    deck:
+      nome: "Calm Water"
+      nivel: 7
+      fonte: 5896140
+      principal:
+        - { nome: "Abyss Soldier", quantidade: 2 }
+        - { nome: "Hydrogeddon", quantidade: 3 }
+        - { nome: "Lekunga", quantidade: 2 }
+        - { nome: "Mobius the Frost Monarch", quantidade: 3 }
+        - { nome: "Morphing Jar", quantidade: 1 }
+        - { nome: "Nightmare Penguin", quantidade: 2 }
+        - { nome: "Oxygeddon", quantidade: 3 }
+        - { nome: "Oyster Meister", quantidade: 2 }
+        - { nome: "Treeborn Frog", quantidade: 1 }
+        - { nome: "Water Dragon", quantidade: 1 }
+        - { nome: "Bonding - H2O", quantidade: 1 }
+        - { nome: "Brain Control", quantidade: 1 }
+        - { nome: "Fissure", quantidade: 1 }
+        - { nome: "Giant Trunade", quantidade: 1 }
+        - { nome: "Heavy Storm", quantidade: 1 }
+        - { nome: "Monster Reborn", quantidade: 1 }
+        - { nome: "Mystical Space Typhoon", quantidade: 1 }
+        - { nome: "Nobleman of Crossout", quantidade: 1 }
+        - { nome: "Premature Burial", quantidade: 1 }
+        - { nome: "Rush Recklessly", quantidade: 2 }
+        - { nome: "Shrink", quantidade: 2 }
+        - { nome: "Smashing Ground", quantidade: 1 }
+        - { nome: "Umiiruka", quantidade: 2 }
+        - { nome: "Destruction Ring", quantidade: 1 }
+        - { nome: "Mirror Force", quantidade: 1 }
+        - { nome: "Spiritual Water Art - Aoi", quantidade: 1 }
+        - { nome: "Torrential Tribute", quantidade: 1 }
+  - id: zane
+    nome: "Zane"
+    grupo: chefes
+    descricao: "O Kaiser. Dragões cibernéticos que se fundem."
+    carta_simbolo: "Cyber End Dragon"
+    deck:
+      nome: "Pure Cyber Style Deck"
+      nivel: 6
+      fonte: 5439989
+      principal:
+        - { nome: "Cyber Dragon", quantidade: 2 }
+        - { nome: "Cyber Phoenix", quantidade: 1 }
+        - { nome: "Cyber Valley", quantidade: 3 }
+        - { nome: "D.D. Warrior Lady", quantidade: 1 }
+        - { nome: "Morphing Jar", quantidade: 1 }
+        - { nome: "Proto-Cyber Dragon", quantidade: 3 }
+        - { nome: "Reflect Bounder", quantidade: 2 }
+        - { nome: "Shining Angel", quantidade: 3 }
+        - { nome: "The Light - Hex-Sealed Fusion", quantidade: 3 }
+        - { nome: "Battle Fusion", quantidade: 2 }
+        - { nome: "Evolution Burst", quantidade: 2 }
+        - { nome: "Fissure", quantidade: 1 }
+        - { nome: "Future Fusion", quantidade: 1 }
+        - { nome: "Giant Trunade", quantidade: 1 }
+        - { nome: "Gold Sarcophagus", quantidade: 1 }
+        - { nome: "Heavy Storm", quantidade: 1 }
+        - { nome: "Limiter Removal", quantidade: 1 }
+        - { nome: "Megamorph", quantidade: 1 }
+        - { nome: "Monster Reborn", quantidade: 1 }
+        - { nome: "My Body as a Shield", quantidade: 2 }
+        - { nome: "Mystical Space Typhoon", quantidade: 1 }
+        - { nome: "Nobleman of Crossout", quantidade: 1 }
+        - { nome: "Polymerization", quantidade: 1 }
+        - { nome: "Power Bond", quantidade: 1 }
+        - { nome: "Premature Burial", quantidade: 1 }
+        - { nome: "Smashing Ground", quantidade: 1 }
+        - { nome: "Swords of Revealing Light", quantidade: 1 }
+        - { nome: "Mirror Force", quantidade: 1 }
+        - { nome: "Torrential Tribute", quantidade: 1 }
+      extra:
+        - { nome: "Cyber End Dragon", quantidade: 3 }
+        - { nome: "Cyber Twin Dragon", quantidade: 3 }
+  - id: crowler
+    nome: "Dr. Crowler"
+    grupo: chefes
+    descricao: "O professor. Engrenagens antigas e monstros enormes."
+    carta_simbolo: "Ancient Gear Golem"
+    deck:
+      nome: "Medieval Ages"
+      nivel: 7
+      fonte: 6036727
+      principal:
+        - { nome: "Ancient Gear Beast", quantidade: 2 }
+        - { nome: "Ancient Gear Engineer", quantidade: 1 }
+        - { nome: "Ancient Gear Gadjiltron Dragon", quantidade: 1 }
+        - { nome: "Ancient Gear Golem", quantidade: 2 }
+        - { nome: "Ancient Gear Soldier", quantidade: 2 }
+        - { nome: "Boot-Up Soldier - Dread Dynamo", quantidade: 2 }
+        - { nome: "Gear Golem the Moving Fortress", quantidade: 2 }
+        - { nome: "King of the Swamp", quantidade: 2 }
+        - { nome: "Morphing Jar", quantidade: 1 }
+        - { nome: "Sangan", quantidade: 1 }
+        - { nome: "Ancient Gear Knight", quantidade: 2 }
+        - { nome: "Ancient Gear Castle", quantidade: 2 }
+        - { nome: "Ancient Gear Explosive", quantidade: 1 }
+        - { nome: "Ancient Gear Fist", quantidade: 1 }
+        - { nome: "Geartown", quantidade: 2 }
+        - { nome: "Giant Trunade", quantidade: 1 }
+        - { nome: "Heavy Storm", quantidade: 1 }
+        - { nome: "Limiter Removal", quantidade: 1 }
+        - { nome: "Monster Reborn", quantidade: 1 }
+        - { nome: "My Body as a Shield", quantidade: 2 }
+        - { nome: "Mystical Space Typhoon", quantidade: 1 }
+        - { nome: "Polymerization", quantidade: 2 }
+        - { nome: "Premature Burial", quantidade: 1 }
+        - { nome: "Swords of Revealing Light", quantidade: 1 }
+        - { nome: "Terraforming", quantidade: 2 }
+        - { nome: "Mirror Force", quantidade: 1 }
+        - { nome: "Royal Decree", quantidade: 2 }
+        - { nome: "Torrential Tribute", quantidade: 1 }
+      extra:
+        - { nome: "Ultimate Ancient Gear Golem", quantidade: 3 }
+  - id: jesse
+    nome: "Jesse"
+    grupo: chefes
+    descricao: "As Bestas de Cristal."
+    carta_simbolo: "Crystal Beast Sapphire Pegasus"
+    deck:
+      nome: "My Family and a Distant Relative"
+      nivel: 8
+      fonte: 5399137
+      principal:
+        - { nome: "Anteatereatingant", quantidade: 2 }
+        - { nome: "Crystal Beast Amethyst Cat", quantidade: 3 }
+        - { nome: "Crystal Beast Sapphire Pegasus", quantidade: 3 }
+        - { nome: "Crystal Beast Topaz Tiger", quantidade: 2 }
+        - { nome: "Hamon, Lord of Striking Thunder", quantidade: 2 }
+        - { nome: "Stealth Bird", quantidade: 2 }
+        - { nome: "Summoner Monk", quantidade: 3 }
+        - { nome: "Swarm of Scarabs", quantidade: 2 }
+        - { nome: "Crystal Blessing", quantidade: 2 }
+        - { nome: "Harpie's Feather Duster", quantidade: 1 }
+        - { nome: "Level Limit - Area B", quantidade: 2 }
+        - { nome: "Messenger of Peace", quantidade: 3 }
+        - { nome: "Monster Reborn", quantidade: 1 }
+        - { nome: "My Body as a Shield", quantidade: 2 }
+        - { nome: "Mystical Space Typhoon", quantidade: 1 }
+        - { nome: "Premature Burial", quantidade: 1 }
+        - { nome: "Swords of Revealing Light", quantidade: 1 }
+        - { nome: "Wave-Motion Cannon", quantidade: 3 }
+        - { nome: "Gravity Bind", quantidade: 2 }
+        - { nome: "Royal Decree", quantidade: 2 }
+  - id: aster
+    nome: "Aster"
+    grupo: chefes
+    descricao: "Os Heróis do Destino."
+    carta_simbolo: "Destiny HERO - Dogma"
+    deck:
+      nome: "Demise D"
+      nivel: 9
+      fonte: 5399146
+      principal:
+        - { nome: "Destiny HERO - Dasher", quantidade: 1 }
+        - { nome: "Destiny HERO - Defender", quantidade: 1 }
+        - { nome: "Destiny HERO - Diamond Dude", quantidade: 2 }
+        - { nome: "Destiny HERO - Disk Commander", quantidade: 1 }
+        - { nome: "Destiny HERO - Dogma", quantidade: 3 }
+        - { nome: "Destiny HERO - Dunker", quantidade: 1 }
+        - { nome: "Destiny HERO - Fear Monger", quantidade: 3 }
+        - { nome: "Destiny HERO - Plasma", quantidade: 3 }
+        - { nome: "Elemental HERO Stratos", quantidade: 1 }
+        - { nome: "Morphing Jar", quantidade: 1 }
+        - { nome: "Card Destruction", quantidade: 1 }
+        - { nome: "Destiny Draw", quantidade: 3 }
+        - { nome: "Fires of Doomsday", quantidade: 2 }
+        - { nome: "Fusion Gate", quantidade: 2 }
+        - { nome: "Future Fusion", quantidade: 1 }
+        - { nome: "Gold Sarcophagus", quantidade: 1 }
+        - { nome: "Heavy Storm", quantidade: 1 }
+        - { nome: "Monster Reborn", quantidade: 1 }
+        - { nome: "Mystical Space Typhoon", quantidade: 1 }
+        - { nome: "Premature Burial", quantidade: 1 }
+        - { nome: "Reinforcement of the Army", quantidade: 2 }
+        - { nome: "Scapegoat", quantidade: 1 }
+        - { nome: "Swords of Revealing Light", quantidade: 1 }
+        - { nome: "Terraforming", quantidade: 2 }
+        - { nome: "Chain Material", quantidade: 3 }
+        - { nome: "Crush Card Virus", quantidade: 1 }
+        - { nome: "Mirror Force", quantidade: 1 }
+        - { nome: "Torrential Tribute", quantidade: 1 }
+      extra:
+        - { nome: "Destiny End Dragoon", quantidade: 3 }
+  - id: jaden
+    nome: "Jaden"
+    grupo: chefes
+    descricao: "Neos e os Neo-Espacianos."
+    carta_simbolo: "Elemental HERO Neos"
+    deck:
+      nome: "Always Go Forward!"
+      nivel: 10
+      fonte: 5841166
+      principal:
+        - { nome: "Elemental HERO Neos", quantidade: 2 }
+        - { nome: "D.D. Warrior Lady", quantidade: 1 }
+        - { nome: "Elemental HERO Prisma", quantidade: 3 }
+        - { nome: "Elemental HERO Stratos", quantidade: 2 }
+        - { nome: "Honest", quantidade: 3 }
+        - { nome: "Morphing Jar", quantidade: 1 }
+        - { nome: "Neo-Spacian Grand Mole", quantidade: 2 }
+        - { nome: "Elemental HERO Neos Alius", quantidade: 2 }
+        - { nome: "E - Emergency Call", quantidade: 3 }
+        - { nome: "Heavy Storm", quantidade: 1 }
+        - { nome: "Lightning Vortex", quantidade: 1 }
+        - { nome: "Monster Reborn", quantidade: 1 }
+        - { nome: "Mystical Space Typhoon", quantidade: 1 }
+        - { nome: "O - Oversoul", quantidade: 3 }
+        - { nome: "Sabatiel - The Philosopher's Stone", quantidade: 1 }
+        - { nome: "Premature Burial", quantidade: 1 }
+        - { nome: "R - Righteous Justice", quantidade: 3 }
+        - { nome: "Reinforcement of the Army", quantidade: 2 }
+        - { nome: "Skyscraper 2 - Hero City", quantidade: 1 }
+        - { nome: "The A. Forces", quantidade: 1 }
+        - { nome: "Wrath of Neos", quantidade: 1 }
+        - { nome: "Birthright", quantidade: 2 }
+        - { nome: "Mirror Force", quantidade: 1 }
+        - { nome: "Sakuretsu Armor", quantidade: 3 }
+      extra:
+        - { nome: "Elemental HERO Grand Neos", quantidade: 3 }
+  - id: joey
+    nome: "Joey"
+    grupo: lendas
+    descricao: "Dragão Negro de Olhos Vermelhos e muita sorte."
+    carta_simbolo: "Red-Eyes Black Dragon"
+    deck:
+      nome: "Proof of our Friendship"
+      nivel: 6
+      fonte: 5398223
+      principal:
+        - { nome: "Alligator's Sword", quantidade: 2 }
+        - { nome: "Baby Dragon", quantidade: 2 }
+        - { nome: "Meteor Dragon", quantidade: 1 }
+        - { nome: "Red-Eyes Black Dragon", quantidade: 2 }
+        - { nome: "Summoned Skull", quantidade: 2 }
+        - { nome: "Black Dragon's Chick", quantidade: 2 }
+        - { nome: "King of the Swamp", quantidade: 2 }
+        - { nome: "Red-Eyes Black Metal Dragon", quantidade: 1 }
+        - { nome: "Time Wizard", quantidade: 1 }
+        - { nome: "Dangerous Machine Type-6", quantidade: 1 }
+        - { nome: "Dark Hole", quantidade: 1 }
+        - { nome: "Graceful Dice", quantidade: 1 }
+        - { nome: "Heart of the Underdog", quantidade: 2 }
+        - { nome: "Heavy Storm", quantidade: 1 }
+        - { nome: "Inferno Fire Blast", quantidade: 1 }
+        - { nome: "Monster Reborn", quantidade: 1 }
+        - { nome: "Mystical Space Typhoon", quantidade: 2 }
+        - { nome: "Polymerization", quantidade: 3 }
+        - { nome: "Scapegoat", quantidade: 2 }
+        - { nome: "Bottomless Trap Hole", quantidade: 2 }
+        - { nome: "Graverobber", quantidade: 1 }
+        - { nome: "Magical Arm Shield", quantidade: 2 }
+        - { nome: "Metalmorph", quantidade: 2 }
+        - { nome: "Skull Dice", quantidade: 1 }
+        - { nome: "Trap Hole", quantidade: 2 }
+      extra:
+        - { nome: "Alligator's Sword Dragon", quantidade: 3 }
+        - { nome: "Black Skull Dragon", quantidade: 3 }
+        - { nome: "Meteor Black Dragon", quantidade: 3 }
+        - { nome: "Thousand Dragon", quantidade: 3 }
+  - id: kaiba
+    nome: "Kaiba"
+    grupo: lendas
+    descricao: "Dragão Branco de Olhos Azuis, três vezes."
+    carta_simbolo: "Blue-Eyes White Dragon"
+    deck:
+      nome: "Be Crushed Before Blue-Eyes!"
+      nivel: 6
+      fonte: 5398195
+      trocas:
+        - { sai: "Obelisk the Tormentor", entra: "Vorse Raider", quantidade: 1 }
+        - { sai: "The Melody of Awakening Dragon", entra: "Trade-In", quantidade: 2 }
+      principal:
+        - { nome: "Blue-Eyes White Dragon", quantidade: 3 }
+        - { nome: "Divine Dragon Ragnarok", quantidade: 2 }
+        - { nome: "La Jinn the Mystical Genie of the Lamp", quantidade: 3 }
+        - { nome: "Ancient Lamp", quantidade: 2 }
+        - { nome: "Blue-Eyes Shining Dragon", quantidade: 1 }
+        - { nome: "Kaibaman", quantidade: 2 }
+        - { nome: "Lord of D.", quantidade: 2 }
+        - { nome: "The White Stone of Legend", quantidade: 2 }
+        - { nome: "Versago the Destroyer", quantidade: 1 }
+        - { nome: "Burst Stream of Destruction", quantidade: 1 }
+        - { nome: "Dark Factory of Mass Production", quantidade: 2 }
+        - { nome: "Dragon's Mirror", quantidade: 2 }
+        - { nome: "Enemy Controller", quantidade: 1 }
+        - { nome: "Megamorph", quantidade: 2 }
+        - { nome: "Monster Reborn", quantidade: 1 }
+        - { nome: "Polymerization", quantidade: 2 }
+        - { nome: "Shrink", quantidade: 2 }
+        - { nome: "Call of the Haunted", quantidade: 2 }
+        - { nome: "Negate Attack", quantidade: 2 }
+        - { nome: "Shadow Spell", quantidade: 1 }
+        - { nome: "The Transmigration Prophecy", quantidade: 1 }
+        - { nome: "Vorse Raider", quantidade: 1 }
+        - { nome: "Trade-In", quantidade: 2 }
+      extra:
+        - { nome: "Blue-Eyes Ultimate Dragon", quantidade: 3 }
+        - { nome: "Dragon Master Knight", quantidade: 3 }
+        - { nome: "King Dragun", quantidade: 3 }
+  - id: yugi
+    nome: "Yugi"
+    grupo: lendas
+    descricao: "O Rei dos Duelos. Mago Negro e seus magos."
+    carta_simbolo: "Dark Magician"
+    deck:
+      nome: "Memories of the Duel King - Comradery"
+      nivel: 9
+      fonte: 5398246
+      trocas:
+        - { sai: "Slifer the Sky Dragon", entra: "Dark Magician Girl", quantidade: 1 }
+        - { sai: "Black Illusion", entra: "Dark Magic Attack", quantidade: 1 }
+        - { sai: "Dark Renewal", entra: "Magical Hats", quantidade: 1 }
+        - { sai: "Dark Renewal", entra: "Spellbinding Circle", quantidade: 1 }
+      principal:
+        - { nome: "Dark Magician", quantidade: 2 }
+        - { nome: "Black Luster Soldier - Envoy of the Beginning", quantidade: 1 }
+        - { nome: "Breaker the Magical Warrior", quantidade: 3 }
+        - { nome: "Chaos Sorcerer", quantidade: 2 }
+        - { nome: "Gorz the Emissary of Darkness", quantidade: 1 }
+        - { nome: "Kuriboh", quantidade: 1 }
+        - { nome: "Magician's Valkyria", quantidade: 3 }
+        - { nome: "Skilled Dark Magician", quantidade: 3 }
+        - { nome: "Dark Hole", quantidade: 1 }
+        - { nome: "Dark Magic Curtain", quantidade: 1 }
+        - { nome: "Diffusion Wave-Motion", quantidade: 1 }
+        - { nome: "Fiend's Sanctuary", quantidade: 1 }
+        - { nome: "Heavy Storm", quantidade: 1 }
+        - { nome: "Magical Dimension", quantidade: 2 }
+        - { nome: "Monster Reborn", quantidade: 1 }
+        - { nome: "Mystical Space Typhoon", quantidade: 2 }
+        - { nome: "Soul Taker", quantidade: 1 }
+        - { nome: "Spell Shattering Arrow", quantidade: 1 }
+        - { nome: "Summoner's Art", quantidade: 2 }
+        - { nome: "Swords of Revealing Light", quantidade: 2 }
+        - { nome: "Magic Cylinder", quantidade: 2 }
+        - { nome: "Mirror Force", quantidade: 2 }
+        - { nome: "Dark Magician Girl", quantidade: 1 }
+        - { nome: "Dark Magic Attack", quantidade: 1 }
+        - { nome: "Magical Hats", quantidade: 1 }
+        - { nome: "Spellbinding Circle", quantidade: 1 }
