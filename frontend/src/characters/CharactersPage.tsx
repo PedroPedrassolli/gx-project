@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { SESSION_KEY, useSession } from "../account/session.ts";
 import { displayName } from "../catalog/cards.ts";
+import { catalogQuery } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
 import { Thumb } from "../catalog/parts.tsx";
 import { useDecks, type DeckSummary } from "../decks/api.ts";
@@ -22,6 +23,13 @@ export function CharactersPage() {
   const characters = useCharacters(Boolean(user));
   const decks = useDecks(Boolean(user));
   const [params, setParams] = useSearchParams();
+  const client = useQueryClient();
+  // Enquanto o jogador escolhe, chega o que o duelo vai usar: o catálogo (nome e imagem das
+  // cartas da mesa) e o código da tela do duelo. A mesa abre pronta (GXP-107).
+  useEffect(() => {
+    void client.prefetchQuery(catalogQuery);
+    void import("../duel/DuelPage.tsx");
+  }, [client]);
 
   if (session.isSuccess && !user) {
     return <SignInFirst title="Personagens" reason="para duelar contra os personagens" />;

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
 import type { Language } from "./cards.ts";
-import { useCardDetail } from "./data.ts";
+import { useCardDetail, useCatalog } from "./data.ts";
 import { Detail } from "./parts.tsx";
 
 // Tela larga o bastante para o detalhe ficar ao lado da lista.
@@ -29,11 +29,15 @@ type Props = {
 
 // O detalhe da carta escolhida, igual em todas as páginas. Na tela larga, um painel que a
 // página põe ao lado da lista; no celular, um diálogo por cima de tudo, que fecha e devolve
-// o lugar na lista.
+// o lugar na lista. A carta aparece na hora com o que o catálogo já tem (nome, imagem e
+// números); só o texto espera o detalhe chegar (GXP-107).
 export function CardPanel(props: Props) {
   const detail = useCardDetail(props.cardId);
-  const body = detail.data ? (
-    <Detail card={detail.data} language={props.language} packs={props.packs} />
+  const summary = useCatalog().data?.byId.get(props.cardId);
+  const card = detail.data ?? summary;
+  const pending = detail.data ? undefined : detail.isError ? "failed" : "loading";
+  const body = card ? (
+    <Detail card={card} pending={pending} language={props.language} packs={props.packs} />
   ) : (
     <h2 id="detail-title">{detail.isError ? "Carta não encontrada." : "Carregando a carta…"}</h2>
   );

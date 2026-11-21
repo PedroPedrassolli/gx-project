@@ -127,6 +127,11 @@ test("mostra a miniatura e a imagem da carta, e esconde a que não carrega", asy
   await expect(thumb).toHaveAttribute("src", /\/cards\/p\/46986414\.webp$/);
   await expect(thumb).toHaveAttribute("loading", "lazy");
   await expect(page.getByRole("img", { name: "Imagem da carta Mago Negro" })).toBeVisible();
+  // Por baixo da imagem grande, a miniatura que já veio com a lista aparece na hora.
+  await expect(page.locator(".detail-image-thumb")).toHaveAttribute(
+    "src",
+    /\/cards\/p\/46986414\.webp$/,
+  );
   await expect(page.getByRole("button", { name: /Pote da Ganância/ }).locator("img")).toBeHidden();
   await expect(page.getByRole("button", { name: /Força Espelho/ }).locator("img")).toHaveCount(0);
 });

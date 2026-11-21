@@ -156,6 +156,15 @@ test("bloqueado não abre pelo endereço; sem deck, manda montar um", async ({ p
   ).toHaveAttribute("href", "/decks");
 });
 
+test("enquanto o jogador escolhe, o catálogo que a mesa usa já é buscado", async ({ page }) => {
+  await mockCharacters(page);
+  const catalog = page.waitForRequest(
+    (request) => new URL(request.url()).pathname === "/api/cards",
+  );
+  await page.goto("/personagens");
+  await catalog;
+});
+
 test("o duelo em andamento aparece com o caminho de volta", async ({ page }) => {
   await mockSession(page, { loggedIn: true });
   await mockCharacters(page, { current: 31 });
