@@ -28,17 +28,47 @@ export function copies(rows: DeckRow[], cardId: number) {
   return rows.filter((row) => row.card_id === cardId).reduce((sum, row) => sum + row.quantity, 0);
 }
 
+// A seção já tem o máximo de cartas (60 no Main, 15 no Extra e no Side).
+export function sectionFull(rows: DeckRow[], section: Section) {
+  return sectionCount(rows, section) >= SECTIONS[section].max;
+}
+
+// O que já impede o deck de duelar pela contagem (GXP-117): o Main Deck fora de 40 a 60 e o
+// Extra ou o Side com mais de 15. O resto (banlist, cartas que o jogador tem) o servidor confere.
+export function deckSizeProblem(counts: Record<Section, number>) {
+  const main = SECTIONS.main;
+  if (counts.main < main.min || counts.main > main.max) {
+    return `O Main Deck tem ${counts.main} cartas: precisa ter de ${main.min} a ${main.max}.`;
+  }
+  for (const section of ["extra", "side"] as const) {
+    const { title, max } = SECTIONS[section];
+    if (counts[section] > max)
+      return `O ${title} tem ${counts[section]} cartas: pode ter até ${max}.`;
+  }
+  return undefined;
+}
+
+// Por que não dá para pôr mais uma cópia da carta na seção (GXP-117): 3 cópias no deck todo
+// ou a seção cheia. O botão fica desativado e a tela mostra o motivo. A banlist não entra
+// aqui, porque depende da sala, nem o que o jogador tem: o deck pode ser um rascunho.
+export function addBlocked(rows: DeckRow[], cardId: number, section: Section) {
+  if (copies(rows, cardId) >= MAX_COPIES) return `Já tem ${MAX_COPIES} no deck.`;
+  if (sectionFull(rows, section)) return `${SECTIONS[section].title} cheio.`;
+  return undefined;
+}
+
 export type DeckEdit =
   | { type: "add"; cardId: number; section: Section }
   | { type: "remove"; cardId: number; section: Section }
   | { type: "destiny"; cardId: number }
   | { type: "move"; cardId: number; from: Section; to: Section };
 
-// Aplica uma edição e devolve as linhas novas. Adicionar para em 3 cópias no deck todo.
+// Aplica uma edição e devolve as linhas novas. Adicionar para em 3 cópias no deck todo e na
+// seção cheia; mover também não enche a seção além do máximo.
 export function editDeck(rows: DeckRow[], edit: DeckEdit): DeckRow[] {
   switch (edit.type) {
     case "add":
-      if (copies(rows, edit.cardId) >= MAX_COPIES) return rows;
+      if (addBlocked(rows, edit.cardId, edit.section)) return rows;
       return change(rows, edit.cardId, edit.section, +1);
     case "remove":
       return change(rows, edit.cardId, edit.section, -1);
@@ -49,6 +79,7 @@ export function editDeck(rows: DeckRow[], edit: DeckEdit): DeckRow[] {
           : row,
       );
     case "move":
+      if (sectionFull(rows, edit.to)) return rows;
       return change(change(rows, edit.cardId, edit.from, -1), edit.cardId, edit.to, +1);
   }
 }

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { EMPTY_FILTERS, matches, sortCards, type Filters } from "./cards.ts";
+import { EMPTY_FILTERS, filtersChanged, matches, sortCards, type Filters } from "./cards.ts";
 import { CardPanel, WIDE, useMediaQuery } from "./CardPanel.tsx";
 import { NO_PACKS, useCatalog, usePackRarities } from "./data.ts";
 import { CatalogFilters } from "./Filters.tsx";
@@ -81,6 +81,7 @@ export function Catalog() {
           setPack("");
           setShown(PAGE);
         }}
+        canReset={filtersChanged(filters, pack)}
       />
 
       <div className="catalog-body">

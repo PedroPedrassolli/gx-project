@@ -79,6 +79,12 @@ export const EMPTY_FILTERS: Filters = {
   order: "asc",
 };
 
+// Algum filtro (ou o pacote) está fora do padrão: só aí "Limpar filtros" faz sentido.
+export function filtersChanged(filters: Filters, pack: string) {
+  const keys = Object.keys(EMPTY_FILTERS) as (keyof Filters)[];
+  return pack !== "" || keys.some((key) => filters[key] !== EMPTY_FILTERS[key]);
+}
+
 // Imagens das cartas no Cloudflare Pages (ADR 0004), em WebP com 3 larguras: p (112) na
 // lista, m (268) e g (813, a da imagem original) no detalhe.
 export const IMAGES_SITE = "https://gx-project-imagens.pages.dev";

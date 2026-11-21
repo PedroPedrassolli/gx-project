@@ -41,6 +41,11 @@ export function ShopPage() {
     },
   });
 
+  // Quanto DP falta para comprar: com saldo curto, o botão desativa e a prateleira diz quanto
+  // falta (GXP-117). Antes de o saldo chegar, nada falta.
+  const missing = (pack: ShopPack, count: number) =>
+    shop.data ? pack.price * count - shop.data.balance : 0;
+
   // Pacote novo na prateleira: o servidor guarda que o jogador já viu, e o destaque some na
   // próxima visita.
   const hasNew = shop.data?.packs.some((pack) => pack.new) ?? false;
@@ -85,19 +90,31 @@ export function ShopPage() {
                   {number(pack.price)} DP, {pack.cards_per_pack} cartas
                 </p>
                 {pack.available ? (
-                  <p className="pack-buy">
-                    {([1, 10] as const).map((count) => (
-                      <button
-                        key={count}
-                        type="button"
-                        className={count === 1 ? "cta" : undefined}
-                        disabled={buy.isPending || (shop.data?.balance ?? 0) < pack.price * count}
-                        onClick={() => buy.mutate({ pack, count })}
-                      >
-                        {count === 1 ? "Comprar 1" : `Comprar 10 (${number(pack.price * 10)} DP)`}
-                      </button>
-                    ))}
-                  </p>
+                  <>
+                    <p className="pack-buy">
+                      {([1, 10] as const).map((count) => (
+                        <button
+                          key={count}
+                          type="button"
+                          className={count === 1 ? "cta" : undefined}
+                          disabled={buy.isPending || missing(pack, count) > 0}
+                          aria-describedby={
+                            missing(pack, count) > 0 ? `pack-${pack.id}-dp` : undefined
+                          }
+                          onClick={() => buy.mutate({ pack, count })}
+                        >
+                          {count === 1 ? "Comprar 1" : `Comprar 10 (${number(pack.price * 10)} DP)`}
+                        </button>
+                      ))}
+                    </p>
+                    {missing(pack, 10) > 0 && (
+                      <p id={`pack-${pack.id}-dp`} className="pack-hint">
+                        {missing(pack, 1) > 0
+                          ? `Faltam ${number(missing(pack, 1))} DP para comprar 1.`
+                          : `Faltam ${number(missing(pack, 10))} DP para comprar 10.`}
+                      </p>
+                    )}
+                  </>
                 ) : (
                   <p className="pack-hint">{pack.hint}</p>
                 )}
@@ -159,6 +176,7 @@ function SecretCode({ onUnlocked }: { onUnlocked: () => void }) {
           </button>
         ))}
       </div>
+      {code.length >= 16 && <p className="hint">O código tem no máximo 16 símbolos.</p>}
       <p className="actions">
         <button
           type="button"

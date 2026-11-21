@@ -258,6 +258,7 @@ React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──
 - O estado do duelo fica num `useReducer` que aplica os `duel.delta` em ordem de `seq`.
 - Imagens: miniatura na lista, normal no campo, grande no zoom. Lazy load. As cartas do próprio deck são pré-carregadas antes do duelo.
 - Animações 2D com CSS e a Web Animations API, com controle de velocidade.
+- Ação que não faz sentido agora fica com o botão desativado (apagado) e, quando o motivo não é óbvio, ele aparece em texto ao lado: falta de DP na loja, deck incompleto na sala e contra personagem, sala cheia, 3 cópias ou seção cheia no Deck Edit, máximo do conversor, limite de 50 decks (GXP-117).
 
 ### 5.9 Planos gratuitos (conferidos na F0: ADR 0004)
 | Serviço | Uso | Limite que importa |

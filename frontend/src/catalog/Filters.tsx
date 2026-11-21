@@ -37,6 +37,7 @@ type Props = {
   language: Language;
   onLanguage: (language: Language) => void;
   onReset: () => void;
+  canReset: boolean; // algum filtro mudou: sem isso, não há o que limpar
   children?: ReactNode; // filtros a mais da tela (coleção e Deck Edit)
 };
 
@@ -111,7 +112,7 @@ export function CatalogFilters(props: Props) {
         options={{ pt: "Português", en: "Inglês" }}
         onChange={(value) => props.onLanguage(value as Language)}
       />
-      <button type="button" className="reset" onClick={props.onReset}>
+      <button type="button" className="reset" disabled={!props.canReset} onClick={props.onReset}>
         Limpar filtros
       </button>
     </form>

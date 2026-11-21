@@ -1,6 +1,12 @@
 import { useMemo, useState } from "react";
 import { useSession } from "../account/session.ts";
-import { EMPTY_FILTERS, matches, sortCards, type Filters } from "../catalog/cards.ts";
+import {
+  EMPTY_FILTERS,
+  filtersChanged,
+  matches,
+  sortCards,
+  type Filters,
+} from "../catalog/cards.ts";
 import { CardPanel, WIDE, useMediaQuery } from "../catalog/CardPanel.tsx";
 import { NO_PACKS, useCatalog, usePackRarities } from "../catalog/data.ts";
 import { CatalogFilters } from "../catalog/Filters.tsx";
@@ -101,6 +107,7 @@ export function CollectionPage() {
           setPack("");
           setShown(PAGE);
         }}
+        canReset={filtersChanged(filters, pack)}
       />
 
       <div className="catalog-body">

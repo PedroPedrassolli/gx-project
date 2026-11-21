@@ -81,6 +81,8 @@ test("lista as cartas e busca pelo nome em português", async ({ page }) => {
 
 test("filtra pelo tipo de carta e pelo pacote, com a raridade", async ({ page }) => {
   await page.goto("/cartas");
+  // Sem filtro, não há o que limpar.
+  await expect(page.getByRole("button", { name: "Limpar filtros" })).toBeDisabled();
   await page.getByRole("radio", { name: "Magia" }).check();
   await expect(page.getByRole("button", { name: /Pote da Ganância/ })).toContainText("Proibida");
   await page.getByRole("button", { name: "Limpar filtros" }).click();

@@ -7,6 +7,7 @@ import { catalogQuery } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
 import { Thumb } from "../catalog/parts.tsx";
 import { useDecks, type DeckSummary } from "../decks/api.ts";
+import { deckSizeProblem } from "../decks/deck.ts";
 import { SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 import { byGroup, charactersKey, startDuel, useCharacters, type Character } from "./api.ts";
@@ -145,6 +146,9 @@ function DeckDialog(props: {
   const chosen = decks.some((deck) => String(deck.id) === deckId)
     ? deckId
     : String(decks[0]?.id ?? "");
+  // Deck que já não vale pela contagem não começa o duelo; a tela diz o que falta (GXP-117).
+  const chosenDeck = decks.find((deck) => String(deck.id) === chosen);
+  const problem = chosenDeck && deckSizeProblem(chosenDeck.counts);
   const start = useMutation({
     mutationFn: () => startDuel(props.character.id, chosen),
     onSuccess: (matchId) => {
@@ -202,6 +206,11 @@ function DeckDialog(props: {
               ))}
             </select>
           </div>
+          {problem && chosenDeck && (
+            <p id="deck-reason" className="hint">
+              {problem} <Link to={`/decks/${chosenDeck.id}`}>Abrir no Deck Edit</Link>
+            </p>
+          )}
           {start.error && (
             <p role="alert" className="form-error">
               {start.error.message}
@@ -211,7 +220,13 @@ function DeckDialog(props: {
       )}
       <p className="actions">
         {decks.length > 0 && (
-          <button type="submit" form="deck-form" className="cta" disabled={start.isPending}>
+          <button
+            type="submit"
+            form="deck-form"
+            className="cta"
+            disabled={start.isPending || Boolean(problem)}
+            aria-describedby={problem ? "deck-reason" : undefined}
+          >
             {start.isPending ? "Começando…" : "Começar o duelo"}
           </button>
         )}
