@@ -13,7 +13,8 @@ module Decks
       now = Time.current
       # Duas inserções em vez de uma por carta: o banco fica em outra cidade.
       user.collection_cards.insert_all!(entries.group_by(&:card_id).map do |card_id, rows|
-        { card_id:, quantity: rows.sum(&:quantity), obtained_at: now }
+        # As cartas do deck inicial já chegam vistas: "nova" é a que vem da loja e das missões.
+        { card_id:, quantity: rows.sum(&:quantity), obtained_at: now, seen_at: now }
       end)
       user.decks.create!(name: NAME).deck_cards.insert_all!(entries.map(&:to_h))
     end

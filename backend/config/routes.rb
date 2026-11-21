@@ -21,11 +21,14 @@ Rails.application.routes.draw do
     resource :me, only: :destroy, controller: "me" do
       get :export
     end
-    resource :collection, only: :show
+    resource :collection, only: :show do
+      post :seen
+    end
     resources :challenges, only: :index
     resource :shop, only: :show, controller: "shop" do
       post :purchases, action: :purchase
       post :codes, action: :code
+      post :seen
       get :converter
       get "converter/groups/:amount", action: :converter_group, as: :converter_group
       post :conversions, action: :conversion

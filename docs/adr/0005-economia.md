@@ -120,7 +120,9 @@ farm de DP entre contas combinadas.
   débito no razão (`compra:CHAVE`), sorteio (`Shop::Draw`: pesos 75, 18, 5 e 2 entre as
   raridades que o pacote tem) com a semente gravada em `pack_openings` e as cartas na coleção.
   A mesma chave devolve a mesma compra, sem cobrar de novo. A carta "nova" é a que o jogador
-  ainda não tinha (só a primeira cópia dela na compra).
+  ainda não tinha (só a primeira cópia dela na compra). O pacote liberado que o jogador ainda
+  não viu na prateleira aparece com o selo "Novo" (`users.seen_pack_ids`); abrir a loja
+  manda `POST /api/shop/seen`, e o selo some na visita seguinte.
 - **Missões** (GXP-89, `Economy::Missions`, `db/seeds/missoes.yml`): contam as vitórias que
   pagam DP de verdade, isto é, duelo que não é curto e até a 3ª vitória do dia contra o mesmo
   oponente (`match_players.mission_win`). Assim, dois amigos trocando vitórias não fecham

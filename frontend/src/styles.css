@@ -1459,6 +1459,31 @@ input[type="file"]::file-selector-button {
   }
 }
 
+/* O aviso das cartas novas no baú do Deck Edit (GXP-42), com a borda dourada da carta nova. */
+.chest-new {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+}
+
+/* Pacote recém-liberado: o selo dourado ao lado do nome (escopo 4). */
+.new-pack {
+  margin-left: 0.25rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-family: var(--font-text);
+  font-size: 0.75rem;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+
 /* A entrada do conversor na loja: um bloco curto entre a prateleira e o código secreto. */
 .converter-link {
   max-width: 32rem;
