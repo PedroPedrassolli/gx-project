@@ -5,9 +5,9 @@ import { usePageTitle } from "./pageTitle.ts";
 
 // Página inicial: a mesa. Os atalhos têm a forma de uma carta, cada um com a cor de
 // moldura de um tipo de carta, e o andamento do projeto aparece como as fases de um turno.
-// Nada aqui depende da sessão: as quatro cartas aparecem para todos (sem conta, Decks e
-// Coleção pedem para entrar), e "Entrar" e "Criar conta" ficam no topo. Assim a página não
-// pula quando a sessão chega, e a linha de cartas fica sempre cheia.
+// Nada aqui depende da sessão: as seis cartas aparecem para todos (sem conta, as que pedem
+// login mandam entrar), e "Entrar" e "Criar conta" ficam no topo. Assim a página não pula
+// quando a sessão chega, e as linhas de cartas ficam sempre cheias: 2 ou 3 por linha.
 export function App() {
   usePageTitle();
   const phase = currentPhase(PHASES);
@@ -25,6 +25,12 @@ export function App() {
         </MenuCard>
         <MenuCard title="Decks" to="/decks" frame="spell" art={<DeckArt />}>
           Monte, confira e importe os seus decks.
+        </MenuCard>
+        <MenuCard title="Loja" to="/loja" frame="ritual" art={<ShopArt />}>
+          Gaste o DP dos duelos em pacotes e troque as repetidas.
+        </MenuCard>
+        <MenuCard title="Desafios" to="/desafios" frame="trap" art={<ChallengesArt />}>
+          Missões que liberam pacotes e os 104 desafios do jogo.
         </MenuCard>
         <MenuCard title="Cartas" to="/cartas" frame="normal" art={<CardsArt />}>
           Todas as cartas do jogo, com busca e texto em português.
@@ -100,6 +106,23 @@ const CardsArt = () => (
     <rect x="8" y="8" width="20" height="29" rx="2" />
     <circle cx="31" cy="30" r="7" />
     <path d="m36 35 6 6" />
+  </Art>
+);
+
+// Um pacote de cartas fechado, com a aba de abrir em cima.
+const ShopArt = () => (
+  <Art>
+    <path d="M13 9h22l-2 4 2 4v24H13V17l2-4z" />
+    <path d="M13 17h22M19 27h10M24 22v10" />
+  </Art>
+);
+
+// Uma medalha pendurada na fita.
+const ChallengesArt = () => (
+  <Art>
+    <path d="m16 6 8 14 8-14" />
+    <circle cx="24" cy="30" r="10" />
+    <path d="m24 25 1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" />
   </Art>
 );
 

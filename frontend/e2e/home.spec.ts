@@ -8,13 +8,15 @@ test("a página inicial mostra o projeto, os atalhos e a fase atual", async ({ p
   await page.goto("/");
   const main = page.getByRole("main");
   await expect(main.getByRole("heading", { level: 1, name: "GX Project" })).toBeVisible();
-  await expect(main.getByText("Fase atual: F4, Economia e loja.")).toBeVisible();
+  await expect(main.getByText("Fase atual: F5, Fila e partidas melhor de 3.")).toBeVisible();
   await expect(main.getByRole("link", { name: "Cartas" })).toHaveAttribute("href", "/cartas");
   // O duelo leva às salas (lá, quem não entrou vê o convite para entrar).
   await expect(main.getByRole("link", { name: "Duelo" })).toHaveAttribute("href", "/salas");
-  // As quatro cartas aparecem para todos (sem conta, Decks e Coleção pedem para entrar);
+  // As seis cartas aparecem para todos (sem conta, as que pedem login mandam entrar);
   // entrar e criar conta ficam no topo.
-  await expect(main.getByRole("list", { name: "Atalhos" }).getByRole("listitem")).toHaveCount(4);
+  await expect(main.getByRole("list", { name: "Atalhos" }).getByRole("listitem")).toHaveCount(6);
+  await expect(main.getByRole("link", { name: "Loja" })).toHaveAttribute("href", "/loja");
+  await expect(main.getByRole("link", { name: "Desafios" })).toHaveAttribute("href", "/desafios");
   await expect(main.getByRole("link", { name: "Decks" })).toHaveAttribute("href", "/decks");
   await expect(
     page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Criar conta" }),

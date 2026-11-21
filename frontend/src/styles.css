@@ -134,7 +134,7 @@ h2 {
    meio e o texto numa caixa clara, como numa carta. A carta inteira é o link. */
 @media (min-width: 40rem) {
   .table-menu {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -2511,6 +2511,7 @@ button.pile {
 }
 
 .duel-result {
+  scroll-margin-top: 1rem;
   padding: 1rem;
   border: 2px solid var(--color-accent);
   border-radius: var(--radius);
