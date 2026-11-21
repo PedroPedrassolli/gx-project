@@ -1,10 +1,10 @@
 module Economy
   # O DP do fim do duelo (GXP-85; ADR 0005): para cada jogador com conta, os desafios que ele
   # concluiu, os bônus, o anti-farm, o crédito no razão (chave partida:ID, então nunca paga
-  # duas vezes) e a subida de nível, que paga 400 por nível. O resumo fica no jogador da
+  # duas vezes) e a subida de nível, que paga 100 por nível. O resumo fica no jogador da
   # partida, para a tela de resultado. Roda na mesma transação que encerra a partida.
   class DuelRewards
-    LEVEL_UP_DP = 400
+    LEVEL_UP_DP = 100
     ZONE = "America/Sao_Paulo"
 
     # field: a mesa no fim (Duel::Query.field), com o PV e o deck de cada lado.
@@ -34,10 +34,8 @@ module Economy
       progress = @challenges.complete(player, user, stats)
       challenges = progress[:new].map { |number| { number:, label: Challenges.label(number) } }
       lines = BonusCalculator.lines(stats.merge(challenges: progress[:total]))
-      earlier = earlier_today(user, opponent)
-      farm = AntiFarm.apply(lines.sum { |line| line[:dp] }, short: short?, earlier_today: earlier, earned_today: earned_today(user),
-                                                             new_account: user.created_at > AntiFarm::NEW_ACCOUNT.ago)
-      missions = missions(player, user, stats[:result] == :win && !short? && earlier < AntiFarm::MISSION_WINS)
+      farm = AntiFarm.apply(lines.sum { |line| line[:dp] }, short: short?, earned_today: earned_today(user))
+      missions = missions(player, user, stats[:result] == :win && !short?)
       Ledger.post!(user, farm[:total], reason: "duel", key: "partida:#{@match.id}", ref: @match)
       level_ups = level_up(user.reload)
       player.update!(rewards: { lines:, cuts: farm[:cuts], level_ups:, challenges:, missions:, total: farm[:total] + level_ups.sum { |line| line[:dp] },
@@ -75,28 +73,18 @@ module Economy
 
     def today = Time.current.in_time_zone(ZONE).all_day
 
-    # Duelos contra o mesmo oponente que já acabaram hoje (sem contar este).
-    def earlier_today(user, opponent)
-      return 0 unless opponent
-
-      Match.where(status: "finished", finished_at: today).where.not(id: @match.id)
-           .where(id: MatchPlayer.where(user_id: user.id).select(:match_id))
-           .where(id: MatchPlayer.where(user_id: opponent.id).select(:match_id)).count
-    end
-
     def earned_today(user) = user.dp_transactions.where(reason: "duel", created_at: today).sum(:amount)
 
-    # Cada nível novo paga 400, e esse DP também conta para o próximo nível.
+    # Cada nível novo paga 100. Esse DP não conta para o próximo nível (Ledger), então uma
+    # conta basta, mesmo quando o duelo sobe vários níveis de uma vez.
     def level_up(user)
-      lines = []
-      while (level = Level.for(user.dp_earned)) > user.level
-        dp = LEVEL_UP_DP * (level - user.level)
-        user.update!(level:)
-        Ledger.post!(user, dp, reason: "level_up", key: "nivel:#{level}", ref: @match)
-        lines << { key: "level_up", label: "Subiu para o nível #{level}", dp: }
-        user.reload
-      end
-      lines
+      level = Level.for(user.dp_earned)
+      return [] unless level > user.level
+
+      dp = LEVEL_UP_DP * (level - user.level)
+      user.update!(level:)
+      Ledger.post!(user, dp, reason: "level_up", key: "nivel:#{level}", ref: @match)
+      [ { key: "level_up", label: "Subiu para o nível #{level}", dp: } ]
     end
   end
 end

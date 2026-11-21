@@ -75,10 +75,7 @@ export function ChallengesPage() {
               </li>
             ))}
           </ul>
-          <p className="hint">
-            Conta a vitória de um duelo com pelo menos 3 turnos e 2 minutos, até 3 por dia contra o
-            mesmo oponente.
-          </p>
+          <p className="hint">Conta a vitória de todo duelo com pelo menos 3 turnos e 2 minutos.</p>
         </section>
       )}
       {data && (

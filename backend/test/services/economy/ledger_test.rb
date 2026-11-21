@@ -12,6 +12,13 @@ class Economy::LedgerTest < ActiveSupport::TestCase
     assert_equal [ 300, 200 ], user.dp_transactions.order(:id).pluck(:balance_after)
   end
 
+  it "o DP de subir de nível entra no saldo, mas não conta para o próximo nível" do
+    Economy::Ledger.post!(user, 300, reason: "duel", key: "partida:1")
+    Economy::Ledger.post!(user, 100, reason: "level_up", key: "nivel:2")
+
+    assert_equal [ 400, 300 ], [ Economy::Ledger.balance(user), user.reload.dp_earned ]
+  end
+
   it "a chave repetida devolve o lançamento que já existe, sem pagar de novo" do
     first = Economy::Ledger.post!(user, 300, reason: "duel", key: "partida:1")
     again = Economy::Ledger.post!(user, 300, reason: "duel", key: "partida:1")
