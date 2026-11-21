@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   EMPTY_FILTERS,
+  cardText,
   frame,
   imageUrl,
   matches,
@@ -108,6 +109,25 @@ test("monta a linha de tipo em português", () => {
   assert.equal(
     typeLine({ id: 5, name: "Sogen", card_type: "Spell", property: "Field" }),
     "Magia de Campo",
+  );
+});
+
+test("mostra o texto no idioma escolhido e avisa quando o português falta ou não é oficial", () => {
+  const card = { id: 1, name: "Pot", text: "Draw 2 cards.", source: "" };
+  assert.deepEqual(cardText(card, "en"), { text: "Draw 2 cards." });
+  assert.deepEqual(cardText(card, "pt"), {
+    text: "Draw 2 cards.",
+    note: "Sem texto em português: este é o texto em inglês.",
+  });
+  assert.deepEqual(cardText({ ...card, text_pt: "Compre 2 cards." }, "pt"), {
+    text: "Compre 2 cards.",
+  });
+  assert.deepEqual(
+    cardText({ ...card, text_pt: "Compre 2 cards.", text_pt_unofficial: true }, "pt"),
+    {
+      text: "Compre 2 cards.",
+      note: "Tradução não oficial, feita pelo GX Project.",
+    },
   );
 });
 

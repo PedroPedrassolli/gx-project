@@ -58,7 +58,8 @@ module Catalog
     def detail(card)
       packs = @pack_cards.fetch(card.id, []).map { |_card, pack_id, rarity| { id: pack_id, rarity: } }
       summary(card).merge({ passcode: card.passcode, name_in_game: card.name_in_game, text: card.text,
-                            text_pt: card.text_pt, packs: packs.presence, source: format(SOURCE, card.source_revision) }.compact)
+                            text_pt: card.text_pt, text_pt_unofficial: (true if card.text_pt_unofficial),
+                            packs: packs.presence, source: format(SOURCE, card.source_revision) }.compact)
     end
 
     # Sem a regra de liberação: ela fica só no servidor (a loja diz a cada jogador o que falta),

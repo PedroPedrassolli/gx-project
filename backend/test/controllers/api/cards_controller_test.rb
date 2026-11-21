@@ -69,6 +69,13 @@ class Api::CardsControllerTest < ActionDispatch::IntegrationTest
                                                                          "text" => "FLIP: Destroy 1 monster." })
       _(data["packs"].pluck("rarity").sort).must_equal %w[ultra_rare ultra_rare ultra_rare]
       _(data["source"]).must_equal "https://yugipedia.com/index.php?oldid=1"
+      _(data.slice("text_pt", "text_pt_unofficial")).must_equal({ "text_pt" => "VIRE: destrua 1 monstro.", "text_pt_unofficial" => true })
+    end
+
+    it "só marca o texto em português quando a tradução não é oficial" do
+      get api_card_path(card_id(500))
+
+      _(data.slice("text_pt", "text_pt_unofficial")).must_equal({ "text_pt" => "Texto da engrenagem." })
     end
 
     it "responde 404 em JSON para carta que não existe" do

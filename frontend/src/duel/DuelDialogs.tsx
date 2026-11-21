@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { displayName, imageUrl, type CardSummary, type Language } from "../catalog/cards.ts";
+import {
+  cardText,
+  displayName,
+  imageUrl,
+  type CardSummary,
+  type Language,
+} from "../catalog/cards.ts";
 import { useCardDetail } from "../catalog/data.ts";
 import { Stats } from "../catalog/parts.tsx";
 import type { ChainLink, Prompt } from "./api.ts";
@@ -44,13 +50,15 @@ function CardText(props: {
   const summary = props.code ? props.cards.get(props.code) : undefined;
   const detail = useCardDetail(summary?.id ?? 0);
   if (!summary) return null;
-  const card = detail.data;
-  const text = card && (props.language === "pt" ? (card.text_pt ?? card.text) : card.text);
+  const shown = detail.data && cardText(detail.data, props.language);
   return (
     <section className="card-text" aria-labelledby="card-text-title" aria-live="polite">
       <h3 id="card-text-title">{displayName(summary, props.language)}</h3>
       <Stats card={summary} />
-      <p>{text ?? (detail.isError ? "Não deu para carregar o texto." : "Carregando o texto…")}</p>
+      <p>
+        {shown?.text ?? (detail.isError ? "Não deu para carregar o texto." : "Carregando o texto…")}
+      </p>
+      {shown?.note && <p className="muted">{shown.note}</p>}
     </section>
   );
 }

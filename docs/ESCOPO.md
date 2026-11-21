@@ -92,7 +92,7 @@
 
 ### 3.2 Cartas e coleção
 - O pool é exatamente o do jogo de referência, com cartas originais do anime e Sincro (sem Sincro Sombrio).
-- O texto de cada carta é o da época (pré-errata) quando existir, em inglês, ou em português quando houver tradução. A interface é em português.
+- O texto de cada carta é o da época (pré-errata) quando existir. Em português, vale a tradução oficial; sem ela, a nossa, com o aviso de que não é oficial (ADR 0014). A interface é em português.
 - Imagens: YGOPRODeck, baixadas uma vez e hospedadas por nós, em WebP com 3 tamanhos. Cartas do anime sem imagem mostram só o texto.
 - Coleção: quantidade por carta, % total e por pacote (essa % é condição de desbloqueio na loja).
 - Conta nova recebe o **deck inicial do jogo de referência**.

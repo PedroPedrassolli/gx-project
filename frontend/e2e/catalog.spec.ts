@@ -103,6 +103,20 @@ test("mostra o detalhe da carta e troca o idioma do texto", async ({ page }) => 
   );
 });
 
+test("avisa quando o texto em português é tradução nossa, não a oficial", async ({ page }) => {
+  await page.route("**/api/cards/1", (route) =>
+    route.fulfill({ json: { data: { ...detail, text_pt_unofficial: true } } }),
+  );
+  await page.goto("/cartas?carta=1");
+  const panel = page.getByRole("region", { name: "Mago Negro" });
+  await expect(panel).toContainText("O mago definitivo");
+  await expect(panel).toContainText("Tradução não oficial, feita pelo GX Project.");
+  await page.getByRole("radio", { name: "Inglês" }).check();
+  await expect(page.getByRole("region", { name: "Dark Magician" })).not.toContainText(
+    "Tradução não oficial",
+  );
+});
+
 test("mostra a miniatura e a imagem da carta, e esconde a que não carrega", async ({ page }) => {
   await page.goto("/cartas?carta=1");
   // A conexão com o site das imagens abre junto com a página, antes de a lista chegar.
