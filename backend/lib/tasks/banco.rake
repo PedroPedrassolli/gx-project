@@ -5,7 +5,8 @@ namespace :banco do
     if opened.empty?
       puts "Nenhuma tabela estava aberta para a API de dados."
     else
-      puts "RLS ligado em #{opened.size} tabelas que estavam abertas: #{opened.join(', ')}."
+      tables = opened.size == 1 ? "1 tabela que estava aberta" : "#{opened.size} tabelas que estavam abertas"
+      puts "RLS ligado em #{tables}: #{opened.join(', ')}."
     end
   end
 end

@@ -14,13 +14,20 @@ class Api::ShopController < Api::BaseController
   end
 
   # GET /api/shop: o saldo, o nível e os pacotes na ordem da loja, com a dica de como liberar
-  # os bloqueados.
+  # os bloqueados. new: liberado e ainda não visto na prateleira (POST /api/shop/seen).
   def show
-    availability = Shop::Availability.for(current_user)
-    packs = Pack.order(:position).map do |pack|
-      pack.slice(:id, :name, :price, :cards_per_pack).merge(availability.call(pack.availability))
+    seen = current_user.seen_pack_ids.to_set
+    packs = shelf.map do |pack, state|
+      pack.slice(:id, :name, :price, :cards_per_pack).merge(state, new: state[:available] && !seen.include?(pack.id))
     end
     render json: { data: { balance: Economy::Ledger.balance(current_user), level: current_user.level, packs: } }
+  end
+
+  # POST /api/shop/seen: os pacotes liberados agora deixam de aparecer como novos.
+  def seen
+    available = shelf.filter_map { |pack, state| pack.id if state[:available] }
+    current_user.update!(seen_pack_ids: current_user.seen_pack_ids | available)
+    head :no_content
   end
 
   # POST /api/shop/purchases: { pack_id, count (1 ou 10), key }. A mesma chave devolve a mesma
@@ -67,5 +74,13 @@ class Api::ShopController < Api::BaseController
     cards = Array(rows).each_with_object(Hash.new(0)) { |row, sum| sum[row[:id].to_i] += row[:quantity].to_i }
     conversion = Shop::Converter.new(current_user, cards, key:).call
     render json: { data: { card_id: conversion.card_id, amount: conversion.amount, new: conversion.new_card } }, status: :created
+  end
+
+  private
+
+  # Os pacotes na ordem da loja, cada um com { available, hint } para o jogador.
+  def shelf
+    availability = Shop::Availability.for(current_user)
+    Pack.order(:position).map { |pack| [ pack, availability.call(pack.availability) ] }
   end
 end

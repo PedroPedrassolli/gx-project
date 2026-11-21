@@ -45,10 +45,12 @@ const deck = {
   errors: [],
 };
 const collection = {
+  // A 3 veio depois, de um pacote, e o jogador ainda não viu.
   data: [1, 2, 3].map((card_id) => ({
     card_id,
     quantity: card_id === 1 ? 3 : 1,
-    obtained_at: "2026-11-08T12:00:00.000-03:00",
+    obtained_at: card_id === 3 ? "2026-11-20T21:00:00.000-03:00" : "2026-11-08T12:00:00.000-03:00",
+    new: card_id === 3,
   })),
   meta: { total: { owned: 3, cards: 3, percent: 100 }, packs: [] },
 };
@@ -222,6 +224,34 @@ test("põe cartas do baú no deck, até 3 cópias, e mostra o detalhe", async ({
 
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
+});
+
+test("a carta nova aparece marcada, dá para ver só as novas, e ela deixa de ser nova ao abrir", async ({
+  page,
+}) => {
+  const seen: unknown[] = [];
+  await page.route("**/api/collection/seen", (route) => {
+    seen.push(route.request().postDataJSON());
+    return route.fulfill({ status: 204 });
+  });
+  await page.goto("/decks/7");
+  const chest = page.getByRole("region", { name: "Baú" });
+  await expect(chest.locator(".chest-new")).toContainText("Você tem 1 carta nova.");
+
+  await chest.getByRole("button", { name: "Ver só as novas" }).click();
+  await expect(chest.getByRole("status")).toHaveText("1 carta");
+  const wingman = chest.getByRole("listitem").filter({ hasText: "Elemental HERO Flame Wingman" });
+  await expect(wingman).toContainText("Nova");
+  await chest.getByRole("button", { name: /^Elemental HERO Flame Wingman/ }).click();
+  await expect(wingman).not.toContainText("Nova");
+  // Continua na lista até o filtro ser desligado.
+  await expect(chest.getByRole("status")).toHaveText("1 carta");
+  expect(seen).toEqual([{ card_ids: [3] }]);
+
+  await chest.getByRole("button", { name: "Ver todas" }).click();
+  await chest.getByText("Mais filtros").click();
+  await chest.getByLabel("Mais recentes primeiro").check();
+  await expect(chest.locator(".chest-item").first()).toContainText("Elemental HERO Flame Wingman");
 });
 
 test("o baú mostra também as cartas que o jogador não tem, se pedir", async ({ page }) => {

@@ -38,6 +38,14 @@ inválido pode ser salvo, nem como é o formato de texto, nem como a Destiny via
    200 objetos (um deck cheio tem 90 cartas); outra coisa volta 422 e não apaga as cartas do
    deck. `card_id` e `quantity` que não são inteiros viram 0, que a validação recusa. O
    arquivo importado vai até 50 KB (um `.ydk` cheio tem uns 1,5 KB).
+8. **Carta nova no baú (GXP-42, F4):** "nova" é a carta que o jogador ganhou (loja, missão
+   ou conversor) e ainda não abriu no baú, como no jogo de referência. Fica em
+   `collection_cards.seen_at` (vazio = nova); ganhar mais cópias de uma carta que ele já tem
+   não a faz nova de novo. O deck inicial chega visto, e as cartas que já existiam na
+   migração contam como vistas. Abrir o detalhe marca a carta (`POST /api/collection/seen`
+   com `card_ids`); "Marcar todas como vistas" manda sem a lista. O baú avisa quantas são
+   novas, filtra "só as novas" (a lista do momento em que o filtro foi ligado, para a carta
+   aberta não sumir) e ordena pela data de obtenção ("Mais recentes primeiro").
 
 ## Consequências
 

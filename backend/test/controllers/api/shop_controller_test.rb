@@ -19,8 +19,21 @@ class Api::ShopControllerTest < ActionDispatch::IntegrationTest
 
     data = response.parsed_body["data"]
     assert_equal [ 300, 1 ], data.values_at("balance", "level")
-    assert_equal({ "id" => pack_a.id, "name" => "Pack A", "price" => 50, "cards_per_pack" => 5, "available" => true, "hint" => nil }, data["packs"].first)
-    assert_equal [ false, "Chegue ao nível 10." ], data["packs"].second.values_at("available", "hint")
+    assert_equal({ "id" => pack_a.id, "name" => "Pack A", "price" => 50, "cards_per_pack" => 5, "available" => true, "hint" => nil, "new" => true },
+                 data["packs"].first)
+    assert_equal [ false, "Chegue ao nível 10.", false ], data["packs"].second.values_at("available", "hint", "new")
+  end
+
+  it "o pacote liberado aparece como novo até o jogador ver a prateleira" do
+    post seen_api_shop_path, as: :json
+    assert_response :no_content
+    assert_equal [ pack_a.id ], user.reload.seen_pack_ids
+
+    get api_shop_path
+    assert_equal [ false ], response.parsed_body.dig("data", "packs").pluck("new").uniq
+    user.update!(level: 10)
+    get api_shop_path
+    assert_equal [ "Pack B" ], response.parsed_body.dig("data", "packs").select { |pack| pack["new"] }.pluck("name")
   end
 
   it "a compra cobra, sorteia, guarda a abertura e põe as cartas na coleção; a mesma chave não cobra de novo" do

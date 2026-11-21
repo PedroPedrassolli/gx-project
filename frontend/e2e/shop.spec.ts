@@ -17,6 +17,7 @@ const shop = {
       cards_per_pack: 5,
       available: true,
       hint: null,
+      new: true,
     },
     {
       id: 11,
@@ -25,6 +26,7 @@ const shop = {
       cards_per_pack: 5,
       available: false,
       hint: "Chegue ao nível 27.",
+      new: false,
     },
   ],
 };
@@ -35,6 +37,7 @@ async function mockShop(page: Page) {
   await page.route("**/api/cards", (route) => route.fulfill({ json: { data: cards } }));
   await page.route("**/api/packs", (route) => route.fulfill({ json: { data: [] } }));
   await page.route("**/api/shop", (route) => route.fulfill({ json: { data: shop } }));
+  await page.route("**/api/shop/seen", (route) => route.fulfill({ status: 204 }));
   const sent: unknown[] = [];
   await page.route("**/api/shop/purchases", (route) => {
     sent.push(route.request().postDataJSON());
@@ -57,13 +60,19 @@ test("sem login, pede para entrar", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Entre na sua conta" })).toBeVisible();
 });
 
-test("a prateleira mostra o saldo, o preço e a dica dos bloqueados", async ({ page }) => {
+test("a prateleira mostra o saldo, o preço, o selo de novo e a dica dos bloqueados", async ({
+  page,
+}) => {
   await mockShop(page);
+  const seen = page.waitForRequest("**/api/shop/seen");
   await page.goto("/loja");
 
   await expect(page.getByText("Você tem 120 DP. Nível 3.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Beginner Monsters Novo" })).toBeVisible();
+  await seen;
   const locked = page.getByRole("listitem").filter({ hasText: "Making the Team 1" });
   await expect(locked).toContainText("Chegue ao nível 27.");
+  await expect(locked).not.toContainText("Novo");
   await expect(locked.getByRole("button")).toHaveCount(0);
   // 10 pacotes custam 500: o saldo não dá.
   await expect(page.getByRole("button", { name: "Comprar 10 (500 DP)" })).toBeDisabled();

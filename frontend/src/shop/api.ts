@@ -9,6 +9,7 @@ export type ShopPack = {
   cards_per_pack: number;
   available: boolean;
   hint: string | null; // como liberar, quando bloqueado
+  new: boolean; // liberado e ainda não visto na prateleira
 };
 
 export type Shop = { balance: number; level: number; packs: ShopPack[] };
@@ -23,6 +24,12 @@ export function useShop(enabled: boolean) {
     queryFn: async () => (await request<{ data: Shop }>("GET", "/api/shop")).data,
     enabled,
   });
+}
+
+// Os pacotes liberados agora deixam de ser novos. A tela não busca a loja de novo: o destaque
+// fica até o jogador sair da página.
+export async function markPacksSeen() {
+  await request("POST", "/api/shop/seen");
 }
 
 // O código secreto: devolve os nomes dos pacotes que ele libera.

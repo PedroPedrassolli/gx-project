@@ -19,6 +19,8 @@ class Decks::StarterDeckTest < ActiveSupport::TestCase
     _(deck.deck_cards.where(destiny: true).count).must_equal 3
     _(user.collection_cards.sum(:quantity)).must_equal 55
     _(user.collection_cards.pluck(:obtained_at).uniq).must_equal [ Time.zone.local(2026, 11, 8, 12) ]
+    # O deck inicial chega visto: no baú, "nova" é só a carta ganha depois.
+    _(user.collection_cards.pluck(:seen_at).uniq).must_equal [ Time.zone.local(2026, 11, 8, 12) ]
     _(Decks::Validator.for(deck).errors).must_be_empty
   end
 

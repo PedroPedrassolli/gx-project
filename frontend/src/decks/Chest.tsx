@@ -10,6 +10,7 @@ import {
   type Pack,
 } from "../catalog/cards.ts";
 import { usePackRarities } from "../catalog/data.ts";
+import { useCollection, useMarkSeen } from "../collection/api.ts";
 import { CatalogFilters } from "../catalog/Filters.tsx";
 import { CardTile } from "../catalog/parts.tsx";
 import { copies, goesToExtra, type DeckRow, type Section } from "./deck.ts";
@@ -32,24 +33,60 @@ type Props = {
 
 // Baú do Deck Edit (escopo 4): as cartas para pôr no deck, com os filtros do catálogo.
 // Fusão e Sincro vão para o Extra; o resto, para o Main. Qualquer uma pode ir para o Side.
+// A carta ganha na loja ou numa missão aparece como nova até o jogador abrir o detalhe dela
+// (GXP-42), e dá para ver só as novas ou pôr as mais recentes primeiro.
 export function Chest(props: Props) {
   const { owned, rows, language } = props;
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [pack, setPack] = useState("");
   const [onlyOwned, setOnlyOwned] = useState(true);
+  const [onlyNew, setOnlyNew] = useState(false);
+  const [recentFirst, setRecentFirst] = useState(false);
   const [shown, setShown] = useState(PAGE);
   const rarities = usePackRarities(pack).data ?? null;
+  const collection = useCollection(true).data?.data;
+  const markSeen = useMarkSeen();
+  const fresh = useMemo(
+    () => new Set(collection?.filter((row) => row.new).map((row) => row.card_id)),
+    [collection],
+  );
+  const obtained = useMemo(
+    () => new Map(collection?.map((row) => [row.card_id, row.obtained_at])),
+    [collection],
+  );
+  // "Só as novas" mostra as que eram novas quando o filtro foi ligado: abrir o detalhe de uma
+  // carta não a faz sumir da lista na mesma hora.
+  const [newShown, setNewShown] = useState<Set<number>>(new Set());
 
   const results = useMemo(() => {
     if (pack !== "" && !rarities) return [];
     const list = props.cards.filter(
       (card) =>
         (!onlyOwned || owned.has(card.id)) &&
+        (!onlyNew || newShown.has(card.id)) &&
         matches(card, filters) &&
         (!rarities || rarities.has(card.id)),
     );
-    return sortCards(list, filters, language);
-  }, [props.cards, onlyOwned, owned, filters, pack, rarities, language]);
+    const sorted = sortCards(list, filters, language);
+    if (!recentFirst) return sorted;
+    // Mais recentes primeiro; as que o jogador não tem vão para o fim. O sort é estável: no
+    // mesmo dia, vale a ordem escolhida nos filtros.
+    return sorted.sort((a, b) =>
+      (obtained.get(b.id) ?? "").localeCompare(obtained.get(a.id) ?? ""),
+    );
+  }, [
+    props.cards,
+    onlyOwned,
+    onlyNew,
+    newShown,
+    owned,
+    filters,
+    pack,
+    rarities,
+    language,
+    recentFirst,
+    obtained,
+  ]);
 
   const reset = () => setShown(PAGE);
 
@@ -83,6 +120,8 @@ export function Chest(props: Props) {
           setFilters(EMPTY_FILTERS);
           setPack("");
           setOnlyOwned(true);
+          setOnlyNew(false);
+          setRecentFirst(false);
           reset();
         }}
       >
@@ -97,7 +136,48 @@ export function Chest(props: Props) {
           />
           Só as que tenho
         </label>
+        <label className="choice">
+          <input
+            type="checkbox"
+            checked={recentFirst}
+            onChange={(event) => {
+              setRecentFirst(event.target.checked);
+              reset();
+            }}
+          />
+          Mais recentes primeiro
+        </label>
       </CatalogFilters>
+
+      {(fresh.size > 0 || onlyNew) && (
+        <p className="chest-new">
+          {fresh.size > 0
+            ? `Você tem ${fresh.size} ${fresh.size === 1 ? "carta nova" : "cartas novas"}.`
+            : "Você já viu todas as cartas novas."}
+          <button
+            type="button"
+            aria-pressed={onlyNew}
+            onClick={() => {
+              setNewShown(new Set(fresh));
+              setOnlyNew(!onlyNew);
+              reset();
+            }}
+          >
+            {onlyNew ? "Ver todas" : "Ver só as novas"}
+          </button>
+          {fresh.size > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                markSeen();
+                setOnlyNew(false);
+              }}
+            >
+              Marcar todas como vistas
+            </button>
+          )}
+        </p>
+      )}
 
       <p role="status">{`${results.length} ${results.length === 1 ? "carta" : "cartas"}`}</p>
       <ul className="card-grid">
@@ -115,11 +195,15 @@ export function Chest(props: Props) {
                 card={card}
                 language={language}
                 selected={props.selected === card.id}
-                onSelect={() => props.onSelect(card.id)}
+                onSelect={() => {
+                  props.onSelect(card.id);
+                  if (fresh.has(card.id)) markSeen([card.id]);
+                }}
               >
                 <span className="badge">
                   Tenho {owned.get(card.id) ?? 0} · no deck {copies(rows, card.id)}
                 </span>
+                {fresh.has(card.id) && <strong className="badge new-card">Nova</strong>}
               </CardTile>
               <span className="chest-actions">
                 <button

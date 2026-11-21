@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "../account/session.ts";
@@ -8,7 +8,15 @@ import { useCardLanguage } from "../catalog/language.ts";
 import { RARITIES, label } from "../catalog/labels.ts";
 import { SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
-import { buyPacks, redeemCode, shopKey, useShop, type DrawnCard, type ShopPack } from "./api.ts";
+import {
+  buyPacks,
+  markPacksSeen,
+  redeemCode,
+  shopKey,
+  useShop,
+  type DrawnCard,
+  type ShopPack,
+} from "./api.ts";
 
 const number = (value: number) => value.toLocaleString("pt-BR");
 
@@ -32,6 +40,13 @@ export function ShopPage() {
       }
     },
   });
+
+  // Pacote novo na prateleira: o servidor guarda que o jogador já viu, e o destaque some na
+  // próxima visita.
+  const hasNew = shop.data?.packs.some((pack) => pack.new) ?? false;
+  useEffect(() => {
+    if (hasNew) markPacksSeen().catch(() => undefined);
+  }, [hasNew]);
 
   if (session.isSuccess && !user) {
     return <SignInFirst title="Loja" reason="para comprar pacotes" />;
@@ -57,7 +72,15 @@ export function ShopPage() {
           <ul className="shelf">
             {shop.data?.packs.map((pack) => (
               <li key={pack.id} className={pack.available ? "pack-tile" : "pack-tile locked"}>
-                <h2>{pack.name}</h2>
+                <h2>
+                  {pack.name}
+                  {pack.new && (
+                    <>
+                      {" "}
+                      <strong className="new-pack">Novo</strong>
+                    </>
+                  )}
+                </h2>
                 <p className="pack-price">
                   {number(pack.price)} DP, {pack.cards_per_pack} cartas
                 </p>
