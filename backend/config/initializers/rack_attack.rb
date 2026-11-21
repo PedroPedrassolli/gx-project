@@ -79,6 +79,22 @@ Rack::Attack.throttle("mesa por IP", limit: 240, period: 1.minute) do |request|
   client_ip.call(request) if request.get? && request.path.match?(match_path)
 end
 
+# Duelo contra personagem: 10 por minuto por IP. Cada um liga a engine (GXP-110).
+Rack::Attack.throttle("duelos contra personagem por IP", limit: 10, period: 1.minute) do |request|
+  client_ip.call(request) if request.post? && request.path.match?(%r{\A/api/characters/[^/]+/duels})
+end
+
+# Criar, importar, validar, salvar e apagar deck: 60 por minuto por IP; ninguém monta deck
+# tão rápido, e cada escrita pode ter centenas de linhas (GXP-110).
+Rack::Attack.throttle("decks por IP", limit: 60, period: 1.minute) do |request|
+  client_ip.call(request) if !request.get? && request.path.start_with?("/api/decks")
+end
+
+# Exportação dos dados da conta (LGPD): 10 por hora por IP; junta tudo do jogador.
+Rack::Attack.throttle("exportação da conta por IP", limit: 10, period: 1.hour) do |request|
+  client_ip.call(request) if request.get? && request.path == "/api/me/export"
+end
+
 # Token do tempo real: 30 por minuto por IP (um por página aberta com tempo real).
 Rack::Attack.throttle("tempo real por IP", limit: 30, period: 1.minute) do |request|
   client_ip.call(request) if request.post? && request.path == "/api/realtime/token"

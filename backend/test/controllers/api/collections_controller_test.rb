@@ -49,6 +49,18 @@ class Api::CollectionsControllerTest < ActionDispatch::IntegrationTest
     _(new_cards).must_equal []
   end
 
+  it "lista hostil de cartas vistas não derruba nada: só valem os ids inteiros" do
+    log_in
+
+    post seen_api_collection_path, params: { card_ids: { a: "b" } }, as: :json
+    assert_response :no_content
+    post seen_api_collection_path, params: { card_ids: [ { a: 1 }, "x", nil ] }, as: :json
+    assert_response :no_content
+    _(new_cards).must_equal [ "Night Assailant", "Trap Hole" ]
+    post seen_api_collection_path, params: { card_ids: [ { a: 1 }, card("Trap Hole").id.to_s ] }, as: :json
+    _(new_cards).must_equal [ "Night Assailant" ]
+  end
+
   it "a carta ganha depois chega nova, e a que o jogador já tinha não volta a ser nova" do
     user.collection_cards.update_all(seen_at: Time.current)
     CollectionCard.add!(user, { card("Trap Hole").id => 1, card("Clear Wall").id => 1 })
