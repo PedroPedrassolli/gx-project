@@ -33,6 +33,48 @@ export async function redeemCode(code: string) {
   return response.data.packs;
 }
 
+// O conversor (GXP-90): as cópias que dá para trocar e as cartas que podem sair.
+export type Converter = {
+  min: number;
+  max: number;
+  cards: { card_id: number; quantity: number }[];
+};
+
+export const converterKey = ["converter"];
+
+export function useConverter(enabled: boolean) {
+  return useQuery({
+    queryKey: converterKey,
+    queryFn: async () => (await request<{ data: Converter }>("GET", "/api/shop/converter")).data,
+    enabled,
+  });
+}
+
+export function useConverterGroup(amount: number, enabled: boolean) {
+  return useQuery({
+    queryKey: ["converter-group", amount],
+    queryFn: async () =>
+      (await request<{ data: { cards: number[] } }>("GET", `/api/shop/converter/groups/${amount}`))
+        .data.cards,
+    enabled,
+    staleTime: Infinity, // os grupos são do jogo e não mudam
+  });
+}
+
+// A chave da conversão, como a da compra: o mesmo pedido mandado duas vezes troca uma vez só.
+export async function convertCards(cards: Record<number, number>, key: string) {
+  const body = {
+    cards: Object.entries(cards).map(([id, quantity]) => ({ id: Number(id), quantity })),
+    key,
+  };
+  const response = await request<{ data: { card_id: number; amount: number; new: boolean } }>(
+    "POST",
+    "/api/shop/conversions",
+    body,
+  );
+  return response.data;
+}
+
 // A chave da compra: a mesma chave devolve a mesma compra (clique duplo, rede que repete).
 export async function buyPacks(pack: ShopPack, count: 1 | 10, key: string) {
   const body = { pack_id: pack.id, count, key };

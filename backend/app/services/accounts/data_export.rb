@@ -26,7 +26,8 @@ module Accounts
         missions: @user.mission_completions.includes(:card).order(:created_at, :id).map do |row|
           { mission: Economy::Missions.name_of(row.mission), period: row.period, card: row.card&.name, completed_at: row.created_at }
         end,
-        secret_codes: @user.code_unlocks.order(:created_at, :id).map { |row| { code: row.code, unlocked_at: row.created_at } }
+        secret_codes: @user.code_unlocks.order(:created_at, :id).map { |row| { code: row.code, unlocked_at: row.created_at } },
+        conversions:
       }.as_json
     end
 
@@ -45,6 +46,15 @@ module Accounts
       names = Card.where(id: openings.flat_map { |opening| opening.cards.pluck("id") }).pluck(:id, :name).to_h
       openings.map do |opening|
         { pack: opening.pack.name, opened_at: opening.created_at, cards: opening.cards.map { |card| names[card["id"]] } }
+      end
+    end
+
+    # As conversões de cartas repetidas (GXP-90): o que foi gasto e a carta que saiu.
+    def conversions
+      rows = @user.card_conversions.includes(:card).order(:id).to_a
+      names = Card.where(id: rows.flat_map { |row| row.spent.keys }).pluck(:id, :name).to_h
+      rows.map do |row|
+        { converted_at: row.created_at, spent: row.spent.to_h { |id, quantity| [ names[id.to_i], quantity ] }, card: row.card.name }
       end
     end
 

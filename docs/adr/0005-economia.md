@@ -134,6 +134,13 @@ farm de DP entre contas combinadas.
   `POST /api/shop/codes` libera os pacotes da regra "codigo" para quem acertou
   (`code_unlocks`). Errar devolve 422 sem dizer nada do código; o Rack::Attack deixa 10
   tentativas por minuto por IP.
+- **Conversor** (GXP-90, `Shop::Converter`, página `/loja/conversor`): de 10 a 99 cópias
+  repetidas viram 1 carta sorteada do grupo da quantidade (`conversor.yml`). Decisão: só
+  entram cópias repetidas, então o jogador sempre fica com uma cópia de cada carta e com as
+  cópias que o deck que mais usa a carta precisa (somando Principal, Extra e Side daquele
+  deck). Uma transação com o jogador travado; a semente e o que foi gasto ficam em
+  `card_conversions`, e a mesma chave devolve a mesma conversão. A página mostra só o que dá
+  para trocar e a lista das cartas que podem sair antes de confirmar.
 - **Resultado:** o resumo (linhas, cortes, subida de nível, total, nível e saldo) fica em
   `match_players.rewards`, com os textos prontos, e a mesa devolve o de quem consulta. O saldo
   e o nível também vão no usuário da sessão (topo da página no computador e a página da conta).

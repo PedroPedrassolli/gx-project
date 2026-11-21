@@ -45,7 +45,7 @@ class Api::MeControllerTest < ActionDispatch::IntegrationTest
       _(response.body).wont_include "Syrus"
     end
 
-    it "traz também o DP, os pacotes, as partidas, os desafios, as missões e os códigos (F4)" do
+    it "traz também o DP, os pacotes, as partidas, os desafios, as missões, os códigos e as conversões (F4)" do
       card = Card.find_by!(name: "D.D. Assailant")
       pack = Pack.create!(name: "Pacote de teste", position: 99, price: 50, cards_per_pack: 1, source_revision: 1)
       Economy::Ledger.post!(user, 100, reason: "duel", key: "teste:1", note: "duelo")
@@ -56,6 +56,7 @@ class Api::MeControllerTest < ActionDispatch::IntegrationTest
       user.user_challenges.create!(number: 26, match:)
       user.mission_completions.create!(mission: "carta_da_semana", period: "2026-W46", card:, match:)
       user.code_unlocks.create!(code: "↑↑↓↓")
+      user.card_conversions.create!(key: "c1", amount: 10, spent: { card.id => 10 }, seed: 1, card:, new_card: false)
       log_in
 
       get export_api_me_path
@@ -67,6 +68,7 @@ class Api::MeControllerTest < ActionDispatch::IntegrationTest
       _(file["challenges"].map { |row| row.slice("number", "label") }).must_equal [ { "number" => 26, "label" => "Empatar um duelo" } ]
       _(file["missions"].map { |row| row.slice("mission", "period", "card") }).must_equal [ { "mission" => "Carta da semana", "period" => "2026-W46", "card" => "D.D. Assailant" } ]
       _(file["secret_codes"].map { |row| row["code"] }).must_equal [ "↑↑↓↓" ]
+      _(file["conversions"].map { |row| row.slice("spent", "card") }).must_equal [ { "spent" => { "D.D. Assailant" => 10 }, "card" => "D.D. Assailant" } ]
     end
   end
 
