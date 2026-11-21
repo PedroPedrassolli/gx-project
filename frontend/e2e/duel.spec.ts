@@ -387,6 +387,55 @@ test("o resultado mostra o DP do duelo linha por linha, com os cortes e o saldo"
   await expect(result).toBeVisible();
 });
 
+test("contra personagem: sem frases, e o resultado mostra a carta ganha e o próximo", async ({
+  page,
+}) => {
+  const match = await mockMatch(page);
+  const players = [
+    { team: 0, nickname: "JadenYuki" },
+    { team: 1, nickname: "Chumley" },
+  ];
+  match.set({ ...STATE, character: "chumley", players });
+  await page.goto("/duelo/5");
+  await expect(page.getByRole("status")).toContainText("Vez de Chumley");
+  await expect(page.getByRole("button", { name: "Frases" })).toHaveCount(0);
+
+  const rewards = {
+    lines: [{ key: "character", label: "Vitória contra Chumley", dp: 60 }],
+    cuts: [],
+    level_ups: [],
+    card: { id: 1, name: "Dark Magician", name_pt: "Mago Negro", image: 46986414 },
+    unlocked: { id: "syrus", name: "Syrus" },
+    total: 60,
+    level: 2,
+    balance: 1294,
+  };
+  match.set({
+    ...STATE,
+    character: "chumley",
+    players,
+    status: "finished",
+    winner_team: 0,
+    finish_reason: "duel",
+    rewards,
+  });
+  await page.reload();
+  const result = page.getByRole("dialog", { name: "Você venceu!" });
+  await expect(result.getByText(/Você ganhou a carta (Mago Negro|Dark Magician)!/)).toBeVisible();
+  await expect(result.getByText("Personagem liberado: Syrus.")).toBeVisible();
+  await expect(result.getByRole("link", { name: "Duelar contra Syrus" })).toHaveAttribute(
+    "href",
+    "/personagens?duelar=syrus",
+  );
+  await expect(result.getByRole("link", { name: "Duelar de novo" })).toHaveAttribute(
+    "href",
+    "/personagens?duelar=chumley",
+  );
+  await expect(result.getByRole("link", { name: "Revanche" })).toHaveCount(0);
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
+});
+
 test("o replay passa lance a lance e turno a turno, e reproduz sozinho", async ({ page }) => {
   await mockMatch(page);
   const frame = (step: number, turn: number, lp: number) => ({

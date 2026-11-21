@@ -71,6 +71,9 @@ export type Rewards = {
   level_ups: RewardLine[];
   challenges?: { number: number; label: string }[]; // os desafios concluídos neste duelo
   missions?: { name: string; card: string | null; packs: string[] }[]; // as missões concluídas
+  // Contra personagem, na primeira vitória: a carta-símbolo e quem ficou liberado (ADR 0013).
+  card?: { id: number; name: string; name_pt?: string; image?: number };
+  unlocked?: { id: string; name: string };
   total: number;
   level: number;
   balance: number;
@@ -83,6 +86,7 @@ export type MatchState = {
   // Por que acabou: o próprio duelo, desistência, tempo da resposta ou limite do duelo.
   finish_reason?: "duel" | "surrender" | "timeout" | "time_limit" | null;
   room_code?: string | null;
+  character?: string | null; // contra o computador: o personagem (ADR 0013)
   // O relógio (escopo 3.7): até quando a pergunta da vez vale, o banco do turno e o fim.
   deadline_at?: string | null;
   turn_time_left?: number;

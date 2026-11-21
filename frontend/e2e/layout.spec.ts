@@ -22,6 +22,23 @@ const PACKS = Array.from({ length: 20 }, (_, index) => ({
   position: index + 1,
   card_count: 3,
 }));
+// Os três jeitos de um personagem aparecer, com nome e descrição longos.
+const CHARACTERS = (["beaten", "unlocked", "locked"] as const).map((status, index) => ({
+  id: `personagem-${index}`,
+  position: index + 1,
+  name: "Dr. Vellian Crowler",
+  description: "O professor. Engrenagens antigas e monstros enormes que esmagam qualquer defesa.",
+  group: {
+    id: index < 2 ? "alunos" : "lendas",
+    name: index < 2 ? "Alunos da Academia" : "Lendas de Duel Monsters",
+  },
+  deck: "Medieval Ages",
+  bonus: 840,
+  wins: status === "beaten" ? 12 : 0,
+  status,
+  unlock_hint: status === "locked" ? "Vença Dr. Vellian Crowler para liberar." : undefined,
+  signature: { id: 1, name: "Ancient Gear Golem", image: 83104731 },
+}));
 const SIDE = {
   lp: 8000,
   deck: 30,
@@ -103,6 +120,7 @@ async function mockApi(page: Page) {
       "/api/rooms": [{ ...ROOM, players: 1 }],
       "/api/rooms/ABC234": ROOM,
       "/api/matches/5": MATCH,
+      "/api/characters": { characters: CHARACTERS, current_match_id: 5 },
       "/api/matches/5/replay": {
         id: 5,
         turn: 1,
@@ -161,6 +179,8 @@ const PAGES: [string, string, boolean][] = [
   ["/decks/7", "Deck", true],
   ["/salas", "Salas", true],
   ["/salas/ABC234", "Sala", true],
+  ["/personagens", "Personagens", true],
+  ["/personagens?duelar=personagem-1", "Personagens com o deck", true],
   ["/duelo/5", "Duelo", true],
   ["/duelo/5/replay", "Replay", true],
 ];

@@ -72,6 +72,9 @@ export function RoomsPage() {
     <main className="page rooms-page">
       <h1>Salas</h1>
       {notice && <p role="status">{notice}</p>}
+      <p className="lead">
+        Sem ninguém para duelar agora? <Link to="/personagens">Duele contra os personagens</Link>.
+      </p>
 
       <section aria-labelledby="create-title">
         <h2 id="create-title">Criar sala</h2>

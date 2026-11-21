@@ -21,6 +21,9 @@ const CollectionPage = lazy(() =>
 const ChallengesPage = lazy(() =>
   import("./challenges/ChallengesPage.tsx").then((m) => ({ default: m.ChallengesPage })),
 );
+const CharactersPage = lazy(() =>
+  import("./characters/CharactersPage.tsx").then((m) => ({ default: m.CharactersPage })),
+);
 const ShopPage = lazy(() => import("./shop/ShopPage.tsx").then((m) => ({ default: m.ShopPage })));
 const ConverterPage = lazy(() =>
   import("./shop/ConverterPage.tsx").then((m) => ({ default: m.ConverterPage })),
@@ -85,6 +88,7 @@ createRoot(root).render(
             <Route path="loja" element={<ShopPage />} />
             <Route path="loja/conversor" element={<ConverterPage />} />
             <Route path="desafios" element={<ChallengesPage />} />
+            <Route path="personagens" element={<CharactersPage />} />
             <Route path="decks" element={<DecksPage />} />
             <Route path="decks/:id" element={<DeckEditPage />} />
             <Route path="salas" element={<RoomsPage />} />

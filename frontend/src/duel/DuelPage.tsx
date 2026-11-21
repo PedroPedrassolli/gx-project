@@ -209,11 +209,14 @@ export function DuelPage() {
         onSurrender={() => giveUp.mutate()}
         onTimeUp={() => match.refetch()}
       >
-        <EmotePicker
-          pending={say.isPending}
-          error={say.error?.message}
-          onSend={(emote) => say.mutate(emote)}
-        />
+        {/* Contra o computador, não há quem leia as frases. */}
+        {!state.character && (
+          <EmotePicker
+            pending={say.isPending}
+            error={say.error?.message}
+            onSend={(emote) => say.mutate(emote)}
+          />
+        )}
         {!wide && (
           <button type="button" className="secondary" onClick={() => setMore(true)}>
             Mais
