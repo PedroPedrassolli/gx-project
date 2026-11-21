@@ -2,13 +2,16 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router";
 import { ApiError } from "../api.ts";
+import { displayName } from "../catalog/cards.ts";
+import { useCardLanguage } from "../catalog/language.ts";
+import { Thumb } from "../catalog/parts.tsx";
 import { roomAction, roomKey } from "../rooms/api.ts";
 import type { MatchState, RewardLine, Rewards } from "./api.ts";
 import { clock } from "./time.ts";
 
 // A barra do duelo, em cima da mesa (GXP-99): de quem é a vez e quanto tempo falta (escopo
 // 3.7), os botões (frases, mais e desistir) e, no fim, o resultado num modal, com o caminho
-// de volta para a sala.
+// de volta para a sala ou para os personagens.
 
 type Props = {
   state: MatchState;
@@ -90,7 +93,11 @@ export function ResultDialog(props: {
       {props.open && (
         <>
           <Result {...props} />
-          <BackToRoom code={props.state.room_code} matchId={props.state.id} />
+          {props.state.character ? (
+            <BackToCharacters state={props.state} />
+          ) : (
+            <BackToRoom code={props.state.room_code} matchId={props.state.id} />
+          )}
           <form method="dialog">
             <button type="submit" className="secondary">
               Ver a mesa
@@ -191,6 +198,10 @@ function RewardsTable({ rewards }: { rewards: Rewards }) {
   const challenges = rewards.challenges ?? [];
   return (
     <>
+      {rewards.card && <NewCard card={rewards.card} />}
+      {rewards.unlocked && (
+        <p className="new-challenges">Personagem liberado: {rewards.unlocked.name}.</p>
+      )}
       {rewards.missions?.map((mission) => (
         <div key={mission.name} className="new-challenges">
           <p>
@@ -235,6 +246,47 @@ function RewardsTable({ rewards }: { rewards: Rewards }) {
         Saldo: {number(rewards.balance)} DP. Nível {rewards.level}.
       </p>
     </>
+  );
+}
+
+// A carta-símbolo da primeira vitória contra o personagem, já na coleção.
+function NewCard({ card }: { card: NonNullable<Rewards["card"]> }) {
+  const [language] = useCardLanguage();
+  return (
+    <div className="new-challenges new-card">
+      <Thumb card={card} />
+      <p>
+        Você ganhou a carta {displayName(card, language)}! Ela já está na{" "}
+        <Link to="/colecao">sua coleção</Link>.
+      </p>
+    </div>
+  );
+}
+
+// Contra personagem: enfrentar quem a vitória liberou, duelar de novo (o modal do deck abre
+// direto), a lista e o replay.
+function BackToCharacters({ state }: { state: MatchState }) {
+  const unlocked = state.rewards?.unlocked;
+  return (
+    <p className="duel-actions">
+      {unlocked && (
+        <Link className="cta" to={`/personagens?duelar=${unlocked.id}`}>
+          Duelar contra {unlocked.name}
+        </Link>
+      )}
+      <Link
+        className={unlocked ? "cta secondary" : "cta"}
+        to={`/personagens?duelar=${state.character}`}
+      >
+        Duelar de novo
+      </Link>
+      <Link className="cta secondary" to="/personagens">
+        Ver os personagens
+      </Link>
+      <Link className="cta secondary" to={`/duelo/${state.id}/replay`}>
+        Ver o replay
+      </Link>
+    </p>
   );
 }
 

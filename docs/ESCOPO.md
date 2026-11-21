@@ -175,13 +175,14 @@
 | Entrar / Cadastro / Senha | Formulários com verificação de idade e de e-mail |
 | Lobby | Salas, Personagens, Loja, Deck Edit, Coleção, Conversor, Desafios, Perfil, Amigos, Replays; DP e nível no topo |
 | Salas | Lista das públicas, criar, entrar por código; sala de espera com vagas, deck escolhido e "pronto" |
+| Personagens | Os 14 na ordem (alunos, chefes, lendas), com a carta do prêmio e o bônus; bloqueado com a dica de quem vencer antes; o deck escolhido num modal; o duelo em andamento com a volta para a mesa |
 | Deck Edit | Baú + deck (abas Main/Extra/Side) + painel da carta; filtros, Destiny, validação, importar/exportar |
 | Loja | Prateleira por disponibilidade (hoje, bloqueados com dica), compra de 1 ou 10, abertura carta a carta, campo de código |
 | Conversor | Escolher as repetidas, ver o grupo da quantidade e confirmar |
 | Coleção | Grade com filtros, % total e por pacote |
 | **Mesa de duelo** | Campo MR1 dos dois lados (5 + 5 + campo + cemitério + deck + extra + banidas). Mão em leque. Painel de detalhe. LP e fases (DP/SP/M1/BP/M2/EP). Pilha da cadeia. Log. Timer. Emotes. Botão do Destiny Draw. Desistir. A mesa cabe na tela, sem rolar, no computador e no celular |
 | Prompts do duelo | Um componente por tipo de pergunta da engine (seção 5.3), num modal: dá para jogar sem rolar a página, inclusive no celular. A carta que pode ser usada brilha; tocar nela abre as ações. Dá para minimizar o modal e olhar a mesa antes de responder (20/11/2026) |
-| Resultado | Bônus linha a linha, total de DP, subida de nível, desafios novos; revanche, replay, reportar |
+| Resultado | Bônus linha a linha, total de DP, subida de nível, desafios novos; revanche, replay, reportar. Contra personagem: a carta ganha, quem ficou liberado, duelar de novo ou contra o próximo |
 | Side Deck (Match) | Troca entre Main e Side com timer de 3 min |
 | Perfil / Desafios | Nível, estatísticas, lista dos 104 desafios com progresso |
 | Replays | Player com linha do tempo (avançar, voltar, pular para o turno) |

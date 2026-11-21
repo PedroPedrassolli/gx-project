@@ -7,7 +7,7 @@ export const PHASES: Phase[] = [
   { code: "F2", name: "Contas e montagem de decks", done: true },
   { code: "F3", name: "Duelo 1x1 em sala", done: true },
   { code: "F4", name: "Economia e loja", done: true },
-  { code: "F5", name: "Duelos contra personagens", done: false },
+  { code: "F5", name: "Duelos contra personagens", done: true },
   { code: "F6", name: "Partidas melhor de 3", done: false },
   { code: "F7", name: "Social e acabamento", done: false },
 ];
