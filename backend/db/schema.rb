@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_16_020000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_20_030000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -30,6 +30,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_020000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_banlists_on_name", unique: true
+  end
+
+  create_table "card_conversions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "key", null: false
+    t.integer "amount", null: false
+    t.jsonb "spent", null: false
+    t.bigint "seed", null: false
+    t.bigint "card_id", null: false
+    t.boolean "new_card", null: false
+    t.datetime "created_at", null: false
+    t.index ["card_id"], name: "index_card_conversions_on_card_id"
+    t.index ["user_id", "key"], name: "index_card_conversions_on_user_id_and_key", unique: true
   end
 
   create_table "cards", force: :cascade do |t|
@@ -307,6 +320,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_16_020000) do
 
   add_foreign_key "banlist_entries", "banlists"
   add_foreign_key "banlist_entries", "cards"
+  add_foreign_key "card_conversions", "cards"
+  add_foreign_key "card_conversions", "users"
   add_foreign_key "code_unlocks", "users"
   add_foreign_key "collection_cards", "cards"
   add_foreign_key "collection_cards", "users"

@@ -1459,6 +1459,151 @@ input[type="file"]::file-selector-button {
   }
 }
 
+/* A entrada do conversor na loja: um bloco curto entre a prateleira e o código secreto. */
+.converter-link {
+  max-width: 32rem;
+  margin-top: 2rem;
+
+  p {
+    margin: 0;
+  }
+}
+
+/* O conversor (GXP-90): o resumo fica preso no topo enquanto a lista rola, e cada carta
+   tem os botões − e + grandes o bastante para o dedo. */
+.converter-summary {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+
+  p {
+    margin: 0 0 0.5rem;
+  }
+
+  .actions {
+    margin: 0;
+  }
+}
+
+.converter-group {
+  margin-bottom: 1rem;
+}
+
+.converter-group summary {
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.converter-group ul {
+  max-height: 14rem;
+  overflow-y: auto;
+  columns: 2 12rem;
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+  font-size: 0.9375rem;
+}
+
+.converter-cards {
+  padding: 0;
+  list-style: none;
+}
+
+.converter-cards li {
+  display: grid;
+  grid-template-columns: 3rem 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+
+  img,
+  .converter-face {
+    width: 3rem;
+    height: auto;
+    aspect-ratio: 48 / 70;
+    border-radius: 3px;
+    background: var(--color-surface);
+  }
+}
+
+.converter-cards li.chosen .converter-name {
+  color: var(--color-accent);
+}
+
+.converter-face {
+  display: block;
+  background: var(--color-surface);
+}
+
+.converter-name {
+  display: grid;
+
+  .hint {
+    font-size: 0.875rem;
+  }
+}
+
+.converter-count {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+
+  button {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    padding: 0 0.5rem;
+  }
+
+  output {
+    min-width: 2ch;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Em tela estreita, os botões descem para baixo do nome. */
+@media (width < 30rem) {
+  .converter-cards li {
+    grid-template-columns: 3rem 1fr;
+  }
+
+  .converter-count {
+    grid-column: 2;
+  }
+}
+
+.converted {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  text-align: center;
+
+  img {
+    border: 2px solid var(--color-accent);
+    border-radius: 6px;
+    background: var(--color-surface);
+    box-shadow: 0 0 0.75rem color-mix(in srgb, var(--color-accent) 60%, transparent);
+  }
+
+  .actions {
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.converted-name {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0;
+  font-size: 1.25rem;
+}
+
 /* O código secreto da loja: seis teclas iguais numa linha. */
 .secret-code {
   max-width: 24rem;

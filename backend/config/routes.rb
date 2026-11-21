@@ -26,6 +26,9 @@ Rails.application.routes.draw do
     resource :shop, only: :show, controller: "shop" do
       post :purchases, action: :purchase
       post :codes, action: :code
+      get :converter
+      get "converter/groups/:amount", action: :converter_group, as: :converter_group
+      post :conversions, action: :conversion
     end
     resources :missions, only: :index
     post "realtime/token" => "realtime_tokens#create", as: :realtime_token

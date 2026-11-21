@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "../account/session.ts";
 import { displayName, imageUrl } from "../catalog/cards.ts";
@@ -80,6 +81,13 @@ export function ShopPage() {
               </li>
             ))}
           </ul>
+          <section className="converter-link" aria-labelledby="converter-link-title">
+            <h2 id="converter-link-title">Conversor de cartas</h2>
+            <p>
+              Troque de 10 a 99 cartas repetidas por 1 carta.{" "}
+              <Link to="/loja/conversor">Abrir o conversor</Link>
+            </p>
+          </section>
           <SecretCode onUnlocked={() => client.invalidateQueries({ queryKey: shopKey })} />
         </>
       )}

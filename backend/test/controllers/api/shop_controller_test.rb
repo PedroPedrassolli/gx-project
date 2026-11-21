@@ -84,4 +84,47 @@ class Api::ShopControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal 401, response.status
   end
+
+  describe "conversor" do
+    let(:trap_hole) { Card.find_by!(name: "Trap Hole") }
+    let(:assailant) { Card.find_by!(name: "Night Assailant") }
+
+    before { CollectionCard.add!(user, { trap_hole.id => 8, assailant.id => 6 }) }
+
+    def convert(cards, key: "conversao-0001") = post(conversions_api_shop_path, params: { cards:, key: }, as: :json)
+
+    it "mostra as repetidas e as cartas do grupo de uma quantidade" do
+      get converter_api_shop_path
+
+      data = response.parsed_body["data"]
+      assert_equal [ 10, 99 ], data.values_at("min", "max")
+      assert_equal [ { "card_id" => trap_hole.id, "quantity" => 7 }, { "card_id" => assailant.id, "quantity" => 5 } ], data["cards"].sort_by { |card| -card["quantity"] }
+
+      get converter_group_api_shop_path(10)
+      assert_equal Card.where(name: [ "Trap Hole", "Ancient Gear" ]).order(:id).ids, response.parsed_body.dig("data", "cards")
+      get converter_group_api_shop_path(12)
+      assert_response :not_found
+    end
+
+    it "converte: 201 com a carta, e a mesma chave devolve a mesma carta" do
+      convert([ { id: trap_hole.id, quantity: 6 }, { id: assailant.id, quantity: 3 }, { id: assailant.id, quantity: 2 } ])
+
+      assert_response :created
+      data = response.parsed_body["data"]
+      assert_equal [ assailant.id, 11, false ], data.values_at("card_id", "amount", "new")
+      convert([ { id: trap_hole.id, quantity: 6 }, { id: assailant.id, quantity: 5 } ])
+      assert_equal [ 201, data ], [ response.status, response.parsed_body["data"] ]
+      assert_equal 1, user.card_conversions.count
+    end
+
+    it "recusa pedido fora do formato e cartas que não dá para converter" do
+      convert([ { id: trap_hole.id, quantity: 10 } ], key: "x")
+      assert_equal [ 422, "Pedido inválido." ], [ response.status, response.parsed_body.dig("error", "message") ]
+      convert("tudo")
+      assert_equal [ 422, "Escolha de 10 a 99 cartas." ], [ response.status, response.parsed_body.dig("error", "message") ]
+      convert([ { id: trap_hole.id, quantity: 8 }, { id: assailant.id, quantity: 2 } ])
+      assert_equal 422, response.status
+      assert_equal 0, user.card_conversions.count
+    end
+  end
 end
