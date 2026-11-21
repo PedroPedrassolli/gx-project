@@ -6,8 +6,9 @@ module Economy
   # stats: result (:win, :loss ou :draw), turns, level e opponent_level (1 a 99), challenges
   # (desafios já concluídos), engine_win (o duelo acabou na engine, não por desistência ou
   # tempo), win_reason (o da engine), lp e deck (do jogador, no fim), opponent_turn (acabou no
-  # turno do oponente), duel (as contas do time, de Duel::Stats#team) e summoned, used e
-  # finisher (os nomes das cartas invocadas, usadas e a do golpe final).
+  # turno do oponente), duel (as contas do time, de Duel::Stats#team), summoned, used e
+  # finisher (os nomes das cartas invocadas, usadas e a do golpe final) e character (contra o
+  # computador: o nome do personagem e o bônus da vitória).
   #
   # Ficam de fora: Tag (o projeto não terá dupla), Match (melhor de 3, mais tarde), "nenhuma
   # zona de monstro livre" e "carta-chave do oponente" (a fonte não diz como o jogo decide) e o
@@ -67,6 +68,11 @@ module Economy
       add.call("draw", "Empate", 50) if stats[:result] == :draw
       add.call("turns", "#{stats[:turns]} turnos", (won ? 2 : 1) * stats[:turns])
       return unless won
+
+      # Contra o computador (ADR 0013): sem "vitória em rede"; no lugar do Duelista, o bônus do
+      # personagem, que cresce com a ordem da lista.
+      character = stats[:character]
+      return add.call("character", "Vitória contra #{character[:name]}", character[:bonus]) if character
 
       add.call("network_win", "Vitória em rede", 50)
       # Duelista: 90 por faixa de nível do oponente (1 a 10, uma a cada 10 níveis).

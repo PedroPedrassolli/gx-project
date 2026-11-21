@@ -57,6 +57,8 @@ class Api::MeControllerTest < ActionDispatch::IntegrationTest
       user.mission_completions.create!(mission: "carta_da_semana", period: "2026-W46", card:, match:)
       user.code_unlocks.create!(code: "↑↑↓↓")
       user.card_conversions.create!(key: "c1", amount: 10, spent: { card.id => 10 }, seed: 1, card:, new_card: false)
+      user.character_wins.create!(character: "chumley", wins: 3)
+      user.character_wins.create!(character: "gx-antigo", wins: 1)
       log_in
 
       get export_api_me_path
@@ -69,6 +71,7 @@ class Api::MeControllerTest < ActionDispatch::IntegrationTest
       _(file["missions"].map { |row| row.slice("mission", "period", "card") }).must_equal [ { "mission" => "Carta da semana", "period" => "2026-W46", "card" => "D.D. Assailant" } ]
       _(file["secret_codes"].map { |row| row["code"] }).must_equal [ "↑↑↓↓" ]
       _(file["conversions"].map { |row| row.slice("spent", "card") }).must_equal [ { "spent" => { "D.D. Assailant" => 10 }, "card" => "D.D. Assailant" } ]
+      _(file["characters"].map { |row| row.slice("character", "wins") }).must_equal [ { "character" => "Chumley", "wins" => 3 }, { "character" => "gx-antigo", "wins" => 1 } ]
     end
   end
 

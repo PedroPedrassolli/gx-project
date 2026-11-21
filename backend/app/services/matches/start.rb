@@ -33,7 +33,7 @@ module Matches
                               seed: Array.new(4) { SecureRandom.random_number(2**63) }, started_at: Time.current)
         order = @first_seat ? players.sort_by { |player| player.seat == @first_seat ? 0 : 1 } : players.shuffle(random: SecureRandom)
         order.each_with_index do |player, team|
-          match.players.create!(user_id: player.user_id, seat: player.seat, team:, deck: snapshot(decks.fetch(player.deck_id)))
+          match.players.create!(user_id: player.user_id, seat: player.seat, team:, deck: Decks::Snapshot.of(decks.fetch(player.deck_id)))
         end
         @room.update!(status: "dueling", hands: {}, last_hands: nil, chooser_seat: nil)
         Game.new(match).start!
@@ -42,19 +42,6 @@ module Matches
       # Duelo novo é a hora de tirar do banco os replays vencidos.
       Cleanup.call if started
       started
-    end
-
-    private
-
-    # O deck do jeito que a engine recebe: os códigos do Main embaralhados, o Extra e as
-    # cartas marcadas como Destiny.
-    def snapshot(deck)
-      rows = deck.deck_cards.to_a
-      # Só o código da engine de cada carta, numa consulta (a carta inteira não é usada aqui).
-      engine_codes = Card.where(id: rows.map(&:card_id)).pluck(:id, :engine_code).to_h
-      codes = ->(section) { rows.select { |row| row.section == section }.flat_map { |row| [ engine_codes.fetch(row.card_id) ] * row.quantity } }
-      { main: codes.call("main").shuffle(random: SecureRandom), extra: codes.call("extra"),
-        destiny: rows.select { |row| row.section == "main" && row.destiny }.map { |row| engine_codes.fetch(row.card_id) } }
     end
   end
 end

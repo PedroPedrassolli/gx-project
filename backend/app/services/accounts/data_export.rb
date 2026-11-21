@@ -27,7 +27,11 @@ module Accounts
           { mission: Economy::Missions.name_of(row.mission), period: row.period, card: row.card&.name, completed_at: row.created_at }
         end,
         secret_codes: @user.code_unlocks.order(:created_at, :id).map { |row| { code: row.code, unlocked_at: row.created_at } },
-        conversions:
+        conversions:,
+        # As vitórias contra os personagens (ADR 0013).
+        characters: @user.character_wins.order(:created_at, :id).map do |row|
+          { character: Characters::Roster.find(row.character)&.name || row.character, wins: row.wins, first_win_at: row.created_at }
+        end
       }.as_json
     end
 

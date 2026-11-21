@@ -51,6 +51,12 @@ aqui deve ser possível vencer."
    computador até a pergunta voltar para o jogador. Se a engine recusar a jogada dele, ele
    tenta ao acaso (até 50 vezes); se nada valer, desiste e o jogador vence (não deveria
    acontecer; fica no log).
+9. **Começar o duelo** (`POST /api/characters/:id/duels`, com um deck do jogador): só com o
+   personagem liberado, sem outro duelo em andamento e fora de sala (quem duela contra
+   personagem também não entra em sala). Quem começa é sorteado. **Sem relógio**: contra o
+   computador dá para pensar com calma, e o duelo largado fica esperando a volta do jogador (o
+   aviso "Voltar para a mesa" aparece em todas as telas). As vitórias ficam em
+   `character_wins` (uma linha por jogador e personagem), que também entram no arquivo da LGPD.
 
 ## Consequências
 

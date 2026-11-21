@@ -48,7 +48,7 @@ module Economy
       result = if @match.winner_team.nil? then :draw elsif @match.winner_team == player.team then :win else :loss end
       { result:, turns: @match.turn, level: user.level, opponent_level: opponent&.level || 1,
         engine_win: @match.finish_reason == "duel", win_reason: @match.win_reason, lp: side[:lp], deck: side[:deck],
-        opponent_turn: @match.turn_team != player.team, duel:, **card_names(duel) }
+        opponent_turn: @match.turn_team != player.team, duel:, character: character, **card_names(duel) }
     end
 
     # A vitória que conta para missão fica marcada no jogador da partida, e as missões que
@@ -69,7 +69,19 @@ module Economy
       { summoned: names.values_at(*duel["summoned"]).compact, used: names.values_at(*duel["used"]).compact, finisher: names[duel["finisher"]] }
     end
 
-    def short? = @match.turn < AntiFarm::SHORT_TURNS || (@match.finished_at - @match.started_at) < AntiFarm::SHORT_TIME
+    # Contra o computador, desistir (ou deixar o tempo passar) paga como duelo curto: senão,
+    # bastaria começar e desistir depois de 3 turnos para levar o prêmio (ADR 0013).
+    def short?
+      return true if @match.bot && %w[surrender timeout].include?(@match.finish_reason)
+
+      @match.turn < AntiFarm::SHORT_TURNS || (@match.finished_at - @match.started_at) < AntiFarm::SHORT_TIME
+    end
+
+    # O personagem do duelo contra o computador, com o bônus da vitória (nil entre jogadores).
+    def character
+      character = Characters::Roster.find(@match.bot&.character)
+      { name: character.name, bonus: character.victory_bonus } if character
+    end
 
     def today = Time.current.in_time_zone(ZONE).all_day
 

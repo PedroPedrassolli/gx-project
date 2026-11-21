@@ -35,6 +35,9 @@ Rails.application.routes.draw do
     end
     resources :missions, only: :index
     post "realtime/token" => "realtime_tokens#create", as: :realtime_token
+    resources :characters, only: :index do
+      post :duels, on: :member, action: :duel
+    end
     resources :matches, only: :show do
       post :responses, on: :member, action: :respond
       post :surrender, on: :member
