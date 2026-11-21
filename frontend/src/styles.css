@@ -1881,48 +1881,41 @@ input[type="file"]::file-selector-button {
 /* Duelo: no celular, uma coluna (mesa, situação, detalhe, pergunta, corrente e histórico).
    No computador, três: o detalhe da carta à esquerda, a mesa e a pergunta no meio, a
    corrente e o histórico à direita, os lados parados enquanto a página rola. */
+/* A mesa do duelo ocupa a tela que sobra embaixo da barra do topo (GXP-99): a barra do duelo
+   em cima e a mesa no resto, sem rolar a página. No computador largo, o detalhe da carta à
+   esquerda e a corrente, o histórico e as opções à direita, cada coluna rolando por dentro. */
 .duel-page {
-  max-width: 44rem;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0.5rem;
+  height: calc(100dvh - var(--header-h, 6rem));
+  min-height: 0;
+  padding-block: 0.5rem;
 }
 
 @media (width >= 72rem) {
   .duel-page {
-    display: grid;
     grid-template-areas:
-      "detail board side"
-      "detail status side"
-      "detail prompt side"
-      "detail error side"
-      "detail . side";
+      "detail board bar"
+      "detail board side";
     grid-template-columns: 17rem minmax(0, 1fr) 17rem;
-    grid-template-rows: auto auto auto auto 1fr;
-    gap: 0 1.5rem;
-    align-items: start;
+    column-gap: 1.5rem;
     max-width: 72rem;
+  }
+
+  .duel-page > .duel-bar {
+    grid-area: bar;
   }
 
   .duel-page > .board {
     grid-area: board;
   }
 
-  .duel-page > .duel-status-area {
-    grid-area: status;
-  }
-
-  .duel-page > .prompt-panel {
-    grid-area: prompt;
-    width: 100%;
-  }
-
-  .duel-page > .duel-error {
-    grid-area: error;
-  }
-
   .duel-page > .duel-side,
   .duel-page > .duel-detail {
-    position: sticky;
-    top: 1rem;
-    max-height: calc(100dvh - 2rem);
+    align-self: start;
+    min-height: 0;
+    max-height: 100%;
     margin: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -1949,6 +1942,15 @@ input[type="file"]::file-selector-button {
   background: radial-gradient(ellipse at 50% 50%, #18264a, var(--color-bg) 75%);
 }
 
+/* No duelo, a mesa ocupa a altura que sobra: o lado de cima no alto, o seu embaixo (perto do
+   polegar) e a faixa das fases no meio. */
+.duel-page > .board {
+  container-type: size;
+  align-content: space-between;
+  gap: 0.5rem;
+  min-height: 0;
+}
+
 /* 7 zonas e 6 vãos na largura da mesa, entre 2rem e 4,5rem cada. */
 .side {
   --zone: clamp(2rem, (100cqi - 6 * var(--gap)) / 7, 4.5rem);
@@ -1956,6 +1958,35 @@ input[type="file"]::file-selector-button {
   display: grid;
   gap: 0.5rem;
   justify-items: center;
+}
+
+/* No duelo, a zona também cabe na altura: os dois campos (4 zonas), as duas mãos (perto de
+   2,1 zonas) e o resto da mesa (os nomes, a faixa das fases e os vãos: 17,5rem, medidos em
+   telas de 360 a 1920 de largura). */
+.duel-page > .board .side {
+  --zone: clamp(
+    1.75rem,
+    min((100cqi - 6 * var(--gap)) / 7, (100cqh - var(--board-fixed, 17.5rem)) / 6.2),
+    5.5rem
+  );
+}
+
+/* Tela baixa (celular pequeno, notebook de 720 linhas): sem a linha do turno (a barra já diz
+   de quem é a vez) e com menos vão, para as cartas não ficarem miúdas. */
+@container (height < 36rem) {
+  .duel-page > .board .side {
+    --board-fixed: 15rem;
+
+    gap: 0.25rem;
+  }
+
+  .duel-page > .board .phase-track > p {
+    display: none;
+  }
+
+  .duel-page > .board .lp {
+    font-size: 1.125rem;
+  }
 }
 
 /* O campo de cada lado em 7 colunas: zona de campo ou Extra, as 5 zonas, cemitério ou deck. */
@@ -2227,28 +2258,11 @@ button.pile {
   bottom: auto;
 }
 
-/* As frases fixas num menu pequeno, embaixo da situação do duelo: seis botões em 3 × 2. */
-.emotes {
-  margin: 0 0 1rem;
-  text-align: center;
-}
-
-.emotes summary {
-  display: inline-block;
-  padding: 0.25rem 0.85rem;
-  border: 1px solid var(--color-field-border);
-  border-radius: 999px;
-  color: var(--color-muted);
-  cursor: pointer;
-}
-
-/* Duas colunas no celular (3 × 2 no computador): cada frase cabe numa linha só. */
+/* As frases fixas, no modal "Frases": duas colunas no celular, três no computador. */
 .emote-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
   gap: 0.5rem;
-  max-width: 30rem;
-  margin: 0.5rem auto 0;
 }
 
 .pile-banished {
@@ -2361,7 +2375,7 @@ button.pile {
   container-type: inline-size;
 }
 
-.phase-track ol {
+.phase-list {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.25rem;
@@ -2376,7 +2390,7 @@ button.pile {
   }
 }
 
-.phase-track li {
+.phase-list li {
   padding: 0 0.5rem;
   text-align: center;
   white-space: nowrap;
@@ -2385,10 +2399,140 @@ button.pile {
   color: var(--color-muted);
 }
 
-.phase-track li[aria-current="step"] {
+.phase-list li[aria-current="step"] {
   border-color: var(--color-accent);
   background: var(--color-accent);
   color: var(--color-bg);
+}
+
+/* As fases ou, com a corrente aberta, a corrente: as duas com a mesma altura, para a mesa
+   não pular quando a corrente abre e fecha. */
+.phase-slot {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 2.75rem;
+}
+
+/* A corrente aberta: os elos em fila, o mais alto à direita, cada um com o número. */
+.chain-strip {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chain-strip li {
+  position: relative;
+  display: grid;
+}
+
+.chain-strip img,
+.chain-face {
+  width: 1.9rem;
+  height: auto;
+  aspect-ratio: 56 / 82;
+  border: 1px solid var(--color-accent);
+  border-radius: 3px;
+  background: var(--color-surface);
+}
+
+.chain-strip .negated img {
+  opacity: 0.45;
+}
+
+.chain-number {
+  position: absolute;
+  top: -0.35rem;
+  left: -0.35rem;
+  min-width: 1.1rem;
+  padding: 0 0.2rem;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.1rem;
+  text-align: center;
+}
+
+/* O que fazer agora: até três botões do mesmo tamanho numa linha (o texto quebra dentro do
+   botão), sempre com a mesma altura. */
+.turn-actions {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 0.4rem;
+  align-items: stretch;
+  width: min(100%, 30rem);
+  min-height: 2.5rem;
+}
+
+.turn-actions button {
+  padding: 0.3rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.15;
+}
+
+.turn-waiting {
+  align-self: center;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.turn-actions .duel-error {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin: 0;
+  text-align: center;
+}
+
+/* A barra do duelo, em cima da mesa: a vez e o relógio à esquerda, os botões à direita. */
+.duel-bar {
+  display: grid;
+  grid-template-areas:
+    "status actions"
+    "timers timers";
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.15rem 0.75rem;
+  align-items: center;
+}
+
+.duel-bar .duel-status {
+  grid-area: status;
+  margin: 0;
+  text-align: start;
+  overflow: hidden;
+  font-family: var(--font-title);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.duel-bar .duel-timers {
+  grid-area: timers;
+  justify-content: start;
+  gap: 0.75rem;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.duel-bar-actions {
+  display: flex;
+  grid-area: actions;
+  gap: 0.35rem;
+}
+
+.duel-bar-actions button {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.875rem;
+}
+
+.duel-bar-error {
+  grid-column: 1 / -1;
+  margin: 0;
 }
 
 /* A situação embaixo da mesa: a vez, o relógio, o "Desistir" e, no fim, o resultado. */
@@ -2510,12 +2654,8 @@ button.pile {
   width: auto;
 }
 
-.duel-result {
-  scroll-margin-top: 1rem;
-  padding: 1rem;
-  border: 2px solid var(--color-accent);
-  border-radius: var(--radius);
-  background: var(--color-surface);
+/* O resultado do duelo, num modal: o título, o motivo, o DP e as ações, no centro. */
+.duel-dialog.duel-result {
   text-align: center;
 }
 
@@ -2523,9 +2663,7 @@ button.pile {
   margin: 0;
 }
 
-.duel-result .duel-status p {
-  font-family: var(--font-text);
-  font-size: 1rem;
+.duel-result > p {
   color: var(--color-muted);
 }
 
@@ -2661,38 +2799,141 @@ button.danger {
   }
 }
 
-/* A pergunta da vez embaixo da mesa: um botão por escolha, com o texto do efeito menor. */
-.prompt-panel {
+/* Os modais do duelo (GXP-99): no celular sobem de baixo, perto do polegar, e deixam a parte
+   de cima da mesa à vista; no computador ficam no meio. Um botão por escolha, com o texto do
+   efeito menor. */
+.duel-dialog {
+  width: min(34rem, 100%);
+  max-width: 100%;
   padding: 1rem;
   border: 2px solid var(--color-accent);
   border-radius: var(--radius);
   background: var(--color-surface);
+  color: var(--color-text);
 }
 
-.prompt-panel h2 {
+.duel-dialog:modal {
+  max-height: min(85dvh, 44rem);
+  overscroll-behavior: contain;
+}
+
+.duel-dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background: rgb(5 9 18 / 0.55);
+}
+
+@media (width < 40rem) {
+  .duel-dialog:modal {
+    width: 100%;
+    max-height: 78dvh;
+    margin: auto 0 0;
+    border-width: 2px 0 0;
+    border-radius: 14px 14px 0 0;
+  }
+}
+
+/* O modal entra subindo um pouco, se o aparelho e a mesa deixam animar. */
+@media (prefers-reduced-motion: no-preference) {
+  .duel-page:not([data-motion="off"]) .duel-dialog:modal {
+    transition:
+      opacity 160ms ease-out,
+      translate 160ms ease-out;
+
+    @starting-style {
+      opacity: 0;
+      translate: 0 1rem;
+    }
+  }
+}
+
+.duel-dialog-header {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
   margin: 0 0 0.75rem;
+}
+
+.duel-dialog-header h2 {
+  margin: 0;
   font-size: 1.125rem;
 }
 
-.prompt-panel fieldset {
+.duel-dialog-header button {
+  flex: none;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.875rem;
+}
+
+.duel-dialog fieldset {
   margin: 0;
   padding: 0;
   border: 0;
 }
 
 /* Uma coluna só: em grade, um grupo com uma escolha deixava um buraco do lado. */
-.prompt-panel .actions {
+.duel-dialog .actions {
   display: grid;
   gap: 0.5rem;
   margin: 0 0 0.5rem;
 }
 
-.prompt-panel .actions:empty {
+.duel-dialog .actions:empty {
   display: none;
 }
 
-.prompt-panel .actions > button {
+.duel-dialog .actions > button {
   text-align: start;
+}
+
+.duel-dialog .chain-stack {
+  margin: 0 0 0.75rem;
+}
+
+/* A carta tocada: a imagem ao lado das ações. */
+.card-actions-body {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+
+  img {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+  }
+
+  @media (width < 30rem) {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+  }
+}
+
+/* O texto da carta dentro do modal, numa caixa que rola se for longo. */
+.card-text {
+  max-height: 12rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: rgb(11 19 36 / 0.45);
+
+  h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1rem;
+  }
+
+  p {
+    margin: 0.25rem 0 0;
+    font-size: 0.9375rem;
+  }
+}
+
+/* O "Mais" do celular: a corrente, o histórico e as opções, um embaixo do outro. */
+.duel-more {
+  display: grid;
+  gap: 1rem;
 }
 
 .choice-detail {

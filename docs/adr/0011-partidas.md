@@ -102,6 +102,17 @@ semente, os decks e a lista de respostas: a engine refaz o resto (ADR 0001).
     navegador (como as animações) e vai para cada duelo (`POST /api/matches/:id/settings`,
     guardada em `match_players.always_chain`). O passe que o jogador dá entra nas respostas
     como qualquer outra, então o replay não muda.
+21. **Mesa sem rolar, com modais** (pedido do Pedro em 20/11/2026; GXP-99): a página do duelo
+    ocupa a tela que sobra embaixo da barra do topo, sem a faixa de confirmar e-mail e sem o
+    rodapé. A zona da mesa cabe na largura e na altura (`--zone` com `cqi` e `cqh`, a parte fixa
+    medida em telas de 360×640 a 1920×1080; em tela baixa, some a linha do turno). A carta que
+    dá para usar brilha (`actionable.ts`); tocar nela abre as ações dela num modal
+    (`commands.ts`, `CardActionsDialog`), com o texto da carta. Ir para a Batalha, Principal 2,
+    encerrar o turno e "Todas as ações" ficam na faixa das fases. As outras perguntas abrem num
+    modal (`PromptDialog`) com a corrente aberta à vista; "Ver a mesa" e o Esc minimizam, e a
+    faixa mostra "Responder" para voltar. A corrente aparece compacta no lugar das fases, na
+    mesma altura (a mesa não pula). O resultado abre num modal. No celular, histórico e opções
+    ficam no "Mais" da barra; no computador, na coluna da direita, com a barra em cima dela.
 
 ## Consequências
 

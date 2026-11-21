@@ -1,4 +1,4 @@
-import { Suspense, useState, type MouseEvent } from "react";
+import { Suspense, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { request, type User } from "./api.ts";
@@ -19,6 +19,9 @@ export function Layout() {
   const duel = user ? session.data?.duel : null;
   const { pathname } = useLocation();
   const [firstPath] = useState(pathname);
+  // Na mesa do duelo, nada além da barra do topo: a mesa ocupa o resto da tela (GXP-99).
+  const inDuel = /^\/duelo\/\d+$/.test(pathname);
+  const topbar = useHeaderHeight();
   // Avisa antes de a página nova montar: é ela que leva o foco para o próprio título.
   if (pathname !== firstPath) markNavigation();
 
@@ -27,7 +30,7 @@ export function Layout() {
       <a className="skip-link" href="#conteudo" onClick={skipToContent}>
         Pular para o conteúdo
       </a>
-      <nav className="topbar" aria-label="Principal">
+      <nav className="topbar" aria-label="Principal" ref={topbar}>
         <Link to="/" className="brand">
           <BrandMark />
           <span className="brand-name">GX Project</span>
@@ -67,7 +70,7 @@ export function Layout() {
           )}
         </span>
       </nav>
-      {user && !user.email_verified && <ConfirmEmailNotice user={user} />}
+      {user && !user.email_verified && !inDuel && <ConfirmEmailNotice user={user} />}
       {duel && pathname !== `/duelo/${duel.match_id}` && (
         <p className="notice" role="status">
           Você tem um duelo em andamento.{" "}
@@ -79,9 +82,26 @@ export function Layout() {
           <Outlet />
         </Suspense>
       </div>
-      <SiteFooter />
+      {!inDuel && <SiteFooter />}
     </>
   );
+}
+
+// A altura da barra do topo em --header-h, para a mesa do duelo saber quanto sobra da tela
+// (a barra tem duas linhas no celular e uma no computador).
+function useHeaderHeight() {
+  const ref = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    const root = document.documentElement;
+    const update = () => root.style.setProperty("--header-h", `${element.offsetHeight}px`);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  return ref;
 }
 
 // A marca do site: três cartas em leque, nas cores dos três dormitórios (desenho próprio).
