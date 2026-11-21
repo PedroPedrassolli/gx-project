@@ -286,8 +286,11 @@ test("as frases: a sua aparece no seu nome, e a do outro chega na consulta", asy
   });
   await page.goto("/duelo/5");
 
-  await page.getByText("Mensagens").click();
-  await page.getByRole("button", { name: "Boa jogada!" }).click();
+  await page.getByRole("button", { name: "Frases" }).click();
+  await page
+    .getByRole("dialog", { name: "Frases" })
+    .getByRole("button", { name: "Boa jogada!" })
+    .click();
   await expect(page.getByRole("status").filter({ hasText: "Boa jogada!" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Bom duelo!" })).toBeHidden();
   expect(sent).toEqual([{ emote: "nice" }]);
@@ -359,8 +362,9 @@ test("o resultado mostra o DP do duelo linha por linha, com os cortes e o saldo"
     "Total+432 DP",
   ]);
   await expect(page.getByText("Saldo: 1.666 DP. Nível 2.")).toBeVisible();
-  // A página rola até o resultado: não precisa procurar embaixo da mesa.
-  await expect(page.getByRole("table", { name: "DP do duelo" })).toBeInViewport();
+  // O resultado abre sozinho num modal, à vista, sem procurar embaixo da mesa (GXP-99).
+  const result = page.getByRole("dialog", { name: "Você venceu!" });
+  await expect(result.getByRole("table", { name: "DP do duelo" })).toBeInViewport();
   await expect(
     page.getByRole("link", { name: "Missão concluída: Torneio Slifer Red" }),
   ).toBeVisible();
@@ -375,6 +379,12 @@ test("o resultado mostra o DP do duelo linha por linha, com os cortes e o saldo"
   await expect(page.getByText("Empatar um duelo")).toBeVisible();
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
+
+  // "Ver a mesa" fecha o modal, e a faixa das fases tem o caminho de volta.
+  await result.getByRole("button", { name: "Ver a mesa" }).click();
+  await expect(result).toBeHidden();
+  await page.getByRole("button", { name: "Ver o resultado" }).click();
+  await expect(result).toBeVisible();
 });
 
 test("o replay passa lance a lance e turno a turno, e reproduz sozinho", async ({ page }) => {
@@ -691,27 +701,103 @@ const IDLE = {
   to_ep: true,
 };
 
-test("na fase principal, a escolha vai para o servidor e a mesa nova aparece", async ({ page }) => {
+test("na fase principal, a carta que brilha abre as ações dela, e a escolha vai para o servidor", async ({
+  page,
+}) => {
   const sent = await mockPrompt(page, IDLE);
   await page.goto("/duelo/5");
 
-  const panel = page.getByRole("region", { name: "Fase principal: o que fazer?" });
-  await expect(
-    panel.getByRole("button", { name: "Ativar Renascer do Monstro (mão)" }),
-  ).toContainText("Special Summon 1 monster");
-  await expect(panel.getByRole("button", { name: "Encerrar o turno" })).toBeVisible();
   // A carta que dá para usar brilha na mão; a mão do outro, não.
-  await expect(page.getByRole("list", { name: "Sua mão" }).getByRole("listitem")).toHaveAttribute(
-    "data-actionable",
-    "true",
-  );
+  const hand = page.getByRole("list", { name: "Sua mão" });
+  await expect(hand.getByRole("listitem")).toHaveAttribute("data-actionable", "true");
   await expect(page.locator(".side.opponent [data-actionable]")).toHaveCount(0);
+  // Ir para a Batalha e encerrar o turno ficam na faixa das fases, à vista, sem rolar.
+  await expect(page.getByRole("button", { name: "Ir para a Batalha" })).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Encerrar o turno" })).toBeInViewport();
+
+  // "Todas as ações" traz também a carta que não está à vista na mesa.
+  await page.getByRole("button", { name: "Todas as ações" }).click();
+  const all = page.getByRole("dialog", { name: "Fase principal: o que fazer?" });
+  await expect(all.getByRole("button", { name: "Ativar Renascer do Monstro (mão)" })).toContainText(
+    "Special Summon 1 monster",
+  );
+  await all.getByRole("button", { name: "Fechar" }).click();
+  await expect(all).toBeHidden();
+
+  await hand.getByRole("button", { name: "Mago Negro" }).click();
+  const actions = page.getByRole("dialog", { name: "Mago Negro" });
+  await expect(actions.getByRole("button", { name: "Invocar" })).toBeVisible();
+  await expect(actions.getByText("O mago supremo.")).toBeVisible();
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
 
-  await panel.getByRole("button", { name: "Invocar Mago Negro (mão)" }).click();
+  await actions.getByRole("button", { name: "Invocar" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Vez de Syrus" })).toBeVisible();
   await expect.poll(() => sent).toEqual([{ seq: 3, response: { command: "summon", index: 0 } }]);
+});
+
+test("a mesa cheia cabe na tela, sem rolar, do celular pequeno ao notebook", async ({ page }) => {
+  const full = {
+    ...STATE.view,
+    turn_team: 0,
+    waiting_for: 0,
+    prompt: IDLE,
+    sides: STATE.view.sides.map((side) =>
+      side.team === 0
+        ? { ...side, hand: Array.from({ length: 7 }, () => ({ code: 46986414 })) }
+        : { ...side, hand: Array.from({ length: 6 }, () => ({ hidden: true })) },
+    ),
+  };
+  await mockMatch(page);
+  await page.route("**/api/matches/5", (route) =>
+    route.fulfill({ json: { data: { ...STATE, view: full } } }),
+  );
+  const sizes: [number, number][] = [
+    [360, 640],
+    [390, 844],
+    [1280, 720],
+    [1920, 1080],
+  ];
+  for (const [width, height] of sizes) {
+    await page.setViewportSize({ width, height });
+    await page.goto("/duelo/5");
+    await expect(page.getByRole("button", { name: "Encerrar o turno" })).toBeInViewport();
+    const fit = await page.evaluate(() => ({
+      page: document.documentElement.scrollHeight - innerHeight,
+      wide: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      board:
+        Math.ceil(document.querySelector(".board")!.getBoundingClientRect().bottom) - innerHeight,
+    }));
+    expect(fit.page, `rolagem em ${width}x${height}`).toBeLessThanOrEqual(0);
+    expect(fit.wide, `largura em ${width}x${height}`).toBeLessThanOrEqual(0);
+    expect(fit.board, `mesa em ${width}x${height}`).toBeLessThanOrEqual(0);
+  }
+});
+
+test("a pergunta abre num modal que dá para minimizar e abrir de novo", async ({ page }) => {
+  const sent = await mockPrompt(page, {
+    type: "select_effectyn",
+    player: 0,
+    code: 46986414,
+    controller: 0,
+    location: 4,
+    sequence: 0,
+    text: "Ativar o efeito do Mago Negro?",
+  });
+  await page.goto("/duelo/5");
+  const dialog = page.getByRole("dialog", { name: "Ativar o efeito do Mago Negro?" });
+  await expect(dialog).toBeVisible();
+
+  await dialog.getByRole("button", { name: "Ver a mesa" }).click();
+  await expect(dialog).toBeHidden();
+  // Com o modal minimizado, a mesa responde ao toque e a faixa das fases tem o caminho de volta.
+  await page.getByRole("button", { name: "Responder: Ativar o efeito do Mago Negro?" }).click();
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await page.getByRole("button", { name: "Responder: Ativar o efeito do Mago Negro?" }).click();
+  await dialog.getByRole("button", { name: "Sim" }).click();
+  await expect.poll(() => sent).toEqual([{ seq: 3, response: { yes: true } }]);
 });
 
 test("jogada que o servidor recusa mostra o aviso", async ({ page }) => {
@@ -743,7 +829,7 @@ test("cadeia, sim ou não e posição mandam a escolha certa", async ({ page }) 
   });
   await page.goto("/duelo/5");
   await page
-    .getByRole("region", { name: "Usar o Destiny Draw?" })
+    .getByRole("dialog", { name: "Usar o Destiny Draw?" })
     .getByRole("button", { name: "Sim" })
     .click();
   await expect.poll(() => yesNo).toEqual([{ seq: 3, response: { yes: true } }]);
@@ -752,7 +838,7 @@ test("cadeia, sim ou não e posição mandam a escolha certa", async ({ page }) 
   const direct = await mockPrompt(page, { type: "select_yesno", player: 0, description: 31 });
   await page.goto("/duelo/5");
   await page
-    .getByRole("region", { name: "Atacar diretamente?" })
+    .getByRole("dialog", { name: "Atacar diretamente?" })
     .getByRole("button", { name: "Não" })
     .click();
   await expect.poll(() => direct).toEqual([{ seq: 3, response: { yes: false } }]);
@@ -796,7 +882,7 @@ test("escolher cartas: tocar mostra a carta e só o Confirmar responde", async (
     ],
   });
   await page.goto("/duelo/5");
-  const pick = page.getByRole("region", { name: "Escolha a carta para adicionar à mão" });
+  const pick = page.getByRole("dialog", { name: "Escolha a carta para adicionar à mão" });
   await expect(pick.getByRole("button", { name: "Confirmar" })).toBeDisabled();
   await pick.getByRole("radio", { name: "Mago Negro (deck)" }).check();
   await expect(page.getByText("O mago supremo.")).toBeVisible();
@@ -817,7 +903,7 @@ test("escolher cartas: tocar mostra a carta e só o Confirmar responde", async (
     cards: [{ code: 89631139, controller: 1, location: 4, sequence: 0 }],
   });
   await page.goto("/duelo/5");
-  const attack = page.getByRole("region", { name: "Escolha o alvo do ataque" });
+  const attack = page.getByRole("dialog", { name: "Escolha o alvo do ataque" });
   await expect(attack.getByRole("button", { name: "Cancelar" })).toBeVisible();
   await attack
     .getByRole("radio", {
@@ -840,7 +926,7 @@ test("escolher cartas: tocar mostra a carta e só o Confirmar responde", async (
     ],
   });
   await page.goto("/duelo/5");
-  const panel = page.getByRole("region", { name: "Escolha a carta para destruir" });
+  const panel = page.getByRole("dialog", { name: "Escolha a carta para destruir" });
   const confirm = panel.getByRole("button", { name: "Confirmar" });
   await panel.getByRole("checkbox", { name: "Mago Negro (mão)" }).check();
   await expect(confirm).toBeDisabled();
@@ -973,7 +1059,7 @@ test("zona, marcadores, número e pedra, papel e tesoura mandam a escolha certa"
     ],
   });
   await page.goto("/duelo/5");
-  const panel = page.getByRole("region", { name: "Tire 2 marcadores" });
+  const panel = page.getByRole("dialog", { name: "Tire 2 marcadores" });
   await panel
     .getByRole("spinbutton", { name: "Mago Negro (sua zona de monstro, 1ª da esquerda), com 2" })
     .fill("1");
@@ -996,7 +1082,7 @@ test("zona, marcadores, número e pedra, papel e tesoura mandam a escolha certa"
 
   const hand = await mockPrompt(page, { type: "rock_paper_scissors", player: 0 });
   await page.goto("/duelo/5");
-  await page.getByRole("button", { name: "Papel" }).click();
+  await page.getByRole("button", { name: "Papel", exact: true }).click();
   await expect.poll(() => hand).toEqual([{ seq: 3, response: { hand: 3 } }]);
 });
 
@@ -1032,7 +1118,7 @@ test("tipo, atributo e nome de carta mandam a escolha certa", async ({ page }) =
     hint: 564,
   });
   await page.goto("/duelo/5");
-  const panel = page.getByRole("region", { name: "Declare o nome de uma carta" });
+  const panel = page.getByRole("dialog", { name: "Declare o nome de uma carta" });
   await panel.getByLabel("Nome da carta").fill("zzz");
   await expect(panel.getByText("Nenhuma carta com esse nome.")).toBeVisible();
   await panel.getByLabel("Nome da carta").fill("mago");
