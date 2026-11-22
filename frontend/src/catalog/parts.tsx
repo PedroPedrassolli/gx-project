@@ -108,11 +108,13 @@ export function Detail({
   pending,
   language,
   packs,
+  onLanguage,
 }: {
   card: CardDetail;
   pending?: "loading" | "failed"; // o detalhe ainda não chegou (ou falhou): só falta o texto
   language: Language;
   packs: Map<number, string>;
+  onLanguage?: (language: Language) => void; // a troca de idioma fica junto do texto (ADR 0015)
 }) {
   const other = language === "pt" ? card.name : card.name_pt;
   const { text, note } = pending
@@ -122,14 +124,15 @@ export function Detail({
     <article className={`detail frame-${frame(card)}`}>
       <h2 id="detail-title">{displayName(card, language)}</h2>
       {other && other !== displayName(card, language) && <p className="other-name">{other}</p>}
-      {/* A miniatura, que a lista ou a mesa já baixou, aparece na hora por baixo; a imagem
-          grande cobre por cima quando chega (GXP-107). Sem imagem, fica a face da carta. */}
+      {/* A imagem que a grade já baixou aparece na hora por baixo; a do tamanho da tela (maior
+          na tela de alta densidade) cobre por cima quando chega (GXP-107). Sem imagem, fica a
+          face da carta. */}
       <div key={card.id} className="detail-image-box">
         <CardImage
           card={card}
-          size="p"
-          width={IMAGE_WIDTHS.p}
-          height={163}
+          size="m"
+          width={IMAGE_WIDTHS.m}
+          height={391}
           className="detail-image-thumb"
           alt={card.image === undefined ? `Carta ${displayName(card, language)}, sem imagem` : ""}
         />
@@ -149,6 +152,15 @@ export function Detail({
       {card.banlist && <p className="badge">{label(BANLIST, card.banlist)}</p>}
       <p className="text">{text}</p>
       {note && <p className="muted">{note}</p>}
+      {onLanguage && (
+        <Choices
+          name="language"
+          title="Texto das cartas"
+          value={language}
+          options={{ pt: "Português", en: "Inglês" }}
+          onChange={(value) => onLanguage(value as Language)}
+        />
+      )}
       {card.name_in_game && <p className="muted">No jogo: {card.name_in_game}</p>}
       {card.packs && (
         <>
@@ -171,35 +183,64 @@ export function Detail({
   );
 }
 
-// Um item da lista: miniatura, nome, tipo, ATK/DEF e a banlist. children traz o que a
-// tela quiser a mais (raridade no pacote, quantas cópias o jogador tem).
+// Um item da lista. Em grade (o padrão: catálogo e coleção), a carta grande com o nome
+// embaixo e as marcas (banlist, raridade, cópias) por cima da imagem; o nome vem primeiro
+// no código, para o leitor de tela começar por ele. Em linha (o baú do Deck Edit, até o
+// GXP-132), a miniatura com o nome, o tipo e os números ao lado. children traz o que a tela
+// quiser a mais; missing apaga a carta que o jogador não tem.
 export function CardTile({
   card,
   language,
   selected,
   onSelect,
   children,
+  layout = "grid",
+  missing = false,
 }: {
   card: CardSummary;
   language: Language;
   selected: boolean;
   onSelect: () => void;
   children?: ReactNode;
+  layout?: "grid" | "row";
+  missing?: boolean;
 }) {
+  const ban = card.banlist && <span className="badge">{label(BANLIST, card.banlist)}</span>;
+  if (layout === "row") {
+    return (
+      <button
+        type="button"
+        className={`card-tile row frame-${frame(card)}`}
+        aria-current={selected || undefined}
+        onClick={onSelect}
+      >
+        <Thumb card={card} />
+        <span className="tile-text">
+          <strong>{displayName(card, language)}</strong>
+          <span className="type-line">{typeLine(card)}</span>
+          <Stats card={card} />
+          {ban}
+          {children}
+        </span>
+      </button>
+    );
+  }
   return (
     <button
       type="button"
-      className={`card-tile frame-${frame(card)}`}
+      className={`card-tile frame-${frame(card)}${missing ? " missing" : ""}`}
       aria-current={selected || undefined}
       onClick={onSelect}
     >
-      <Thumb card={card} />
-      <span className="tile-text">
-        <strong>{displayName(card, language)}</strong>
-        <span className="type-line">{typeLine(card)}</span>
-        <Stats card={card} />
-        {card.banlist && <span className="badge">{label(BANLIST, card.banlist)}</span>}
-        {children}
+      <span className="tile-name">{displayName(card, language)}</span>
+      <span className="tile-art">
+        <CardImage card={card} size="m" width={IMAGE_WIDTHS.m} height={391} lazy />
+        {(ban || children) && (
+          <span className="tile-marks">
+            {ban}
+            {children}
+          </span>
+        )}
       </span>
     </button>
   );

@@ -12,7 +12,7 @@ import { NO_PACKS, useCatalog, usePackRarities } from "../catalog/data.ts";
 import { CatalogFilters } from "../catalog/Filters.tsx";
 import { useCardLanguage } from "../catalog/language.ts";
 import { CardTile } from "../catalog/parts.tsx";
-import { useCollection, type Progress } from "./api.ts";
+import { useCollection, useMarkSeen, type Progress } from "./api.ts";
 import { SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 
@@ -20,11 +20,13 @@ const PAGE = 60;
 const percent = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
 
 function progressText({ owned, cards, percent: value }: Progress) {
-  return `${owned} de ${cards} (${percent.format(value)}%)`;
+  return `${owned.toLocaleString("pt-BR")} de ${cards.toLocaleString("pt-BR")} (${percent.format(value)}%)`;
 }
 
-// Coleção do jogador (escopo 3.2 e 4): o que ele tem, quantas cópias e quanto falta do
-// pool e de cada pacote (essa porcentagem libera pacotes na loja, na F4).
+// Coleção do jogador (escopo 3.2 e 4; ADR 0015): o que ele tem, quantas cópias e quanto falta
+// do pool e de cada pacote (essa porcentagem libera pacotes na loja). "Todas" mostra o pool
+// inteiro, com as que ele ainda não tem apagadas. A carta nova (da loja ou de uma missão) fica
+// marcada até o jogador abrir o detalhe dela, como no baú (GXP-42).
 export function CollectionPage() {
   usePageTitle("Coleção");
   const session = useSession();
@@ -36,11 +38,17 @@ export function CollectionPage() {
   const [language, setLanguage] = useCardLanguage();
   const [shown, setShown] = useState(PAGE);
   const [selected, setSelected] = useState(0);
+  const [all, setAll] = useState(false);
   const wide = useMediaQuery(WIDE);
   const rarities = usePackRarities(pack).data ?? null;
+  const markSeen = useMarkSeen();
 
   const owned = useMemo(
     () => new Map(collection.data?.data.map((row) => [row.card_id, row.quantity])),
+    [collection.data],
+  );
+  const fresh = useMemo(
+    () => new Set(collection.data?.data.filter((row) => row.new).map((row) => row.card_id)),
     [collection.data],
   );
   // A lista filtra com o valor "atrasado" dos filtros: o campo responde na hora a cada tecla e
@@ -50,10 +58,12 @@ export function CollectionPage() {
     if (!catalog.data || (pack !== "" && !rarities)) return [];
     const list = catalog.data.cards.filter(
       (card) =>
-        owned.has(card.id) && matches(card, deferred) && (!rarities || rarities.has(card.id)),
+        (all || owned.has(card.id)) &&
+        matches(card, deferred) &&
+        (!rarities || rarities.has(card.id)),
     );
     return sortCards(list, deferred, language);
-  }, [catalog.data, owned, deferred, pack, rarities, language]);
+  }, [catalog.data, owned, all, deferred, pack, rarities, language]);
   const packNames = catalog.data?.packNames ?? NO_PACKS;
 
   if (session.isSuccess && !user) {
@@ -90,6 +100,29 @@ export function CollectionPage() {
         </section>
       )}
 
+      <div className="segmented" role="group" aria-label="Quais cartas mostrar">
+        <button
+          type="button"
+          aria-pressed={!all}
+          onClick={() => {
+            setAll(false);
+            setShown(PAGE);
+          }}
+        >
+          Tenho
+        </button>
+        <button
+          type="button"
+          aria-pressed={all}
+          onClick={() => {
+            setAll(true);
+            setShown(PAGE);
+          }}
+        >
+          Todas
+        </button>
+      </div>
+
       <CatalogFilters
         title="Filtros da coleção"
         filters={filters}
@@ -103,8 +136,7 @@ export function CollectionPage() {
           setShown(PAGE);
         }}
         packs={catalog.data?.packs ?? []}
-        language={language}
-        onLanguage={setLanguage}
+        results={collection.data && catalog.data ? results.length : undefined}
         onReset={() => {
           setFilters(EMPTY_FILTERS);
           setPack("");
@@ -118,6 +150,7 @@ export function CollectionPage() {
           <CardPanel
             cardId={selected}
             language={language}
+            onLanguage={setLanguage}
             packs={packNames}
             wide={wide}
             onClose={() => setSelected(0)}
@@ -130,20 +163,30 @@ export function CollectionPage() {
               : "Carregando a coleção…"}
           </p>
           <ul className="card-grid">
-            {results.slice(0, shown).map((card) => (
-              <li key={card.id}>
-                <CardTile
-                  card={card}
-                  language={language}
-                  selected={selected === card.id}
-                  onSelect={() => setSelected(card.id)}
-                >
-                  <span className="badge">
-                    {owned.get(card.id)} {owned.get(card.id) === 1 ? "cópia" : "cópias"}
-                  </span>
-                </CardTile>
-              </li>
-            ))}
+            {results.slice(0, shown).map((card) => {
+              const copies = owned.get(card.id) ?? 0;
+              return (
+                <li key={card.id}>
+                  <CardTile
+                    card={card}
+                    language={language}
+                    selected={selected === card.id}
+                    missing={copies === 0}
+                    onSelect={() => {
+                      setSelected(card.id);
+                      if (fresh.has(card.id)) markSeen([card.id]);
+                    }}
+                  >
+                    {fresh.has(card.id) && <span className="badge new-card">Nova</span>}
+                    {copies > 0 && (
+                      <span className="badge">
+                        {copies} {copies === 1 ? "cópia" : "cópias"}
+                      </span>
+                    )}
+                  </CardTile>
+                </li>
+              );
+            })}
           </ul>
           {/* Em transição: o toque responde na hora e as próximas cartas vêm logo atrás. */}
           {results.length > shown && (

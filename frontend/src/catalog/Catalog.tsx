@@ -53,7 +53,7 @@ export function Catalog() {
   if (catalog.isError && !catalog.data) {
     return (
       <main className="page catalog-page">
-        <h1>Catálogo de cartas</h1>
+        <h1>Cartas</h1>
         <p role="alert">Não deu para carregar as cartas.</p>
         <button type="button" onClick={() => catalog.refetch()}>
           Tentar de novo
@@ -65,7 +65,7 @@ export function Catalog() {
   return (
     <main className="page catalog-page">
       <header className="catalog-header">
-        <h1>Catálogo de cartas</h1>
+        <h1>Cartas</h1>
       </header>
 
       <CatalogFilters
@@ -78,8 +78,7 @@ export function Catalog() {
           setShown(PAGE);
         }}
         packs={catalog.data?.packs ?? []}
-        language={language}
-        onLanguage={setLanguage}
+        results={catalog.data ? results.length : undefined}
         onReset={() => {
           setFilters(EMPTY_FILTERS);
           setPack("");
@@ -93,6 +92,7 @@ export function Catalog() {
           <CardPanel
             cardId={selected}
             language={language}
+            onLanguage={setLanguage}
             packs={packNames}
             wide={wide}
             onClose={() => select(0)}

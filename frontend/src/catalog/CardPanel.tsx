@@ -21,6 +21,7 @@ export function useMediaQuery(query: string) {
 type Props = {
   cardId: number;
   language: Language;
+  onLanguage?: (language: Language) => void;
   packs: Map<number, string>;
   wide: boolean;
   onClose: () => void;
@@ -37,7 +38,13 @@ export function CardPanel(props: Props) {
   const card = detail.data ?? summary;
   const pending = detail.data ? undefined : detail.isError ? "failed" : "loading";
   const body = card ? (
-    <Detail card={card} pending={pending} language={props.language} packs={props.packs} />
+    <Detail
+      card={card}
+      pending={pending}
+      language={props.language}
+      packs={props.packs}
+      onLanguage={props.onLanguage}
+    />
   ) : (
     <h2 id="detail-title">{detail.isError ? "Carta não encontrada." : "Carregando a carta…"}</h2>
   );

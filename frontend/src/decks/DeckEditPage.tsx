@@ -150,7 +150,6 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
           owned={owned}
           rows={rows}
           language={language}
-          onLanguage={onLanguage}
           selected={selected}
           onSelect={setSelected}
           onAdd={(cardId, to) => edit({ type: "add", cardId, section: to })}
@@ -161,6 +160,7 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
             <CardPanel
               cardId={selected}
               language={language}
+              onLanguage={onLanguage}
               packs={packNames}
               wide={wide}
               onClose={() => setSelected(0)}
