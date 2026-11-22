@@ -1,22 +1,25 @@
-/* Tema "mesa de duelo" (GXP-44): o fundo é um tapete azul-marinho, os detalhes têm o
-   dourado das molduras e cada tipo de carta tem a cor da sua moldura (.frame-*).
-   Desenho próprio: nada de logo, verso de carta ou tela oficial. */
+/* Tema Holo (ADR 0015): a interface fica quieta e escura, e quem brilha são as cartas. O
+   brilho holográfico (--holo) aparece só no que é raro ou importante: a carta rara, o botão
+   principal e os seus PV. Desenho próprio: nada de logo, verso de carta ou tela oficial. */
 :root {
-  --font-text: "Spectral", Georgia, "Times New Roman", serif;
-  /* Versaletes, como o nome das cartas: títulos, menu e botões principais. */
-  --font-title: "Spectral SC", "Spectral", Georgia, serif;
-  --color-bg: #0b1324;
-  --color-surface: #131d36;
-  --color-border: rgb(216 184 104 / 0.3);
+  --font-text: "Hanken Grotesk Variable", "Segoe UI", system-ui, sans-serif;
+  /* Títulos, números e botões: o Oxanium, de cantos retos, lembra o visor de um disco de duelo. */
+  --font-title: "Oxanium Variable", "Segoe UI", system-ui, sans-serif;
+  --color-bg: #0a0d16;
+  --color-surface: #141a29;
+  --color-surface-2: #1c2337;
+  --color-border: rgb(255 255 255 / 0.1);
   /* Borda de campo e botão: precisa de contraste 3:1 com o fundo (WCAG 1.4.11). */
-  --color-field-border: #6a77a0;
-  --color-text: #efe8d8;
-  --color-muted: #a9b2c8;
-  --color-accent: #d8b868;
+  --color-field-border: #66718f;
+  --color-text: #eef1f8;
+  --color-muted: #97a0ba;
+  /* O ciano dos links, do foco e do que está escolhido. */
+  --color-accent: #9ee6ff;
+  --holo: linear-gradient(100deg, #6be7ff, #a98bff 35%, #ff8ad6 65%, #ffd27a);
   /* As cores dos três dormitórios: a marca do site. */
-  --dorm-red: #d2444d;
-  --dorm-yellow: #e6b940;
-  --dorm-blue: #4a80dc;
+  --dorm-red: #ff5b6b;
+  --dorm-yellow: #ffd16a;
+  --dorm-blue: #7ab0ff;
   /* A cor da moldura de cada tipo de carta (cards.ts, frame). */
   --frame-normal: #d9b25f;
   --frame-effect: #e0823f;
@@ -25,19 +28,21 @@
   --frame-synchro: #e6e6ee;
   --frame-spell: #35b892;
   --frame-trap: #d85a97;
-  --radius: 10px;
+  --radius: 14px;
   --gutter: clamp(1rem, 4vw, 2rem);
+  /* A barra de abas fixa embaixo: só no celular (o tamanho vem no fim do bloco da barra). */
+  --tabbar-h: 0px;
 
   color-scheme: dark;
   accent-color: var(--color-accent);
   font-family: var(--font-text);
   /* Enquanto a fonte baixa, a substituta fica do mesmo tamanho visual (sem pulo). */
   font-size-adjust: from-font;
-  /* Algarismos do tamanho das maiúsculas: o 0 da Spectral parece um "o" no estilo antigo. */
-  font-variant-numeric: lining-nums;
-  line-height: 1.55;
+  line-height: 1.5;
   color: var(--color-text);
   background: var(--color-bg);
+  /* O que recebe o foco nunca fica escondido atrás da barra de abas (WCAG 2.4.11). */
+  scroll-padding-bottom: calc(var(--tabbar-h) + 1rem);
 }
 
 * {
@@ -46,7 +51,7 @@
 
 body {
   margin: 0;
-  font-size: 1.0625rem;
+  font-size: 1rem;
 }
 
 /* Toda página ocupa pelo menos a tela: o rodapé começa abaixo dela e não pula quando o
@@ -55,7 +60,7 @@ body {
   max-width: 44rem;
   min-height: 100vh;
   margin: 0 auto;
-  padding: calc(var(--gutter) * 2) var(--gutter);
+  padding: var(--gutter) var(--gutter) calc(var(--gutter) * 2);
 }
 
 /* Link para pular a barra do topo: só aparece com o foco do teclado. */
@@ -83,25 +88,26 @@ h2,
 h3 {
   font-family: var(--font-title);
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.005em;
   text-wrap: balance;
 }
 
 h1 {
-  margin: 0.25rem 0 0.75rem;
-  font-size: clamp(2.25rem, 1.75rem + 2vw, 3.5rem);
-  line-height: 1.05;
+  margin: 0.5rem 0 0.75rem;
+  font-size: clamp(1.75rem, 1.45rem + 1.4vw, 2.5rem);
+  line-height: 1.1;
 }
 
 h2 {
-  margin-top: 2.5rem;
-  font-size: 1.375rem;
+  margin-top: 2rem;
+  font-size: 1.25rem;
+  line-height: 1.2;
 }
 
 .lead {
   max-width: 34rem;
   color: var(--color-muted);
-  font-size: 1.1875rem;
+  font-size: 1.0625rem;
   text-wrap: pretty;
 }
 
@@ -303,31 +309,44 @@ h2 {
 
 a {
   color: var(--color-accent);
-  text-underline-offset: 0.15em;
+  text-underline-offset: 0.2em;
 }
 
-a:focus-visible {
+:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
-/* Botão principal: dourado, como o brilho da moldura. O secundário é só o contorno. */
+/* Botão principal: fundo escuro com a borda holográfica (o brilho fica para o que importa).
+   O secundário é só o contorno. Os dois com 44 px de altura, o alvo de toque confortável. */
 .cta {
-  display: inline-block;
-  padding: 0.5rem 1.1rem;
-  border: 1px solid var(--color-accent);
-  border-radius: 6px;
-  background: var(--color-accent);
-  color: var(--color-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.25rem;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background:
+    linear-gradient(var(--color-surface-2), var(--color-surface-2)) padding-box,
+    var(--holo) border-box;
+  color: var(--color-text);
   font-family: var(--font-title);
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   text-decoration: none;
 }
 
+.cta:hover {
+  background:
+    linear-gradient(#232b43, #232b43) padding-box,
+    var(--holo) border-box;
+}
+
 .cta.secondary {
+  border: 1px solid var(--color-field-border);
   background: transparent;
-  color: var(--color-accent);
 }
 
 /* ---- Catálogo: a faixa do título tem as cores dos três dormitórios. ---- */
@@ -573,7 +592,7 @@ button:disabled {
 }
 
 /* Cada carta da lista com a moldura do seu tipo, um pouco da cor no fundo e o nome em
-   versaletes. A escolhida ganha o contorno dourado. */
+   versaletes. A escolhida ganha o contorno do destaque. */
 .card-tile {
   display: flex;
   gap: 0.6rem;
@@ -798,10 +817,9 @@ button:disabled {
   font-size: 0.875rem;
 }
 
-/* Barra do topo: a marca, o menu (a página atual sublinhada em dourado) e a conta. O fundo
-   ocupa a largura toda; o conteúdo fica alinhado com o das páginas largas (72rem). No
-   celular, duas linhas fixas: a marca e a conta em cima, o menu embaixo; a partir de 48rem,
-   tudo numa linha. */
+/* Barra do topo (ADR 0015): a marca, o menu e a conta numa linha, alinhados com as páginas
+   largas (72rem). No celular, o menu vira a barra de abas fixa embaixo, perto do polegar; na
+   mesa do duelo ela some, e a mesa fica com a tela. */
 .topbar,
 .notice {
   padding-inline: max(var(--gutter), calc((100% - 72rem) / 2 + var(--gutter)));
@@ -809,52 +827,29 @@ button:disabled {
 }
 
 .topbar {
-  display: grid;
-  grid-template-areas:
-    "brand account"
-    "links links";
-  grid-template-columns: auto minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  gap: 0.5rem 1rem;
-  padding-block: 0.6rem;
-  background: var(--color-surface);
-  font-family: var(--font-title);
-  font-weight: 600;
-
-  @media (width >= 48rem) {
-    grid-template-areas: "brand links account";
-    grid-template-columns: auto auto minmax(0, 1fr);
-    gap: 0.5rem 1.25rem;
-  }
+  gap: 1rem;
+  min-height: 3.5rem;
+  padding-block: 0.5rem;
+  background: var(--color-bg);
 }
 
 .topbar .brand {
-  grid-area: brand;
-}
-
-/* No celular, o primeiro item alinha com a marca e o último com a conta, com o mesmo
-   espaço entre todos (em colunas iguais, as distâncias entre as palavras variavam). */
-.topbar-links {
-  display: grid;
-  grid-area: links;
-  grid-auto-flow: column;
-  justify-content: space-between;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
   gap: 0.5rem;
-
-  /* Cinco links (com a loja) no celular mais estreito: a letra diminui um pouco para caber. */
-  @media (width < 23rem) {
-    gap: 0.25rem;
-    font-size: 0.875rem;
-  }
-
-  @media (width >= 48rem) {
-    justify-content: start;
-    gap: 1.25rem;
-  }
+  color: var(--color-text);
+  font-family: var(--font-title);
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
-/* No celular estreito, o "Olá," some da tela, e no mais estreito (até 22rem) o nome do site
-   fica só na marca: o leitor de tela ainda lê os dois. */
+/* No celular mais estreito (até 22rem), o nome do site fica só na marca: o leitor de tela
+   ainda lê os dois. */
 .brand-name {
   @media (width < 22rem) {
     position: absolute;
@@ -866,53 +861,13 @@ button:disabled {
   }
 }
 
-/* O saldo de DP e o nível no topo; no celular, ficam na conta e no resultado do duelo. */
-.wallet {
-  color: var(--color-muted);
-  font-variant-numeric: lining-nums tabular-nums;
-
-  @media (width < 40rem) {
-    display: none;
-  }
-}
-
-.greeting {
-  @media (width < 30rem) {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-}
-
-.topbar a {
-  color: var(--color-text);
-  text-decoration: none;
-}
-
-.topbar a[aria-current="page"] {
-  color: var(--color-accent);
-  text-decoration: underline 2px;
-  text-underline-offset: 0.35em;
-}
-
-.topbar .brand {
-  display: inline-flex;
-  white-space: nowrap;
-  gap: 0.5rem;
-  align-items: center;
-  font-size: 1.25rem;
-}
-
 .brand-mark {
-  width: 2.1rem;
+  width: 2rem;
   height: auto;
 }
 
 .brand-mark rect {
-  stroke: var(--color-surface);
+  stroke: var(--color-bg);
   stroke-width: 1.5;
 }
 
@@ -928,21 +883,186 @@ button:disabled {
   fill: var(--dorm-blue);
 }
 
-.topbar .account {
+/* O menu: no computador, pílulas na barra do topo; a página atual ganha o fundo. */
+.mainnav {
   display: flex;
-  grid-area: account;
-  gap: 1rem;
+  gap: 0.25rem;
+}
+
+.mainnav a {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  justify-self: end;
-  white-space: nowrap;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0 0.8rem;
+  border-radius: 999px;
   color: var(--color-muted);
-  font-family: var(--font-text);
-  font-weight: 400;
+  font-family: var(--font-title);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mainnav a:hover {
+  color: var(--color-text);
+}
+
+.mainnav a[aria-current="page"] {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+.mainnav svg,
+.play-option svg {
+  width: 1.375rem;
+  height: 1.375rem;
+  flex: none;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* A conta, à direita: o saldo de DP, o nível e a inicial do apelido (leva à página da conta). */
+.account {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.wallet-chip,
+.level-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0 0.75rem;
+  border-radius: 999px;
+  background: var(--color-surface-2);
+  font-family: var(--font-title);
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.wallet-chip {
+  box-shadow: inset 0 0 0 1px rgb(255 209 106 / 0.35);
+  color: var(--dorm-yellow);
+}
+
+.avatar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.avatar-initial {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background:
+    linear-gradient(var(--color-surface-2), var(--color-surface-2)) padding-box,
+    var(--holo) border-box;
+  font-family: var(--font-title);
+  font-weight: 700;
+}
+
+/* O apelido aparece na tela larga; nas outras fica só a inicial (o leitor de tela lê o nome). */
+.nickname {
+  @media (width < 80rem) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* No computador, o menu é só texto: os ícones ficam para a barra de abas. */
+.mainnav svg {
+  @media (width >= 64rem) {
+    display: none;
+  }
+}
+
+/* No celular e no tablet, o menu é a barra de abas fixa embaixo: ícone em cima, nome embaixo,
+   e a aba atual com o traço holográfico. O nível sai do topo (fica na página da conta). */
+@media (width < 64rem) {
+  :root {
+    --tabbar-h: calc(4.25rem + env(safe-area-inset-bottom));
+  }
+
+  .shell {
+    padding-bottom: var(--tabbar-h);
+  }
+
+  .shell.in-duel {
+    --tabbar-h: 0px;
+  }
+
+  .mainnav {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 20;
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    padding: 0.25rem 0.25rem calc(0.25rem + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--color-border);
+    background: rgb(10 13 22 / 0.94);
+    backdrop-filter: blur(12px);
+  }
+
+  .shell.in-duel .mainnav,
+  .level-chip {
+    display: none;
+  }
+
+  .mainnav a {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.15rem;
+    min-height: 3.5rem;
+    padding: 0.3rem 0;
+    border-radius: 12px;
+    font-size: 0.75rem;
+  }
+
+  .mainnav a[aria-current="page"] {
+    background: none;
+  }
+
+  .mainnav a[aria-current="page"] svg {
+    color: var(--color-accent);
+  }
+
+  .mainnav a[aria-current="page"]::before {
+    position: absolute;
+    top: -0.25rem;
+    right: 30%;
+    left: 30%;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+    background: var(--holo);
+    content: "";
+  }
 }
 
 .notice {
   margin: 0;
   padding-block: 0.6rem;
+  background: var(--color-surface);
   color: var(--color-muted);
 }
 
@@ -1009,7 +1129,7 @@ button:disabled {
   accent-color: var(--color-accent);
 }
 
-/* Progresso da coleção: total e por pacote, com a barra dourada (accent-color). */
+/* Progresso da coleção: total e por pacote, com a barra na cor do destaque (accent-color). */
 .progress h2 {
   margin-top: 0;
   font-family: var(--font-text);
@@ -1106,8 +1226,7 @@ input[type="file"]::file-selector-button {
   align-content: start;
 }
 
-/* Main e Extra: duas abas do mesmo tamanho; a aberta fica dourada, como o botão
-   principal. */
+/* Main e Extra: duas abas do mesmo tamanho; a aberta fica com a cor do destaque. */
 .sections {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1474,7 +1593,7 @@ input[type="file"]::file-selector-button {
 }
 
 /* Some da tela, mas o leitor de tela lê (título da mesa de duelo). */
-/* As missões: cartões do mesmo tamanho; a concluída ganha a borda dourada. */
+/* As missões: cartões do mesmo tamanho; a concluída ganha a borda do destaque. */
 .missions {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
@@ -1522,7 +1641,7 @@ input[type="file"]::file-selector-button {
   }
 }
 
-/* O aviso das cartas novas no baú do Deck Edit (GXP-42), com a borda dourada da carta nova. */
+/* O aviso das cartas novas no baú do Deck Edit (GXP-42), com a borda do destaque, como a carta nova. */
 .chest-new {
   display: flex;
   flex-wrap: wrap;
@@ -1534,7 +1653,7 @@ input[type="file"]::file-selector-button {
   border-radius: var(--radius);
 }
 
-/* Pacote recém-liberado: o selo dourado ao lado do nome (escopo 4). */
+/* Pacote recém-liberado: o selo do destaque ao lado do nome (escopo 4). */
 .new-pack {
   margin-left: 0.25rem;
   padding: 0.05rem 0.45rem;
@@ -1726,7 +1845,7 @@ input[type="file"]::file-selector-button {
   }
 }
 
-/* Os desafios (GXP-88): uma lista numerada; o concluído fica dourado, com a marca à direita. */
+/* Os desafios (GXP-88): uma lista numerada; o concluído fica com a cor do destaque, com a marca à direita. */
 .challenges {
   padding-left: 2.25rem;
 }
@@ -1970,7 +2089,7 @@ input[type="file"]::file-selector-button {
   white-space: nowrap;
 }
 
-/* Mesa de duelo: o tapete com as zonas em pontilhado dourado, o lado do outro em cima. */
+/* Mesa de duelo: o tapete com as zonas em pontilhado, o lado do outro em cima. */
 /* Duelo: no celular, uma coluna (mesa, situação, detalhe, pergunta, corrente e histórico).
    No computador, três: o detalhe da carta à esquerda, a mesa e a pergunta no meio, a
    corrente e o histórico à direita, os lados parados enquanto a página rola. */
@@ -2211,7 +2330,7 @@ button.pile {
   border-radius: 0;
 }
 
-/* O que a pergunta da vez deixa usar brilha em dourado: a carta na mão ou no campo e a
+/* O que a pergunta da vez deixa usar brilha na cor do destaque: a carta na mão ou no campo e a
    pilha que tem carta para usar. Escolher continua sendo nos botões da pergunta. */
 [data-actionable] > .card,
 .pile[data-actionable],
@@ -3046,7 +3165,7 @@ button.danger {
   font-size: 0.8125rem;
 }
 
-/* Lista de cartas para marcar: a carta marcada ganha a moldura dourada. A caixa continua a
+/* Lista de cartas para marcar: a carta marcada ganha a moldura do destaque. A caixa continua a
    nativa (accent-color do :root); o destaque pelo :has() é só enfeite. */
 .picks {
   display: grid;
@@ -3194,8 +3313,8 @@ button.pile-card {
 }
 
 /* Personagens (GXP-103): a lista na ordem de liberar, como uma escada. O número de cada degrau
-   em dourado, a carta do prêmio, o texto e o botão. Bloqueado tem a dica de quem vencer antes;
-   vencido ganha a borda dourada. */
+   no destaque, a carta do prêmio, o texto e o botão. Bloqueado tem a dica de quem vencer antes;
+   vencido ganha a borda do destaque. */
 .characters-page section h2 {
   margin: 2rem 0 0.75rem;
 }
@@ -3222,7 +3341,7 @@ button.pile-card {
   background: var(--color-surface);
 }
 
-/* O número do degrau, em dourado. */
+/* O número do degrau, na cor do destaque. */
 .character-step {
   grid-area: step;
   color: var(--color-accent);
@@ -3232,7 +3351,7 @@ button.pile-card {
   line-height: 1;
 }
 
-/* Enquanto a imagem não chega, a miniatura fica dourada e apagada. */
+/* Enquanto a imagem não chega, a miniatura fica na cor do destaque, apagada. */
 .character .thumb {
   --frame: var(--color-accent);
   grid-area: card;
@@ -3309,4 +3428,57 @@ button.pile-card {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+/* Jogar (ADR 0015): as duas formas de duelar em cartões grandes, lado a lado no computador. */
+.play-options {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  @media (width >= 40rem) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.play-option {
+  display: grid;
+  gap: 0.5rem;
+  height: 100%;
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.play-option:hover {
+  box-shadow: inset 0 0 0 1px var(--color-field-border);
+}
+
+.play-option svg {
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--color-accent);
+}
+
+.play-title {
+  font-family: var(--font-title);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.play-text {
+  color: var(--color-muted);
+}
+
+/* Na conta: o link dos desafios e o "Sair" na mesma linha (que quebra no celular estreito). */
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
 }

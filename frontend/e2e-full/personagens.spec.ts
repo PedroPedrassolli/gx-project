@@ -33,7 +33,7 @@ test("duelo contra personagem: o computador joga o turno dele e o resultado leva
   await page.getByLabel("E-mail").fill("bastion@example.com");
   await page.getByLabel("Senha").fill("duelista123");
   await page.getByRole("main").getByRole("button", { name: "Entrar" }).click();
-  await expect(page.getByRole("navigation", { name: "Principal" })).toContainText("Duelo");
+  await expect(page.getByRole("navigation", { name: "Principal" })).toContainText("Jogar");
 
   await page.goto("/personagens");
   await expect(page.locator("ol.characters > li").first()).toContainText("Chumley");

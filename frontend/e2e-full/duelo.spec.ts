@@ -8,7 +8,7 @@ async function player(browser: Browser, email: string) {
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Senha").fill("duelista123");
   await page.getByRole("main").getByRole("button", { name: "Entrar" }).click();
-  await expect(page.getByRole("navigation", { name: "Principal" })).toContainText("Duelo");
+  await expect(page.getByRole("navigation", { name: "Principal" })).toContainText("Jogar");
   return page;
 }
 
@@ -23,7 +23,8 @@ test("duelo 1x1: sala com código, os dois prontos, jogadas, desistência, resul
   const jaden = await player(browser, "jaden@example.com");
   const syrus = await player(browser, "syrus@example.com");
 
-  await jaden.getByRole("link", { name: "Duelo" }).first().click();
+  await jaden.getByRole("link", { name: "Jogar" }).first().click();
+  await jaden.getByRole("link", { name: /Com os amigos/ }).click();
   await jaden.getByRole("button", { name: "Criar sala" }).click();
   const title = jaden.getByRole("heading", { level: 1 });
   await expect(title).toHaveText(/^Sala [A-Z2-9]{6}$/);

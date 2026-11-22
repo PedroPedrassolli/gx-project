@@ -13,7 +13,7 @@ test("entra com e-mail e senha e vê o apelido na barra do topo", async ({ page 
   await page.getByRole("button", { name: "Entrar" }).click();
 
   await expect(page).toHaveURL("/");
-  await expect(topbar(page).getByText("Olá, JadenYuki")).toBeVisible();
+  await expect(page.getByRole("banner").getByRole("link", { name: "JadenYuki" })).toBeVisible();
 });
 
 test("mostra o erro do login e fica na página", async ({ page }) => {
@@ -38,10 +38,10 @@ test("quem não tem conta acha o cadastro no topo e no entrar", async ({ page })
   await expect(page.getByRole("heading", { level: 1, name: "Criar conta" })).toBeVisible();
 });
 
-test("sai pela barra do topo", async ({ page }) => {
+test("sai pela página da conta", async ({ page }) => {
   await mockSession(page, { loggedIn: true });
-  await page.goto("/");
-  await topbar(page).getByRole("button", { name: "Sair" }).click();
+  await page.goto("/conta");
+  await page.getByRole("main").getByRole("button", { name: "Sair da conta" }).click();
 
   await expect(topbar(page).getByRole("link", { name: "Entrar" })).toBeVisible();
 });
