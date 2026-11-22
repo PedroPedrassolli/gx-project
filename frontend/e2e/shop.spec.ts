@@ -108,7 +108,7 @@ test("a prateleira mostra a capa, o saldo, o preço, o selo de novo e o caminho 
   expect(results.violations).toEqual([]);
 });
 
-test("comprar abre o pacote: as cartas aparecem uma por uma, com a raridade e as novas", async ({
+test("comprar abre o pacote em tela cheia: a mais rara no meio e as outras para virar", async ({
   page,
 }) => {
   const images: string[] = [];
@@ -116,35 +116,46 @@ test("comprar abre o pacote: as cartas aparecem uma por uma, com a raridade e as
   await page.goto("/loja");
   await page.getByRole("button", { name: "Comprar 1", exact: true }).click();
 
-  await expect(page.getByRole("heading", { name: "Beginner Monsters", level: 2 })).toBeVisible();
-  await expect(page.getByRole("status").filter({ hasText: "cartas viradas" })).toHaveText(
-    "0 de 5 cartas viradas.",
-  );
+  const dialog = page.getByRole("dialog", { name: "Beginner Monsters" });
+  await expect(dialog).toBeVisible();
+  const status = dialog.getByRole("status");
+  await expect(status).toHaveText("0 de 5 cartas viradas.");
   // As imagens do pacote baixam antes de virar: a carta aparece pronta.
   await expect
     .poll(() => images)
     .toEqual(expect.arrayContaining(["/cards/m/46986414.webp", "/cards/m/55144522.webp"]));
-  await expect(page.getByText("Rara ou melhor")).toHaveCount(1);
-  await page.getByRole("button", { name: "Virar a próxima" }).click();
-  const first = page.getByRole("listitem").filter({ hasText: "Mago Negro" });
+  // A carta de raridade aumentada (a última) vai para o meio e já avisa, ainda virada.
+  const featured = dialog.getByRole("listitem").last();
+  await expect(featured).toHaveClass(/featured/);
+  await expect(featured).toContainText("Rara ou melhor");
+  await dialog.getByRole("button", { name: "Virar a carta 1" }).click();
+  const first = dialog.getByRole("listitem").first();
+  await expect(first.getByRole("img", { name: "Mago Negro" })).toBeVisible();
   await expect(first).toContainText("Ultra Rara");
   await expect(first).toContainText("Nova");
-  await page.getByRole("button", { name: "Virar todas" }).click();
-  await expect(page.getByRole("status").filter({ hasText: "cartas viradas" })).toHaveText(
-    "5 de 5 cartas viradas.",
-  );
-  await expect(page.getByText("Nova")).toHaveCount(2);
+  // O foco segue para a próxima carta virada: dá para abrir tudo no Enter.
+  await expect(dialog.getByRole("button", { name: "Virar a carta 2" })).toBeFocused();
+
+  await dialog.getByRole("button", { name: "Virar todas" }).click();
+  await expect(status).toHaveText("5 de 5 cartas viradas.");
+  await expect(featured).toContainText("Mago Negro");
+  await expect(dialog.getByText("Nova")).toHaveCount(2);
   // A carta do anime aparece com a face e o nome, não com um quadro vazio.
-  await expect(
-    page.getByRole("listitem").filter({ hasText: "Mundo Claro" }).locator(".card-face"),
-  ).toContainText("Mundo Claro");
+  await expect(dialog.locator(".card-face")).toContainText("Mundo Claro");
+  await expect(dialog).toContainText("Saldo: 70 DP.");
+  await expect(dialog.getByRole("button", { name: "Abrir outro (50 DP)" })).toBeFocused();
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
 
-  await page.getByRole("button", { name: "Voltar para a loja" }).click();
+  // "Abrir outro" compra mais um do mesmo pacote, ali mesmo.
+  await dialog.getByRole("button", { name: "Abrir outro (50 DP)" }).click();
+  await expect(status).toHaveText("0 de 5 cartas viradas.");
+  expect(sent).toHaveLength(2);
+  expect(sent[1]).toMatchObject({ pack_id: 10, count: 1 });
+
+  await dialog.getByRole("button", { name: "Fechar o pacote" }).click();
+  await expect(dialog).toBeHidden();
   await expect(page.getByRole("button", { name: "Comprar 1", exact: true })).toBeVisible();
-  expect(sent).toHaveLength(1);
-  expect(sent[0]).toMatchObject({ pack_id: 10, count: 1 });
 });
 
 test("comprar 10 abre um pacote por vez, cada um com as 5 cartas dele", async ({ page }) => {
@@ -155,29 +166,45 @@ test("comprar 10 abre um pacote por vez, cada um com as 5 cartas dele", async ({
   await page.goto("/loja");
   await page.getByRole("button", { name: "Comprar 10 (500 DP)" }).click();
 
-  const status = page.getByRole("status").filter({ hasText: "cartas viradas" });
-  const cardsOfPack = page.getByRole("list", { name: "Cartas do pacote" }).getByRole("listitem");
+  const dialog = page.getByRole("dialog");
+  const status = dialog.getByRole("status");
+  const cardsOfPack = dialog.getByRole("list", { name: "Cartas do pacote" }).getByRole("listitem");
   for (let number = 1; number <= 10; number++) {
     await expect(
-      page.getByRole("heading", { name: `Pacote ${number} de 10: Beginner Monsters`, level: 2 }),
+      dialog.getByRole("heading", { name: `Pacote ${number} de 10: Beginner Monsters` }),
     ).toBeVisible();
     await expect(status).toHaveText("0 de 5 cartas viradas.");
     await expect(cardsOfPack).toHaveCount(5);
-    await expect(page.getByText("Rara ou melhor")).toHaveCount(1);
-    await page.getByRole("button", { name: "Virar todas" }).click();
+    await expect(dialog.getByText("Rara ou melhor")).toHaveCount(1);
+    await dialog.getByRole("button", { name: "Virar todas" }).click();
     await expect(status).toHaveText("5 de 5 cartas viradas.");
     if (number < 10) {
       // O botão principal vira "abrir o próximo" no mesmo lugar: dá para seguir só no Enter.
-      const next = page.getByRole("button", { name: "Abrir o próximo pacote" });
+      const next = dialog.getByRole("button", { name: "Abrir o próximo pacote" });
       await expect(next).toBeFocused();
       await next.click();
     }
   }
-  await expect(page.getByRole("button", { name: "Abrir o próximo pacote" })).toHaveCount(0);
-  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
-  expect(results.violations).toEqual([]);
-  await page.getByRole("button", { name: "Voltar para a loja" }).click();
+  await expect(dialog.getByRole("button", { name: "Abrir o próximo pacote" })).toHaveCount(0);
+  // No último, "Abrir outro" compra mais um (o saldo depois da compra é 70; o pacote, 50).
+  await expect(dialog.getByRole("button", { name: "Abrir outro (50 DP)" })).toBeEnabled();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
   await expect(page.getByRole("button", { name: "Comprar 1", exact: true })).toBeVisible();
+});
+
+test("sem DP para mais um, Abrir outro desativa e diz quanto falta", async ({ page }) => {
+  await mockShop(page);
+  await page.route("**/api/shop/purchases", (route) =>
+    route.fulfill({ status: 201, json: { data: { balance: 20, openings: [opening] } } }),
+  );
+  await page.goto("/loja");
+  await page.getByRole("button", { name: "Comprar 1", exact: true }).click();
+
+  const dialog = page.getByRole("dialog", { name: "Beginner Monsters" });
+  await dialog.getByRole("button", { name: "Virar todas" }).click();
+  await expect(dialog.getByRole("button", { name: "Abrir outro (50 DP)" })).toBeDisabled();
+  await expect(dialog).toContainText("Faltam 30 DP para abrir outro.");
 });
 
 test("o código secreto se monta nos botões e libera o pacote", async ({ page }) => {
