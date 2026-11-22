@@ -205,3 +205,20 @@ test("no celular, o detalhe abre por cima da lista e fecha no mesmo lugar", asyn
   await expect(page).not.toHaveURL(/carta=/);
   await expect(page.getByRole("button", { name: /Mago Negro/ })).toBeInViewport();
 });
+
+test("na volta ao site, a lista e o texto vêm da cópia guardada, sem esperar o servidor", async ({
+  page,
+}) => {
+  // Primeira visita: o catálogo e os textos chegam do servidor e ficam guardados.
+  await page.goto("/cartas?carta=1");
+  await expect(page.getByRole("region", { name: "Mago Negro" })).toContainText("O mago definitivo");
+  await expect
+    .poll(() => page.evaluate(async () => (await (await caches.open("gx-dados-v1")).keys()).length))
+    .toBe(2);
+
+  // Na volta, o servidor está acordando e não responde: a tela não espera por ele.
+  await page.route(/\/api\/(cards|packs)/, () => undefined);
+  await page.reload();
+  await expect(page.getByRole("button", { name: /Mago Negro/ })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Mago Negro" })).toContainText("O mago definitivo");
+});

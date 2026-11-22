@@ -46,7 +46,8 @@ export function Catalog() {
     history.replaceState(null, "", url);
   }
 
-  if (catalog.isError) {
+  // Só sem nenhuma cópia: com a guardada da última visita, a lista segue na tela.
+  if (catalog.isError && !catalog.data) {
     return (
       <main className="page catalog-page">
         <h1>Catálogo de cartas</h1>
