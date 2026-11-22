@@ -13,6 +13,12 @@ class Api::CardsController < Api::BaseController
     render json: { data: cards, meta: { total: cards.size, version: snapshot.version } }
   end
 
+  # GET /api/cards/details: o detalhe de todas as cartas, pelo id, sem o que a lista já tem
+  # (GXP-121). O front baixa em segundo plano, e o texto de qualquer carta aparece na hora.
+  def details
+    render json: { data: snapshot.details, meta: { version: snapshot.version } } if catalog_stale?
+  end
+
   # GET /api/cards/:id
   def show
     card = snapshot.card(params[:id]) or raise ActiveRecord::RecordNotFound

@@ -36,7 +36,17 @@ export const catalogQuery = queryOptions({
 // antes. O React põe o <link rel="preconnect"> uma vez só, por mais que a página chame.
 export function useCatalog() {
   preconnect(IMAGES_SITE);
-  return useQuery(catalogQuery);
+  const client = useQueryClient();
+  const catalog = useQuery(catalogQuery);
+  // Com o catálogo na tela, o detalhe de todas as cartas vem logo depois, sem disputar a rede
+  // com ele (GXP-121): quando o jogador tocar numa carta, o texto já está aqui.
+  const ready = catalog.isSuccess;
+  useEffect(() => {
+    if (!ready) return;
+    const timer = setTimeout(() => void client.prefetchQuery(detailsQuery), 1000);
+    return () => clearTimeout(timer);
+  }, [client, ready]);
+  return catalog;
 }
 
 // Enquanto o catálogo carrega: índices vazios, sempre os mesmos.
@@ -56,29 +66,37 @@ export function usePackRarities(pack: string) {
   });
 }
 
+// O que só o detalhe traz (textos, pacotes, fonte); com o resumo do catálogo, vira a carta
+// inteira.
+type CardExtra = Omit<CardDetail, keyof CardSummary>;
+
+// O detalhe de todas as cartas num pedido só (GXP-121), com cache na CDN como o catálogo.
+export const detailsQuery = queryOptions({
+  queryKey: ["card-details"],
+  queryFn: async () => {
+    const extras = await data<Record<string, CardExtra>>("/api/cards/details");
+    return new Map(Object.entries(extras).map(([id, extra]) => [Number(id), extra]));
+  },
+  staleTime: HOUR,
+  retry: 3,
+});
+
+// A carta sozinha: o plano B enquanto o pedido de todas não chegou (a primeira visita).
 const cardDetailQuery = (id: number) =>
   queryOptions({
     queryKey: ["card", id],
     queryFn: () => data<CardDetail>(`/api/cards/${id}`),
-    retry: false,
+    retry: 2,
     staleTime: HOUR,
   });
 
+// A carta inteira: o resumo do catálogo com o detalhe de todas; sem ele, o pedido da carta
+// sozinha. Só falha quando os dois falharam.
 export function useCardDetail(id: number) {
-  return useQuery({ ...cardDetailQuery(id), enabled: id > 0 });
-}
-
-// Busca em segundo plano o detalhe das cartas que podem ser tocadas (as da mesa), para o
-// texto já estar aqui no toque (GXP-107). O que já veio não é pedido de novo, e o pouco de
-// espera deixa a jogada que trouxe as cartas terminar primeiro.
-export function usePrefetchCardDetails(ids: number[]) {
-  const client = useQueryClient();
-  const key = ids.join(",");
-  useEffect(() => {
-    if (!key) return;
-    const timer = setTimeout(() => {
-      for (const id of key.split(",")) void client.prefetchQuery(cardDetailQuery(Number(id)));
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [client, key]);
+  const summary = useQuery(catalogQuery).data?.byId.get(id);
+  const all = useQuery(detailsQuery);
+  const extra = all.data?.get(id);
+  const single = useQuery({ ...cardDetailQuery(id), enabled: id > 0 && !(summary && extra) });
+  const data: CardDetail | undefined = summary && extra ? { ...summary, ...extra } : single.data;
+  return { data, isError: !data && single.isError && !all.isPending };
 }

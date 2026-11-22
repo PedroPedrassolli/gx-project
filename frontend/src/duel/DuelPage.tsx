@@ -4,7 +4,7 @@ import { ApiError, request } from "../api.ts";
 import { Link, useParams } from "react-router";
 import { SESSION_KEY, useSession } from "../account/session.ts";
 import { useMediaQuery } from "../catalog/CardPanel.tsx";
-import { NO_CARDS, NO_PACKS, useCatalog, usePrefetchCardDetails } from "../catalog/data.ts";
+import { NO_CARDS, NO_PACKS, useCatalog } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
 import { PageNotice, SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
@@ -17,7 +17,6 @@ import { DuelDetail } from "./DuelDetail.tsx";
 import { CardActionsDialog, CommandsDialog, PlainDialog, PromptDialog } from "./DuelDialogs.tsx";
 import { ChainStack, DuelLog } from "./DuelSide.tsx";
 import { useAlwaysChain } from "./chainSetting.ts";
-import { visibleCodes } from "./visible.ts";
 import { DuelBar, ResultDialog } from "./DuelStatus.tsx";
 import { EmotePicker, useEmoteBubbles } from "./Emotes.tsx";
 import { withEmote, type EmotePlayer } from "./emotes.ts";
@@ -103,9 +102,6 @@ export function DuelPage() {
   const wide = useMediaQuery("(width >= 72rem)");
   const cards = catalog.data?.byCode ?? NO_CARDS;
   const packs = catalog.data?.packNames ?? NO_PACKS;
-  usePrefetchCardDetails(
-    match.data ? visibleCodes(match.data.view).flatMap((code) => cards.get(code)?.id ?? []) : [],
-  );
   const emotes = useEmoteBubbles(match.data?.players ?? []);
   // "Sempre perguntar" (GXP-84): o navegador guarda; quando a mesa diz outra coisa (duelo
   // novo, ou a escolha mudou), manda a do navegador.

@@ -88,6 +88,31 @@ class Api::CardsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe "GET /api/cards/details" do
+    it "traz o detalhe de todas as cartas pelo id, sem repetir o que a lista já tem" do
+      get details_api_cards_path
+
+      assert_response :success
+      _(data.keys.map(&:to_i).sort).must_equal Card.pluck(:id).sort
+      night = data[card_id(110).to_s]
+      _(night.slice("passcode", "text", "text_pt", "text_pt_unofficial", "source"))
+        .must_equal({ "passcode" => 100, "text" => "FLIP: Destroy 1 monster.", "text_pt" => "VIRE: destrua 1 monstro.",
+                      "text_pt_unofficial" => true, "source" => "https://yugipedia.com/index.php?oldid=1" })
+      _(night["packs"].pluck("rarity")).must_equal %w[ultra_rare ultra_rare ultra_rare]
+      _(night.keys).wont_include "name"
+      _(response.parsed_body.dig("meta", "version")).must_equal Catalog::Snapshot.current.version
+    end
+
+    it "fica na CDN como o catálogo e responde 304 quando nada mudou" do
+      get details_api_cards_path
+      etag = response.headers["ETag"]
+
+      _(response.headers["Cache-Control"].split(", ")).must_include "s-maxage=3600"
+      get details_api_cards_path, headers: { "If-None-Match" => etag }
+      assert_response :not_modified
+    end
+  end
+
   describe "cache" do
     it "deixa a CDN guardar e responde 304 quando nada mudou" do
       get api_cards_path, params: { q: "trap" }

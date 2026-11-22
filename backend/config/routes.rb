@@ -9,7 +9,9 @@ Rails.application.routes.draw do
 
   # API do front (escopo 5.6), no mesmo domínio: o vercel.json repassa /api/* para o Rails.
   namespace :api do
-    resources :cards, only: %i[index show]
+    resources :cards, only: %i[index show] do
+      get :details, on: :collection
+    end
     resources :packs, only: :index
     resources :banlists, only: :index
 

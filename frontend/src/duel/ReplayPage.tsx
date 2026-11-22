@@ -3,7 +3,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router";
 import { request } from "../api.ts";
 import { useSession } from "../account/session.ts";
-import { NO_CARDS, NO_PACKS, useCatalog, usePrefetchCardDetails } from "../catalog/data.ts";
+import { NO_CARDS, NO_PACKS, useCatalog } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
 import { PageNotice, SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
@@ -11,7 +11,6 @@ import type { View } from "./api.ts";
 import { Board } from "./Board.tsx";
 import { DuelDetail } from "./DuelDetail.tsx";
 import { ChainStack, DuelLog } from "./DuelSide.tsx";
-import { visibleCodes } from "./visible.ts";
 
 // Replay do duelo (escopo 3.7): um turno por vez, a mesa de quem assiste depois de cada lance
 // e o histórico do turno até ali. "Reproduzir" passa sozinho; "Pausar" para.
@@ -56,10 +55,6 @@ export function ReplayPage() {
   const turns = data?.turns ?? 1;
   const atStart = turn === 1 && index <= 0;
   const atEnd = turn >= turns && index >= frames.length - 1;
-  const shown = frames[index]?.view;
-  usePrefetchCardDetails(
-    shown ? visibleCodes(shown).flatMap((code) => cards.get(code)?.id ?? []) : [],
-  );
 
   function next() {
     if (index < frames.length - 1) return setFrame(index + 1);
