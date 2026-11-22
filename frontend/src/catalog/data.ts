@@ -1,8 +1,9 @@
 import { useEffect } from "react";
-import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { preconnect } from "react-dom";
 import { request } from "../api.ts";
 import { IMAGES_SITE, type CardDetail, type CardSummary, type Pack } from "./cards.ts";
+import { readStored, writeStored } from "./stored.ts";
 
 // Dados do catálogo pela API (ADR 0007), guardados pelo TanStack Query: o catálogo, a
 // coleção e o Deck Edit usam as mesmas cartas sem buscar de novo.
@@ -12,9 +13,22 @@ async function data<T>(path: string): Promise<T> {
   return (await request<{ data: T }>("GET", path)).data;
 }
 
+// As cópias guardadas no navegador (GXP-122).
+const STORED_CATALOG = "/dados/catalogo.json";
+const STORED_DETAILS = "/dados/detalhes.json";
+
 // Os índices saem uma vez por carga, não a cada tela: a carta pelo id (coleção e decks), a
 // carta pelo código da engine (a mesa só sabe o código) e o nome de cada pacote (o detalhe
 // da carta mostra onde ela sai). A sala busca o catálogo antes de o duelo abrir.
+function buildCatalog(cards: CardSummary[], packs: Pack[]) {
+  const byId = new Map(cards.map((card) => [card.id, card]));
+  const byCode = new Map<number, CardSummary>();
+  for (const card of cards) if (card.code !== undefined) byCode.set(card.code, card);
+  const packNames = new Map(packs.map((pack) => [pack.id, pack.name]));
+  return { cards, packs, byId, byCode, packNames };
+}
+
+// gcTime infinito: o catálogo fica na memória a visita inteira, mesmo nas telas que não o usam.
 export const catalogQuery = queryOptions({
   queryKey: ["catalog"],
   queryFn: async () => {
@@ -22,13 +36,11 @@ export const catalogQuery = queryOptions({
       data<CardSummary[]>("/api/cards"),
       data<Pack[]>("/api/packs"),
     ]);
-    const byId = new Map(cards.map((card) => [card.id, card]));
-    const byCode = new Map<number, CardSummary>();
-    for (const card of cards) if (card.code !== undefined) byCode.set(card.code, card);
-    const packNames = new Map(packs.map((pack) => [pack.id, pack.name]));
-    return { cards, packs, byId, byCode, packNames };
+    writeStored(STORED_CATALOG, { cards, packs });
+    return buildCatalog(cards, packs);
   },
   staleTime: HOUR,
+  gcTime: Infinity,
 });
 
 // Toda página que usa o catálogo mostra imagens das cartas: a conexão com o site delas abre
@@ -70,16 +82,39 @@ export function usePackRarities(pack: string) {
 // inteira.
 type CardExtra = Omit<CardDetail, keyof CardSummary>;
 
+function buildDetails(extras: Record<string, CardExtra>) {
+  return new Map(Object.entries(extras).map(([id, extra]) => [Number(id), extra]));
+}
+
 // O detalhe de todas as cartas num pedido só (GXP-121), com cache na CDN como o catálogo.
 export const detailsQuery = queryOptions({
   queryKey: ["card-details"],
   queryFn: async () => {
     const extras = await data<Record<string, CardExtra>>("/api/cards/details");
-    return new Map(Object.entries(extras).map(([id, extra]) => [Number(id), extra]));
+    writeStored(STORED_DETAILS, extras);
+    return buildDetails(extras);
   },
   staleTime: HOUR,
+  gcTime: Infinity,
   retry: 3,
 });
+
+// Na abertura do site, a cópia guardada vira o catálogo e os textos da tela, marcados como
+// velhos (updatedAt 0): quem usa o catálogo já busca a versão nova, em segundo plano. Se a
+// resposta do servidor chegar antes da cópia, a cópia fica de fora.
+export async function restoreStoredCatalog(client: QueryClient) {
+  const [catalog, details] = await Promise.all([
+    readStored<{ cards: CardSummary[]; packs: Pack[] }>(STORED_CATALOG),
+    readStored<Record<string, CardExtra>>(STORED_DETAILS),
+  ]);
+  if (catalog && !client.getQueryData(catalogQuery.queryKey)) {
+    const restored = buildCatalog(catalog.cards, catalog.packs);
+    client.setQueryData(catalogQuery.queryKey, restored, { updatedAt: 0 });
+  }
+  if (details && !client.getQueryData(detailsQuery.queryKey)) {
+    client.setQueryData(detailsQuery.queryKey, buildDetails(details), { updatedAt: 0 });
+  }
+}
 
 // A carta sozinha: o plano B enquanto o pedido de todas não chegou (a primeira visita).
 const cardDetailQuery = (id: number) =>

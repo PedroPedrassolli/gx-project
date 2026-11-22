@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router";
 import { App } from "./App.tsx";
 import { Layout, NotFound } from "./Layout.tsx";
+import { restoreStoredCatalog } from "./catalog/data.ts";
 // Fontes do tema, servidas pelo próprio site (a CSP só aceita fontes daqui): Spectral no
 // texto e Spectral SC, em versaletes como o nome das cartas, nos títulos. Só o alfabeto
 // latino, que cobre o português.
@@ -72,6 +73,8 @@ const PrivacyPage = lazy(() =>
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
 });
+// O catálogo e os textos guardados da última visita aparecem já, sem esperar o servidor.
+void restoreStoredCatalog(queryClient);
 
 const root = document.getElementById("root");
 if (!root) throw new Error("elemento #root não encontrado no index.html");

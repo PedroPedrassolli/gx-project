@@ -38,6 +38,9 @@ mesmo domínio e no mesmo repositório.
    A Vercel tira o `s-maxage` e o `stale-while-revalidate` do que chega ao navegador; ele
    fica só com os 5 minutos. Não vale contornar isso: com `stale-while-revalidate`, o
    Safari baixa a lista inteira de novo em vez de receber 304 (bug 275248 do WebKit).
+   Além disso, o front guarda a última lista e os textos no navegador (Cache Storage,
+   GXP-122): na volta ao site, a tela abre com essa cópia, sem esperar o servidor acordar
+   nem a CDN de um deploy novo, e troca pela resposta nova quando ela chega.
 6. **Formato:** `{ data, meta }` (`meta.total` e `meta.version`); erro como
    `{ error: { status, message } }`. Campo vazio não vai na resposta. Os valores ficam como
    a Yugipedia escreve (`Monster`, `DARK`, `Fiend`, `ultra_rare`); a tela traduz. O id é o do
