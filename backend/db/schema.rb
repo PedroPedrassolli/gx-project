@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_22_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_22_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -271,7 +271,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_22_130000) do
     t.bigint "owner_id", null: false
     t.boolean "public", default: true, null: false
     t.string "mode", default: "1x1", null: false
-    t.integer "best_of", default: 1, null: false
     t.boolean "banlist", default: true, null: false
     t.boolean "destiny_draw", default: true, null: false
     t.string "status", default: "waiting", null: false
