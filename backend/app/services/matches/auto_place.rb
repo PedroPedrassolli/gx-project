@@ -13,15 +13,20 @@ module Matches
     module_function
 
     # Os bytes da resposta (jogador, local e sequência de cada zona), ou nil se faltar zona.
-    # No "flag", bit ligado é zona que não vale (Duel::MessageParser, select_place).
     def pick(prompt)
+      zones = free(prompt)
+      zones.first(prompt[:count]).flatten.pack("C*") if zones.size >= prompt[:count]
+    end
+
+    # As zonas que valem, dos dois lados, do centro para as pontas: [jogador, local, sequência].
+    # No "flag", bit ligado é zona que não vale (Duel::MessageParser, select_place).
+    def free(prompt)
       player = prompt[:player]
-      free = [ player, 1 - player ].each_with_index.flat_map do |owner, side|
+      [ player, 1 - player ].each_with_index.flat_map do |owner, side|
         ZONES.flat_map do |location, first_bit, order|
           order.filter_map { |sequence| [ owner, location, sequence ] if prompt[:flag][first_bit + sequence + (16 * side)].zero? }
         end
       end
-      free.first(prompt[:count]).flatten.pack("C*") if free.size >= prompt[:count]
     end
   end
 end

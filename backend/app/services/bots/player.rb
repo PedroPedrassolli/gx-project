@@ -233,15 +233,8 @@ module Bots
 
     # Tributa os mais fracos.
     def select_tribute(prompt)
-      chosen = []
-      total = 0
-      prompt[:cards].each_index.sort_by { |i| value_of(prompt[:cards][i]) }.each do |i|
-        break if total >= prompt[:min]
-
-        chosen << i
-        total += prompt[:cards][i][:release_param]
-      end
-      total >= prompt[:min] && chosen.size <= prompt[:max] ? { indexes: chosen } : guess(prompt)
+      indexes = RandomPlayer.tributes(prompt, prompt[:cards].each_index.sort_by { |i| value_of(prompt[:cards][i]) })
+      indexes ? { indexes: } : guess(prompt)
     end
 
     # Gatilho do próprio computador (spe_count) é quase sempre bom. Do resto, ativa armadilha e

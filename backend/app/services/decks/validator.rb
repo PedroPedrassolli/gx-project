@@ -5,8 +5,6 @@ module Decks
     SIZES = { "main" => 40..60, "extra" => 0..15, "side" => 0..15 }.freeze
     SECTION_NAMES = { "main" => "Main Deck", "extra" => "Extra Deck", "side" => "Side Deck" }.freeze
     MAX_COPIES = 3
-    # Quantas cópias cada situação da banlist deixa usar.
-    BANLIST_COPIES = { "forbidden" => 0, "limited" => 1, "semi_limited" => 2 }.freeze
     EXTRA_DECK_TYPES = %w[Fusion Synchro].freeze
 
     # cards: { id => Card }; banlist: { id da carta => situação }; collection: { id da
