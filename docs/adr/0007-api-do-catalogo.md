@@ -42,11 +42,13 @@ mesmo domínio e no mesmo repositório.
 
 ## Consequências
 
-- Uma importação nova aparece em até 5 minutos no Rails, 1 hora na CDN (a partir da
+- Uma importação nova aparece em até 30 s no Rails (GXP-120: uma consulta barata confere se
+  o banco mudou, e o catálogo só é remontado quando muda), 1 hora na CDN (a partir da
   segunda visita, porque a primeira recebe a cópia velha e dispara a busca da nova) e 5
   minutos no navegador. Cada deploy tem a própria CDN, que começa vazia: o primeiro pedido
   depois de um deploy espera o servidor.
 - Cada visitante sem cache baixa uns 84 KB da lista inteira; com a CDN, a função quase não
-  roda, e o banco é lido uma vez a cada 5 minutos por instância.
+  roda, e o banco é lido de novo só quando o catálogo muda. Ao subir, o servidor já monta o
+  catálogo em segundo plano.
 - Mudar um filtro ou um campo é mudar o contrato com o front: os dois mudam juntos, com os
   testes de request de cada rota.
