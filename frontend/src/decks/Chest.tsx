@@ -103,7 +103,9 @@ export function Chest(props: Props) {
         if (row) props.onRemove(row.cardId, row.section);
       }}
     >
-      <h2 id="chest-title">Baú</h2>
+      <h2 id="chest-title" className="panel-title">
+        Baú
+      </h2>
       <CatalogFilters
         title="Filtros do baú"
         filters={filters}
@@ -183,12 +185,14 @@ export function Chest(props: Props) {
       )}
 
       <p role="status">{`${results.length} ${results.length === 1 ? "carta" : "cartas"}`}</p>
-      <ul className="card-grid rows">
+      <ul className="card-grid chest-grid">
         {results.slice(0, shown).map((card) => {
           const name = displayName(card, language);
           const deckSection = goesToExtra(card) ? "extra" : "main";
           const reason = addBlocked(rows, card.id, deckSection);
           const reasonId = `chest-reason-${card.id}`;
+          const have = owned.get(card.id) ?? 0;
+          const inDeck = copies(rows, card.id);
           return (
             <li
               key={card.id}
@@ -197,36 +201,34 @@ export function Chest(props: Props) {
               onDragStart={(event) => dragCard(event, card.id)}
             >
               <CardTile
-                layout="row"
                 card={card}
                 language={language}
+                missing={have === 0}
                 selected={props.selected === card.id}
                 onSelect={() => {
                   props.onSelect(card.id);
                   if (fresh.has(card.id)) markSeen([card.id]);
                 }}
               >
-                <span className="badge">
-                  Tenho {owned.get(card.id) ?? 0} · no deck {copies(rows, card.id)}
-                </span>
                 {fresh.has(card.id) && <strong className="badge new-card">Nova</strong>}
-                {reason && (
-                  <span id={reasonId} className="chest-reason">
-                    {reason}
-                  </span>
-                )}
+                <span className="badge">Tenho {have}</span>
+                {inDeck > 0 && <span className="badge in-deck">No deck {inDeck}</span>}
               </CardTile>
-              <span className="chest-actions">
-                <button
-                  type="button"
-                  aria-label={`Pôr ${name} no ${deckSection === "extra" ? "Extra" : "Main"} Deck`}
-                  disabled={Boolean(reason)}
-                  aria-describedby={reason ? reasonId : undefined}
-                  onClick={() => props.onAdd(card.id, deckSection)}
-                >
-                  + {deckSection === "extra" ? "Extra" : "Main"}
-                </button>
-              </span>
+              <button
+                type="button"
+                className="chest-add"
+                aria-label={`Pôr ${name} no ${deckSection === "extra" ? "Extra" : "Main"} Deck`}
+                disabled={Boolean(reason)}
+                aria-describedby={reason ? reasonId : undefined}
+                onClick={() => props.onAdd(card.id, deckSection)}
+              >
+                + {deckSection === "extra" ? "Extra" : "Main"}
+              </button>
+              {reason && (
+                <span id={reasonId} className="chest-reason">
+                  {reason}
+                </span>
+              )}
             </li>
           );
         })}

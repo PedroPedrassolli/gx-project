@@ -105,25 +105,30 @@ async function mockDeckApi(page: Page) {
 
 test.beforeEach(async ({ page }) => mockDeckApi(page));
 
-test("mostra o deck por seção e valida ao vivo", async ({ page }) => {
+test("mostra o deck em grade, com o resumo por tipo, e valida ao vivo", async ({ page }) => {
   await page.goto("/decks/7");
 
   await expect(page.getByRole("heading", { level: 1, name: "Heróis" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Main Deck (3)" })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await expect(page.getByRole("heading", { name: "Main Deck 3", exact: true })).toBeVisible();
+  const main = page.getByRole("list", { name: "Main Deck" });
+  // Monstros primeiro, depois magias e armadilhas.
+  await expect(main.getByRole("listitem")).toHaveCount(2);
+  await expect(main.getByRole("listitem").first()).toContainText("Mago Negro");
+  await expect(main.getByRole("listitem").first()).toContainText("×2");
+  const summary = page.getByRole("list", { name: "Monstros, magias e armadilhas" });
+  await expect(summary.getByRole("listitem")).toHaveText(["2 monstros", "1 magia", "0 armadilhas"]);
   const problems = page.getByRole("list", { name: "Problemas do deck" });
   await expect(problems).toContainText("O Main Deck precisa ter de 40 a 60 cartas (tem 3).");
   await expect(problems).toContainText("Pote da Ganância está proibida.");
 
   await page.getByRole("button", { name: "Pôr mais uma cópia de Mago Negro" }).click();
-  await expect(page.getByRole("button", { name: "Main Deck (4)" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Main Deck 4", exact: true })).toBeVisible();
+  await expect(summary.getByRole("listitem").first()).toHaveText("3 monstros");
   await expect(problems).toContainText("(tem 4)");
 
-  await page.getByRole("button", { name: "Extra Deck (1)" }).click();
+  await expect(page.getByRole("heading", { name: "Extra Deck 1", exact: true })).toBeVisible();
   await expect(page.getByRole("list", { name: "Extra Deck" })).toContainText(
-    "1× Elemental HERO Flame Wingman",
+    "Elemental HERO Flame Wingman",
   );
 
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
@@ -145,7 +150,9 @@ test("marca Destiny, tira uma cópia e salva", async ({ page }) => {
     .click();
   await page.getByRole("button", { name: "Salvar" }).click();
 
-  await expect(page.getByRole("status").filter({ hasText: "Deck salvo." })).toBeVisible();
+  // O botão vira "Salvo" e o leitor de tela ouve o aviso.
+  await expect(page.getByRole("button", { name: "Salvo" })).toBeDisabled();
+  await expect(page.getByRole("status").filter({ hasText: "Deck salvo." })).toBeAttached();
   expect(saved?.name).toBe("Heróis do Jaden");
   expect(saved?.cards).toEqual([
     { card_id: 1, section: "main", quantity: 1, destiny: true },
@@ -207,24 +214,39 @@ test("põe cartas do baú no deck, até 3 cópias, e mostra o detalhe", async ({
   await expect(chest.getByRole("status")).toHaveText("3 cartas");
 
   await chest.getByRole("button", { name: "Pôr Mago Negro no Main Deck" }).click();
-  await expect(page.getByRole("button", { name: "Main Deck (4)" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Main Deck 4", exact: true })).toBeVisible();
   const magician = chest.getByRole("listitem").filter({ hasText: "Mago Negro" });
-  await expect(magician).toContainText("Tenho 3 · no deck 3");
-  // Na terceira cópia, o botão desativa e o baú diz por quê; a linha do deck também.
+  await expect(magician).toContainText("Tenho 3");
+  await expect(magician).toContainText("No deck 3");
+  // Na terceira cópia, o botão desativa e o baú diz por quê; o + da carta no deck também.
   await expect(chest.getByRole("button", { name: "Pôr Mago Negro no Main Deck" })).toBeDisabled();
   await expect(magician).toContainText("Já tem 3 no deck.");
   await expect(
     page.getByRole("button", { name: "Pôr mais uma cópia de Mago Negro" }),
   ).toBeDisabled();
-  await expect(page.getByText("(já tem 3 no deck)")).toBeVisible();
 
   await chest
     .getByRole("button", { name: "Pôr Elemental HERO Flame Wingman no Extra Deck" })
     .click();
-  await expect(page.getByRole("button", { name: "Extra Deck (2)" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Extra Deck 2", exact: true })).toBeVisible();
 
+  // O detalhe abre por cima, com os botões do deck para aquela carta.
   await chest.getByRole("button", { name: /^Mago Negro/ }).click();
-  await expect(page.getByRole("heading", { level: 2, name: "Mago Negro" })).toBeVisible();
+  const detail = page.getByRole("dialog", { name: "Mago Negro" });
+  await expect(detail.getByRole("heading", { level: 2, name: "Mago Negro" })).toBeVisible();
+  await expect(detail).toContainText("Você tem 3. No deck: 3.");
+  await expect(detail.getByRole("button", { name: "Pôr no Main Deck" })).toBeDisabled();
+  await detail.getByRole("button", { name: "Tirar uma cópia" }).click();
+  await expect(detail).toContainText("Você tem 3. No deck: 2.");
+  await expect(detail.getByRole("button", { name: "Pôr no Main Deck" })).toBeEnabled();
+  await detail.getByLabel("Destiny").check();
+  await expect(
+    page
+      .getByRole("list", { name: "Main Deck" })
+      .getByRole("listitem")
+      .first()
+      .getByLabel("Destiny"),
+  ).toBeChecked();
 
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
@@ -247,6 +269,7 @@ test("a carta nova aparece marcada, dá para ver só as novas, e ela deixa de se
   const wingman = chest.getByRole("listitem").filter({ hasText: "Elemental HERO Flame Wingman" });
   await expect(wingman).toContainText("Nova");
   await chest.getByRole("button", { name: /^Elemental HERO Flame Wingman/ }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Fechar" }).click();
   await expect(wingman).not.toContainText("Nova");
   // Continua na lista até o filtro ser desligado.
   await expect(chest.getByRole("status")).toHaveText("1 carta");
@@ -273,9 +296,9 @@ test("o baú mostra também as cartas que o jogador não tem, se pedir", async (
     .click();
 
   await expect(chest.getByRole("status")).toHaveText("4 cartas");
-  await expect(chest.getByRole("listitem").filter({ hasText: "Força Espelho" })).toContainText(
-    "Tenho 0 · no deck 0",
-  );
+  const mirror = chest.getByRole("listitem").filter({ hasText: "Força Espelho" });
+  await expect(mirror).toContainText("Tenho 0");
+  await expect(mirror).not.toContainText("No deck");
 });
 
 test("arrasta carta do baú para o Main e uma linha do deck de volta para o baú", async ({
@@ -284,18 +307,49 @@ test("arrasta carta do baú para o Main e uma linha do deck de volta para o baú
   await page.goto("/decks/7");
   const chest = page.getByRole("region", { name: "Baú" });
 
+  const deckPanel = page.getByRole("region", { name: "Deck", exact: true });
+
+  await chest.getByRole("listitem").filter({ hasText: "Mago Negro" }).dragTo(deckPanel);
+  await expect(page.getByRole("heading", { name: "Main Deck 4", exact: true })).toBeVisible();
+  // A carta de Fusão vai sozinha para o Extra, onde quer que caia no deck.
   await chest
     .getByRole("listitem")
-    .filter({ hasText: "Mago Negro" })
-    .dragTo(page.getByRole("button", { name: "Main Deck (3)" }));
-  await expect(page.getByRole("button", { name: "Main Deck (4)" })).toBeVisible();
+    .filter({ hasText: "Elemental HERO Flame Wingman" })
+    .dragTo(deckPanel);
+  await expect(page.getByRole("heading", { name: "Extra Deck 2", exact: true })).toBeVisible();
 
   await page
     .getByRole("list", { name: "Main Deck" })
     .getByRole("listitem")
     .filter({ hasText: "Pote da Ganância" })
     .dragTo(chest);
-  await expect(page.getByRole("button", { name: "Main Deck (3)" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Main Deck 3", exact: true })).toBeVisible();
+});
+
+test("no celular, Deck e Baú ficam em abas e a do deck conta o Main", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/decks/7");
+  const deckPanel = page.getByRole("region", { name: "Deck", exact: true });
+  const chest = page.getByRole("region", { name: "Baú" });
+  const tabs = page.getByRole("group", { name: "Deck ou baú" });
+
+  await expect(deckPanel).toBeVisible();
+  await expect(chest).toBeHidden();
+  await tabs.getByRole("button", { name: "Baú" }).click();
+  await expect(chest).toBeVisible();
+  await expect(deckPanel).toBeHidden();
+
+  await chest.getByRole("button", { name: "Pôr Mago Negro no Main Deck" }).click();
+  await expect(tabs.getByRole("button", { name: "Deck 4" })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await tabs.getByRole("button", { name: "Deck 4" }).click();
+  await expect(page.getByRole("heading", { name: "Main Deck 4", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Salvar" })).toBeInViewport();
+
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
 });
 
 test("no limite de 50 decks, criar e importar desativam e a página diz por quê", async ({

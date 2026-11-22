@@ -183,18 +183,16 @@ export function Detail({
   );
 }
 
-// Um item da lista. Em grade (o padrão: catálogo e coleção), a carta grande com o nome
+// Um item da grade de cartas (catálogo, coleção e Deck Edit): a carta grande com o nome
 // embaixo e as marcas (banlist, raridade, cópias) por cima da imagem; o nome vem primeiro
-// no código, para o leitor de tela começar por ele. Em linha (o baú do Deck Edit, até o
-// GXP-132), a miniatura com o nome, o tipo e os números ao lado. children traz o que a tela
-// quiser a mais; missing apaga a carta que o jogador não tem.
+// no código, para o leitor de tela começar por ele. children traz o que a tela quiser a
+// mais; missing apaga a carta que o jogador não tem.
 export function CardTile({
   card,
   language,
   selected,
   onSelect,
   children,
-  layout = "grid",
   missing = false,
 }: {
   card: CardSummary;
@@ -202,29 +200,9 @@ export function CardTile({
   selected: boolean;
   onSelect: () => void;
   children?: ReactNode;
-  layout?: "grid" | "row";
   missing?: boolean;
 }) {
   const ban = card.banlist && <span className="badge">{label(BANLIST, card.banlist)}</span>;
-  if (layout === "row") {
-    return (
-      <button
-        type="button"
-        className={`card-tile row frame-${frame(card)}`}
-        aria-current={selected || undefined}
-        onClick={onSelect}
-      >
-        <Thumb card={card} />
-        <span className="tile-text">
-          <strong>{displayName(card, language)}</strong>
-          <span className="type-line">{typeLine(card)}</span>
-          <Stats card={card} />
-          {ban}
-          {children}
-        </span>
-      </button>
-    );
-  }
   return (
     <button
       type="button"

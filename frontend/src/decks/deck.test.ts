@@ -4,9 +4,11 @@ import type { CardSummary } from "../catalog/cards.ts";
 import {
   addBlocked,
   deckErrors,
+  deckOrder,
   deckSizeProblem,
   editDeck,
   sectionCount,
+  typeCounts,
   type DeckRow,
 } from "./deck.ts";
 
@@ -137,5 +139,32 @@ test("a contagem já diz quando o deck não duela, antes de ir ao servidor", () 
   assert.equal(
     deckSizeProblem({ main: 40, extra: 16 }),
     "O Extra Deck tem 16 cartas: pode ter até 15.",
+  );
+});
+
+// Cartas com o tipo, para o resumo e a ordem da grade do deck.
+const typed = new Map<number, CardSummary>(
+  [
+    { id: 1, name: "Zebra", card_type: "Monster" as const },
+    { id: 2, name: "Armadilha", card_type: "Trap" as const },
+    { id: 3, name: "Alfa", card_type: "Monster" as const },
+    { id: 4, name: "Magia", card_type: "Spell" as const },
+    { id: 5, name: "Herói", card_type: "Monster" as const, monster_types: ["Fusion"] },
+  ].map((card) => [card.id, card]),
+);
+
+test("o resumo da seção conta monstros, magias e armadilhas", () => {
+  const rows = [row(1, "main", 3), row(2, "main", 1), row(4, "main", 2), row(5, "extra", 2)];
+
+  assert.deepEqual(typeCounts(rows, typed, "main"), { Monster: 3, Spell: 2, Trap: 1 });
+  assert.deepEqual(typeCounts(rows, typed, "extra"), { Monster: 2, Spell: 0, Trap: 0 });
+});
+
+test("a grade do deck põe monstros, magias e armadilhas, cada grupo pelo nome", () => {
+  const rows = [row(2, "main", 1), row(4, "main", 1), row(1, "main", 1), row(3, "main", 1)];
+
+  assert.deepEqual(
+    deckOrder(rows, typed, "en").map((item) => item.card_id),
+    [3, 1, 4, 2],
   );
 });

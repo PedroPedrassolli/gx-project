@@ -104,7 +104,18 @@ const ROOM = {
   seats: 2,
   players: [{ seat: 0, user_id: 1, nickname: "JadenYuki", ready: false, deck_chosen: false }],
 };
-const DECK = { id: 7, name: "Heróis", updated_at: "2026-11-14T12:00:00Z", cards: [], errors: [] };
+// O deck com cartas no Main e no Extra: a grade, os botões e o Destiny em toda largura.
+const DECK = {
+  id: 7,
+  name: "Heróis",
+  updated_at: "2026-11-14T12:00:00Z",
+  cards: [
+    { card_id: 1, section: "main", quantity: 3, destiny: true },
+    { card_id: 2, section: "main", quantity: 1, destiny: false },
+    { card_id: 3, section: "extra", quantity: 1, destiny: false },
+  ],
+  errors: [],
+};
 
 // Uma resposta para cada rota da API que as páginas pedem.
 async function mockApi(page: Page) {

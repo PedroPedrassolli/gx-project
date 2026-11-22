@@ -823,8 +823,7 @@ button:disabled {
   }
 }
 
-/* Grade de cartas (ADR 0015): três por linha num celular de 390 px, mais conforme a tela. A
-   lista do baú (em linha, até o GXP-132) continua com as colunas largas. */
+/* Grade de cartas (ADR 0015): três por linha num celular de 390 px, mais conforme a tela. */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
@@ -836,11 +835,6 @@ button:disabled {
   @media (width >= 40rem) {
     grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
   }
-}
-
-.card-grid.rows {
-  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
-  gap: 0.75rem;
 }
 
 .frame-normal {
@@ -873,7 +867,7 @@ button:disabled {
 
 /* A carta da grade: a imagem em cima (com as marcas por cima dela) e o nome embaixo, em duas
    linhas no máximo. O nome vem primeiro no código, para o leitor de tela; a grade inverte. */
-.card-tile:not(.row) {
+.card-tile {
   display: grid;
   grid-template-areas:
     "art"
@@ -939,7 +933,7 @@ button:disabled {
   border-radius: 0;
 }
 
-.card-tile:not(.row):hover .tile-art {
+.card-tile:hover .tile-art {
   box-shadow: 0 12px 24px -10px rgb(122 176 255 / 0.55);
   transform: translateY(-2px);
 }
@@ -984,51 +978,6 @@ button:disabled {
   background: var(--holo);
   box-shadow: none;
   color: var(--color-bg);
-}
-
-/* A carta em linha (o baú do Deck Edit, até o GXP-132): a moldura do tipo, um pouco da cor no
-   fundo e o nome ao lado da miniatura. A escolhida ganha o contorno do destaque. */
-.card-tile.row {
-  display: flex;
-  gap: 0.6rem;
-  align-items: start;
-  width: 100%;
-  height: 100%;
-  padding: 0.5rem 0.6rem;
-  border: 2px solid color-mix(in srgb, var(--frame) 65%, transparent);
-  border-radius: 6px;
-  background: linear-gradient(
-    160deg,
-    color-mix(in srgb, var(--frame) 14%, var(--color-surface)),
-    var(--color-surface) 55%
-  );
-  color: var(--color-text);
-  font: inherit;
-  text-align: left;
-}
-
-/* Nome comprido ("Transformação") quebra com hífen em vez de sair da moldura. Só palavra
-   de 10 letras ou mais: com menos, a regra do português cortava nome em inglês no lugar
-   errado ("Bre-eding"). O overflow-wrap segura o que ainda não couber. */
-.card-tile.row strong {
-  font-family: var(--font-title);
-  font-weight: 600;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-  hyphens: auto;
-  hyphenate-limit-chars: 10 4 4;
-}
-
-.card-tile.row[aria-current="true"] {
-  border-color: var(--frame);
-  box-shadow: 0 0 0 2px var(--color-accent);
-}
-
-.tile-text {
-  display: grid;
-  min-width: 0;
-  gap: 0.2rem;
-  min-width: 0;
 }
 
 /* Miniatura na proporção da carta; sem imagem, fica a cor da moldura, mais apagada. */
@@ -1610,65 +1559,261 @@ input[type="file"]::file-selector-button {
   border-radius: 6px;
 }
 
-/* Deck Edit. */
+/* Deck Edit (GXP-132): o deck em grade e o baú. No celular, os dois são abas e a barra com a
+   troca de aba e o Salvar fica presa no topo; no computador, ficam lado a lado, o deck largo e
+   o baú numa coluna parada que rola sozinha. */
 .deck-page {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1rem;
+  align-items: center;
   max-width: 72rem;
+
+  > * {
+    flex-basis: 100%;
+  }
+
+  > h1 {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.deck-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-block: 0.5rem;
+  background: var(--color-bg);
+
+  .cta {
+    flex: none;
+    min-width: 5.5rem;
+  }
+}
+
+/* A contagem fica na mesma linha do "Deck" até no celular de 320 px. */
+.deck-tabs {
+  flex: 1;
+  max-width: none;
+  margin: 0;
+
+  button {
+    padding-inline: 0.25rem;
+    white-space: nowrap;
+  }
+
+  .count {
+    margin-left: 0.25rem;
+  }
+}
+
+.count {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 0.4em;
+  border-radius: 999px;
+  background: rgb(158 230 255 / 0.12);
+  color: var(--color-accent);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.deck-error {
+  margin: 0 0 1rem;
+}
+
+.deck-layout {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
 }
 
 .deck-panel {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
   align-content: start;
 }
 
-/* Main e Extra: duas abas do mesmo tamanho; a aberta fica com a cor do destaque. */
-.sections {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.4rem;
+.chest h2,
+.deck-panel h2 {
+  margin-top: 0;
 }
 
-.sections button {
-  padding-inline: 0.3rem;
-  font-family: var(--font-title);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  line-height: 1.25;
+/* No celular, a aba que não está aberta some (continua montada: os filtros do baú ficam como
+   estavam), e o título do painel só existe para o leitor de tela, porque a aba já diz. */
+@media (width < 60rem) {
+  .deck-layout[data-tab="deck"] > .chest,
+  .deck-layout[data-tab="chest"] > .deck-panel {
+    display: none;
+  }
+
+  .panel-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .chest .filters {
+    margin-top: 0;
+  }
 }
 
-.sections button[aria-pressed="true"] {
-  border-color: var(--color-accent);
-  background: var(--color-accent);
-  color: var(--color-bg);
+/* A barra presa no topo não pode cobrir o que recebe o foco do teclado (WCAG 2.4.11). */
+html:has(.deck-bar) {
+  scroll-padding-top: 4.5rem;
 }
 
-.deck-rows {
-  display: grid;
+/* No computador, o Salvar vai para o lado do nome e continua preso no topo ao rolar. */
+@media (width >= 60rem) {
+  .deck-page > .deck-bar {
+    flex: none;
+    margin-bottom: 0;
+  }
+
+  .deck-tabs {
+    display: none;
+  }
+
+  .deck-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem);
+  }
+
+  .chest {
+    position: sticky;
+    top: 4.5rem;
+    max-height: calc(100dvh - 5.5rem);
+    padding-right: 0.25rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Na coluna do baú, três cartas por linha, como no celular. */
+  .chest-grid {
+    grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  }
+}
+
+/* O título da seção com a contagem e, no Main, monstros, magias e armadilhas. */
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+
+  h3 {
+    margin: 0;
+  }
+}
+
+.type-counts {
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.4rem;
   margin: 0;
   padding: 0;
+  color: var(--color-muted);
+  font-size: 0.875rem;
   list-style: none;
+
+  li {
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+  }
+
+  li::before {
+    content: "";
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--frame);
+  }
 }
 
-/* Cada linha do deck com a cor da moldura da carta na beirada, como a aba de uma capa. */
-.deck-rows li {
-  display: flex;
-  flex-wrap: wrap;
+.deck-section {
+  display: grid;
   gap: 0.5rem;
-  align-items: center;
-  padding: 0.3rem 0.4rem 0.3rem 0.6rem;
-  border-left: 4px solid var(--frame, var(--color-field-border));
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--frame, transparent) 9%, var(--color-surface));
+
+  .card-grid {
+    margin: 0.25rem 0 0;
+  }
+
+  .muted {
+    margin: 0;
+  }
 }
 
-/* O nome numa linha e os botões embaixo: o painel do deck é estreito até na tela larga. */
-.row-name {
-  flex: 1 1 100%;
+/* A carta do deck: a imagem com as cópias, os botões − e + embaixo e a pílula do Destiny.
+   A carta estica até o fim da linha da grade: com nome de uma ou de duas linhas, os botões
+   ficam todos na mesma altura. */
+.deck-card,
+.chest-item {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  gap: 0.4rem;
 }
 
-.deck-rows button {
-  padding: 0.2rem 0.55rem;
+.deck-card .card-tile,
+.chest-item .card-tile {
+  align-content: start;
+}
+
+.deck-card[draggable="true"],
+.chest-item[draggable="true"] {
+  cursor: grab;
+}
+
+.stepper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+
+  button {
+    min-height: 2.25rem;
+    padding: 0;
+    font-size: 1.125rem;
+    line-height: 1;
+  }
+}
+
+.tile-marks .badge.copies {
+  background: var(--color-accent);
+  box-shadow: none;
+  color: var(--color-bg);
+  font-size: 0.75rem;
+}
+
+.choice.destiny {
+  --chip: var(--holo);
+
+  justify-content: center;
+  margin: 0;
+  font-size: 0.8125rem;
+}
+
+.choice.destiny:has(input:checked) {
+  border-color: transparent;
+}
+
+.tile-marks .badge.in-deck {
+  background: rgb(158 230 255 / 0.9);
+  box-shadow: none;
+  color: var(--color-bg);
+}
+
+.chest-add {
+  min-height: 2.25rem;
+  padding-block: 0.2rem;
 }
 
 .deck-errors {
@@ -1702,6 +1847,7 @@ input[type="file"]::file-selector-button {
 }
 
 .warnings {
+  margin-bottom: 1rem;
   padding: 0.75rem 1rem;
   border: 1px solid #f0c674;
   border-radius: var(--radius);
@@ -1711,58 +1857,32 @@ input[type="file"]::file-selector-button {
   margin-top: 0;
 }
 
-/* Baú ao lado do deck: na tela larga, o deck fica parado enquanto a lista rola; na
-   estreita, o deck vem primeiro e o baú embaixo. */
-.deck-layout {
+/* Os botões do deck no rodapé do detalhe da carta. */
+.card-actions {
   display: grid;
-  gap: 1.5rem;
-}
+  gap: 0.6rem;
 
-.deck-side {
-  order: -1;
-}
-
-@media (width >= 60rem) {
-  .deck-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem);
-    align-items: start;
+  p {
+    margin: 0;
   }
 
-  .deck-side {
-    order: 0;
-    position: sticky;
-    top: 1rem;
-    max-height: calc(100dvh - 2rem);
-    overflow-y: auto;
-    overscroll-behavior: contain;
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 0.5rem;
+  }
+
+  .choice.destiny {
+    padding-inline: 1rem;
   }
 }
 
-.chest h2,
-.deck-panel h2 {
-  margin-top: 0;
-}
-
-/* A carta estica e os botões ficam embaixo: a linha do baú fica alinhada. */
-.chest-item {
-  display: grid;
-  grid-template-rows: 1fr auto;
-  gap: 0.35rem;
-}
-
-.chest-item[draggable="true"],
-.deck-rows li[draggable="true"] {
-  cursor: grab;
-}
-
-/* Lista vazia continua sendo um lugar para soltar carta. */
-.deck-rows {
-  min-height: 3rem;
-}
-
-.chest-actions {
+.card-actions-head {
   display: flex;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  justify-content: space-between;
 }
 
 /* Minha conta. */
@@ -2351,9 +2471,8 @@ input[type="file"]::file-selector-button {
   }
 }
 
-/* Por que o botão ao lado está desativado (GXP-117): o baú, a linha do deck no máximo. */
-.chest-reason,
-.row-max {
+/* Por que o botão do baú está desativado (GXP-117). */
+.chest-reason {
   color: var(--color-muted);
   font-size: 0.8125rem;
 }
@@ -3660,8 +3779,16 @@ button.danger {
   color: var(--color-text);
 }
 
-.card-dialog form {
+.card-dialog .dialog-footer {
+  position: sticky;
+  bottom: 0;
+  display: grid;
+  gap: 0.75rem;
   margin-top: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: 0 -10px 24px -8px rgb(0 0 0 / 0.7);
 }
 
 .card-dialog form button {

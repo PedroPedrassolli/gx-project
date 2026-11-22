@@ -180,7 +180,7 @@
 | Lobby | Salas, Personagens, Loja, Deck Edit, Coleção, Conversor, Desafios, Perfil, Amigos, Replays; DP e nível no topo |
 | Salas | Lista das públicas, criar, entrar por código; sala de espera com vagas, deck escolhido e "pronto" |
 | Personagens | Os 14 na ordem (alunos, chefes, lendas), com a carta do prêmio e o bônus; bloqueado com a dica de quem vencer antes; o deck escolhido num modal; o duelo em andamento com a volta para a mesa |
-| Deck Edit | Baú + deck (abas Main/Extra) + painel da carta; filtros, Destiny, validação, importar/exportar |
+| Deck Edit | Deck em grade (Main e Extra, com a conta de monstros, magias e armadilhas) + baú + detalhe da carta por cima, com os botões do deck; no celular, Deck e Baú em abas; filtros, Destiny, validação, importar/exportar |
 | Loja | Prateleira por disponibilidade (hoje, bloqueados com dica), compra de 1 ou 10, abertura carta a carta, campo de código |
 | Conversor | Escolher as repetidas, ver o grupo da quantidade e confirmar |
 | Coleção | Grade com filtros, % total e por pacote |

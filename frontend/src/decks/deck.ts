@@ -27,6 +27,29 @@ export function copies(rows: DeckRow[], cardId: number) {
   return rows.filter((row) => row.card_id === cardId).reduce((sum, row) => sum + row.quantity, 0);
 }
 
+// O resumo da seção que aparece no Deck Edit: quantos monstros, magias e armadilhas.
+export function typeCounts(rows: DeckRow[], cards: Map<number, CardSummary>, section: Section) {
+  const counts = { Monster: 0, Spell: 0, Trap: 0 };
+  for (const row of rows) {
+    const type = cards.get(row.card_id)?.card_type;
+    if (row.section === section && type) counts[type] += row.quantity;
+  }
+  return counts;
+}
+
+// A ordem da grade do deck: monstros, magias e armadilhas, como no jogo, e cada grupo pelo
+// nome. A carta nova entra no lugar dela, não no fim.
+const TYPE_ORDER = ["Monster", "Spell", "Trap"];
+
+export function deckOrder(rows: DeckRow[], cards: Map<number, CardSummary>, language: Language) {
+  const type = (row: DeckRow) => TYPE_ORDER.indexOf(cards.get(row.card_id)?.card_type ?? "");
+  const name = (row: DeckRow) => {
+    const card = cards.get(row.card_id);
+    return card ? displayName(card, language) : "";
+  };
+  return [...rows].sort((a, b) => type(a) - type(b) || name(a).localeCompare(name(b), "pt-BR"));
+}
+
 // A seção já tem o máximo de cartas (60 no Main e 15 no Extra).
 export function sectionFull(rows: DeckRow[], section: Section) {
   return sectionCount(rows, section) >= SECTIONS[section].max;
