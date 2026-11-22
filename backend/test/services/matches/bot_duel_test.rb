@@ -64,4 +64,15 @@ class Matches::BotDuelTest < ActiveSupport::TestCase
       play(100 + index, character: character.id, bot_team: index % 2)
     end
   end
+
+  # O replay refaz a partida só com as respostas gravadas: se o computador escolhesse algo que
+  # não fica no log, o duelo refeito terminaria diferente. O do Yugi é longo (dezenas de turnos).
+  it "o replay refaz o duelo contra o computador até o fim, com os mesmos pontos de vida" do
+    play(102, character: "yugi", bot_team: 1)
+    match = Match.last
+    replay = Matches::Replay.new(match)
+    last = replay.frames(0, replay.turns).last[:view]
+
+    assert_equal Matches::Game.new(match).view(0)[:sides].pluck(:lp), last[:sides].pluck(:lp)
+  end
 end
