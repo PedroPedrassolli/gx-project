@@ -22,7 +22,7 @@ describe GameData::Yugipedia do
 
     _(pages.keys).must_equal [ 1 ]
     _(pages[1].text).must_equal "texto"
-    _(pages[1].source).must_equal "https://yugipedia.com/index.php?oldid=10"
+    _(pages[1].revision).must_equal 10
   end
 
   it "busca pelo título seguindo a normalização e o redirecionamento" do

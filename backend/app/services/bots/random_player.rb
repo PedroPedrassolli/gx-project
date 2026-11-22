@@ -6,8 +6,6 @@ module Bots
   class RandomPlayer
     IDLE = { summonable: "summon", spsummonable: "spsummon", repositionable: "reposition", msetable: "mset",
              ssetable: "sset", activatable: "activate" }.freeze
-    MZONE = 0x04
-    SZONE = 0x08
 
     attr_reader :seen
 
@@ -76,19 +74,24 @@ module Bots
       { indexes: cards.each_index.to_a.sample(count, random: @random) }
     end
 
-    # Tributo: soma do release_param até o mínimo, sem passar do máximo de cartas.
+    # Tributo: as cartas numa ordem ao acaso.
     def select_tribute(prompt)
+      indexes = RandomPlayer.tributes(prompt, prompt[:cards].each_index.to_a.shuffle(random: @random))
+      indexes ? { indexes: } : { cancel: true }
+    end
+
+    # Junta as cartas na ordem dada até a soma do release_param chegar ao mínimo, sem passar do
+    # máximo de cartas. Os índices escolhidos, ou nil se não fecha. O Bots::Player usa também.
+    def self.tributes(prompt, order)
       chosen = []
       total = 0
-      prompt[:cards].each_index.to_a.shuffle(random: @random).each do |index|
+      order.each do |index|
         break if total >= prompt[:min]
 
         chosen << index
         total += prompt[:cards][index][:release_param]
       end
-      return { cancel: true } if total < prompt[:min] || chosen.size > prompt[:max]
-
-      { indexes: chosen }
+      chosen if total >= prompt[:min] && chosen.size <= prompt[:max]
     end
 
     # Soma: procura uma combinação que a engine aceita, nas duas regras.
@@ -133,15 +136,9 @@ module Bots
       { index: -1 }
     end
 
-    # Zona para desativar: as livres do "flag" (bit ligado = não vale), dos dois lados.
+    # Zona para desativar (ou para pôr a carta): qualquer uma das que valem.
     def select_disfield(prompt)
-      player = prompt[:player]
-      free = [ player, 1 - player ].each_with_index.flat_map do |owner, side|
-        [ [ MZONE, 0, 0..4 ], [ SZONE, 8, 0..5 ] ].flat_map do |location, first_bit, sequences|
-          sequences.filter_map { |sequence| [ owner, location, sequence ] if prompt[:flag][first_bit + sequence + (16 * side)].zero? }
-        end
-      end
-      { places: free.sample(prompt[:count], random: @random).flatten }
+      { places: Matches::AutoPlace.free(prompt).sample(prompt[:count], random: @random).flatten }
     end
     alias select_place select_disfield
 

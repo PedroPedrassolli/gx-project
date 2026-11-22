@@ -10,10 +10,9 @@ module GameData
     USER_AGENT = "gx-project-dados/1.0 (https://github.com/PedroPedrassolli/gx-project)".freeze
     BATCH = 50
 
-    # Uma página na revisão lida. A fonte de cada dado é o link dessa revisão.
-    Page = Data.define(:id, :revision, :title, :text) do
-      def source = "https://yugipedia.com/index.php?oldid=#{revision}"
-    end
+    # Uma página na revisão lida. A fonte de cada dado é o link dessa revisão
+    # (Catalog::Snapshot monta o link).
+    Page = Data.define(:id, :revision, :title, :text)
 
     def initialize(pause: 1)
       @pause = pause
