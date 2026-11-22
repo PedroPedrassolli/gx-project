@@ -334,6 +334,10 @@ function Seat(props: { player: RoomPlayer; ownerId: number; onKick?: () => void 
       : "Escolhendo o deck";
   return (
     <li className={player.ready ? "seat ready" : "seat"}>
+      {/* A inicial com o anel holográfico de quem está pronto (GXP-134). */}
+      <span className="avatar-initial" aria-hidden="true">
+        {player.nickname.slice(0, 1).toUpperCase()}
+      </span>
       <strong>{player.nickname}</strong>
       {player.user_id === props.ownerId && <span className="badge">Criou a sala</span>}
       <span>{state}</span>

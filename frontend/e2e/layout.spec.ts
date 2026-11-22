@@ -148,7 +148,7 @@ async function mockApi(page: Page) {
       "/api/decks/7": DECK,
       "/api/shop": SHOP,
       "/api/shop/converter": { min: 10, max: 99, cards: [{ card_id: 1, quantity: 12 }] },
-      "/api/rooms": [{ ...ROOM, players: 1 }],
+      "/api/rooms": [{ ...ROOM, owner: "JadenYuki", players: 1 }],
       "/api/rooms/ABC234": ROOM,
       "/api/matches/5": MATCH,
       "/api/characters": { characters: CHARACTERS },

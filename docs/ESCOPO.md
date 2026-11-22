@@ -179,7 +179,7 @@
 | Entrar / Cadastro / Senha | Formulários com verificação de idade e de e-mail |
 | Lobby | Salas, Personagens, Loja, Deck Edit, Coleção, Conversor, Desafios, Perfil, Amigos, Replays; DP e nível no topo |
 | Salas | Lista das públicas, criar, entrar por código; sala de espera com vagas, deck escolhido e "pronto" |
-| Personagens | Os 14 na ordem (alunos, chefes, lendas), com a carta do prêmio e o bônus; bloqueado com a dica de quem vencer antes; o deck escolhido num modal; o duelo em andamento com a volta para a mesa |
+| Personagens | Os 14 na ordem (alunos, chefes, lendas), numa escada com a carta do prêmio e o bônus e o próximo em destaque; bloqueado com a dica de quem vencer antes; o deck escolhido num modal; o duelo em andamento com a volta para a mesa |
 | Deck Edit | Deck em grade (Main e Extra, com a conta de monstros, magias e armadilhas) + baú + detalhe da carta por cima, com os botões do deck; no celular, Deck e Baú em abas; filtros, Destiny, validação, importar/exportar |
 | Loja | Prateleira por disponibilidade, cada pacote com a capa (a carta mais rara dele); bloqueados com a dica e a barra do quanto falta; compra de 1 ou 10; abertura em tela cheia (a mais rara no meio, as outras viradas para tocar, "Virar todas" e "Abrir outro"); campo de código |
 | Conversor | Escolher as repetidas, ver o grupo da quantidade e confirmar |
