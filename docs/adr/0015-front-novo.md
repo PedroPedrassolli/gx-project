@@ -74,5 +74,10 @@ grande, campo simples) e os Tag Force.
   salas abertas; os personagens viram uma escada com a carta do prêmio; a sala aberta e o
   lugar na sala de espera mostram a inicial de cada um, com o anel holográfico de quem está
   pronto.
+- Na mesa (GXP-135), os seus PV ficam grandes e com brilho e a sua mão, maior que a do outro.
+  No computador, a mesa usa a largura toda da tela e a faixa das fases (com os botões da vez e
+  a corrente) vai para a coluna da direita, acima do histórico; no celular, continua no meio
+  da mesa. O replay segue o mesmo desenho e, no celular, rola a página em vez de apertar a mesa
+  numa altura fixa. A vitória aparece em dourado no resultado.
 - As fontes antigas (Spectral) saíram; as novas são variáveis, um arquivo para todos os pesos
   (uns 50 KB no total, contra uns 60 KB de antes).

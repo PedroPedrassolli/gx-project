@@ -174,9 +174,13 @@ function Result({ state, names }: Pick<Props, "state" | "names">) {
   const winner = state.winner_team;
   const loser = winner === null ? "" : winner === state.you ? (names[1 - winner] ?? "") : "Você";
   const reason = REASONS[state.finish_reason ?? ""]?.(loser);
+  // A vitória ganha o dourado com brilho (GXP-135); a derrota e o empate ficam no texto comum.
+  const outcome = winner === null ? "draw" : winner === state.you ? "win" : "lose";
   return (
     <>
-      <h2 id="result-title">{resultTitle({ state, names })}</h2>
+      <h2 id="result-title" className={`result-title ${outcome}`}>
+        {resultTitle({ state, names })}
+      </h2>
       {reason && <p>{reason}</p>}
       {state.rewards && <RewardsTable rewards={state.rewards} />}
     </>
