@@ -62,10 +62,11 @@ module Catalog
       rows = Card.order(:name, :id).pluck(*COLUMNS).map { |values| COLUMNS.zip(values).to_h }
       @cards = rows.map { |card| summary(card) }
       @names = rows.to_h { |card| [ card[:id], plain([ card[:name], card[:name_pt], card[:name_in_game] ].compact.join(" | ")) ] }
-      @details = rows.to_h { |card| [ card[:id], detail(card) ] }
+      @by_id = @cards.index_by { |card| card[:id] }
+      @extras = rows.to_h { |card| [ card[:id], extra(card) ] }
       @packs = Pack.order(:position).map { |pack| pack_row(pack) }
       @banlists = Banlist.order(:id).includes(:entries).map { |banlist| banlist_row(banlist) }
-      @version = Digest::SHA256.hexdigest(JSON.generate([ @details, @packs, @banlists ]))[0, 16]
+      @version = Digest::SHA256.hexdigest(JSON.generate([ @cards, @extras, @packs, @banlists ]))[0, 16]
     end
 
     def checked_recently? = @checked_at > CHECK_EVERY.ago
@@ -87,7 +88,15 @@ module Catalog
       sort(rows, filters[:sort], filters[:order])
     end
 
-    def card(id) = @details[integer(id)]
+    # O detalhe de uma carta: o resumo da lista e o que só o detalhe traz.
+    def card(id)
+      id = integer(id)
+      @by_id[id]&.merge(@extras[id])
+    end
+
+    # O que só o detalhe traz (textos, pacotes, fonte), de todas as cartas, pelo id: o front
+    # baixa num pedido só e junta com o resumo que já tem (GXP-121).
+    def details = @extras
 
     private
 
@@ -100,11 +109,11 @@ module Catalog
         level: card[:level], atk: card[:attack], def: card[:defense], banlist: @statuses[card[:id]], image: card[:image_code] }.compact
     end
 
-    def detail(card)
+    def extra(card)
       packs = @pack_cards.fetch(card[:id], []).map { |_card, pack_id, rarity| { id: pack_id, rarity: } }
-      summary(card).merge({ passcode: card[:passcode], name_in_game: card[:name_in_game], text: card[:text],
-                            text_pt: card[:text_pt], text_pt_unofficial: (true if card[:text_pt_unofficial]),
-                            packs: packs.presence, source: format(SOURCE, card[:source_revision]) }.compact)
+      { passcode: card[:passcode], name_in_game: card[:name_in_game], text: card[:text], text_pt: card[:text_pt],
+        text_pt_unofficial: (true if card[:text_pt_unofficial]), packs: packs.presence,
+        source: format(SOURCE, card[:source_revision]) }.compact
     end
 
     # Sem a regra de liberação: ela fica só no servidor (a loja diz a cada jogador o que falta),

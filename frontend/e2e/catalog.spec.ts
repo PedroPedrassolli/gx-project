@@ -46,6 +46,12 @@ async function mockApi(page: Page) {
       const data = url.searchParams.get("pack") ? [{ ...cards[0], rarity: "ultra_rare" }] : cards;
       return route.fulfill({ json: { data } });
     }
+    // O detalhe de todas as cartas vem num pedido só (GXP-121); o de uma carta sozinha fica
+    // para quando ele ainda não chegou.
+    if (url.pathname === "/api/cards/details") {
+      const { text, text_pt, packs, source, passcode } = detail;
+      return route.fulfill({ json: { data: { 1: { text, text_pt, packs, source, passcode } } } });
+    }
     if (url.pathname === "/api/cards/1") return route.fulfill({ json: { data: detail } });
     return route.fulfill({ status: 404, json: { error: { status: 404 } } });
   });
@@ -106,8 +112,13 @@ test("mostra o detalhe da carta e troca o idioma do texto", async ({ page }) => 
 });
 
 test("avisa quando o texto em português é tradução nossa, não a oficial", async ({ page }) => {
+  const { text, text_pt, packs, source } = detail;
+  const extra = { text, text_pt, packs, source, text_pt_unofficial: true };
+  await page.route("**/api/cards/details", (route) =>
+    route.fulfill({ json: { data: { 1: extra } } }),
+  );
   await page.route("**/api/cards/1", (route) =>
-    route.fulfill({ json: { data: { ...detail, text_pt_unofficial: true } } }),
+    route.fulfill({ json: { data: { ...detail, ...extra } } }),
   );
   await page.goto("/cartas?carta=1");
   const panel = page.getByRole("region", { name: "Mago Negro" });

@@ -27,6 +27,9 @@ mesmo domínio e no mesmo repositório.
    comprimida). O front pode filtrar e ordenar na própria lista, sem ir à rede a cada letra.
    A lista traz o resumo; o detalhe (`/api/cards/:id`) traz os textos, os pacotes e o link
    da revisão da Yugipedia (crédito da CC BY-SA).
+   `/api/cards/details` traz o detalhe de todas as cartas, pelo id, sem o que a lista já
+   tem (GXP-121): o front baixa em segundo plano logo depois da lista, e o texto de qualquer
+   carta aparece na hora; o detalhe de uma carta sozinha fica como plano B.
 5. **Cache:** `Cache-Control: public, max-age=300, s-maxage=3600, stale-while-revalidate=2592000`
    e ETag pela versão dos dados (um resumo do conteúdo) junto com os parâmetros. Pedido com
    `If-None-Match` igual recebe 304. A cópia velha vale 30 dias na CDN (era 1 dia até
