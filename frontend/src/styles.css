@@ -111,11 +111,8 @@ h2 {
   text-wrap: pretty;
 }
 
-/* ---- Página inicial: a mesa. ---- */
-/* A largura das quatro cartas do menu: elas e as fases do andamento enchem a linha. */
+/* ---- Início (ADR 0015): a próxima ação primeiro, depois o progresso. ---- */
 .page.home {
-  --menu-gap: clamp(0.75rem, 2vw, 1.25rem);
-
   max-width: 54rem;
 }
 
@@ -125,118 +122,243 @@ h2 {
   gap: 0.75rem;
 }
 
-/* Duas cartas por linha no celular e quatro na tela larga (com auto-fit e largura máxima,
-   o navegador conta as colunas pela largura máxima e deixaria uma só no celular). */
-.table-menu {
+/* O destaque: o duelo aberto ou o próximo personagem, com a carta do prêmio ao lado. */
+.home-hero {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--menu-gap);
-  margin: 2rem 0 0;
-  padding: 0;
-  list-style: none;
-}
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 1rem 1.25rem;
+  align-items: center;
+  min-height: 11rem;
+  padding: 1.25rem;
+  border-radius: 18px;
+  background: var(--color-surface);
+  box-shadow: inset 0 0 0 1px var(--color-border);
 
-/* Atalho com a forma de carta: a moldura na cor do tipo, o nome em cima, a ilustração no
-   meio e o texto numa caixa clara, como numa carta. A carta inteira é o link. */
-@media (min-width: 40rem) {
-  .table-menu {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  @media (width >= 36rem) {
+    grid-template-columns: 9rem minmax(0, 1fr);
+    gap: 1rem 1.75rem;
   }
 }
 
-.menu-card {
-  position: relative;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: 0.35rem;
-  aspect-ratio: 59 / 86;
-  padding: 0.45rem;
-  border-radius: 0.6rem;
-  background: var(--frame);
-  color: #1d1708;
+.home-hero > div:only-child {
+  grid-column: 1 / -1;
 }
 
-/* O nome encolhe um pouco no celular estreito: "Personagens" cabe na carta de 320px. */
-.menu-card h2 {
+.home-hero h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.375rem;
+}
+
+.home-hero p {
+  margin: 0 0 0.75rem;
+}
+
+.home-hero .actions {
   margin: 0;
-  padding: 0.1rem 0.5rem;
-  border: 1px solid rgb(0 0 0 / 0.35);
-  background: rgb(255 255 255 / 0.28);
-  font-size: clamp(0.9rem, 4.6vw, 1.125rem);
-  line-height: 1.35;
 }
 
-.menu-card h2 a {
-  color: inherit;
+/* No celular, os botões ocupam a largura toda embaixo da carta (alvo grande para o polegar);
+   na tela larga, ficam na coluna do texto. */
+.hero-actions {
+  grid-column: 1 / -1;
+
+  .cta {
+    flex: 1 1 12rem;
+  }
+
+  @media (width >= 36rem) {
+    grid-column: 2;
+
+    .cta {
+      flex: 0 1 auto;
+    }
+  }
+}
+
+/* O duelo aberto é o que mais importa na página: a borda holográfica. */
+.home-hero.duel {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+    var(--holo) border-box;
+  box-shadow: none;
+}
+
+.hero-card {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 14px 30px -12px rgb(122 176 255 / 0.6);
+
+  @media (width >= 36rem) {
+    grid-row: span 2;
+  }
+}
+
+.hero-prize {
+  color: var(--dorm-yellow);
+  font-size: 0.9375rem;
+}
+
+/* Coleção e desafios: o número grande e a barra do quanto falta. */
+.home-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.home-tile,
+.home-shop {
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+  color: var(--color-text);
   text-decoration: none;
 }
 
-.menu-card h2 a::after {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  content: "";
+.home-tile:hover,
+.home-shop:hover {
+  box-shadow: inset 0 0 0 1px var(--color-field-border);
 }
 
-.menu-card:has(a:hover) {
-  filter: brightness(1.08);
-}
-
-.menu-card:has(a:focus-visible) {
-  outline: 3px solid var(--color-text);
-  outline-offset: 3px;
-}
-
-.menu-art {
+.home-tile {
   display: grid;
-  place-items: center;
-  border: 1px solid rgb(0 0 0 / 0.45);
-  background: radial-gradient(
-    circle at 50% 40%,
-    color-mix(in srgb, var(--frame) 40%, #0b1324),
-    #0b1324 80%
-  );
+  gap: 0.3rem;
+  padding: 1rem;
 }
 
-.menu-art svg {
-  width: 55%;
+.tile-label {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.tile-number {
+  font-family: var(--font-title);
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-shop {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.home-shop > span {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.home-shop svg {
+  width: 2rem;
+  height: 2rem;
+  flex: none;
   fill: none;
-  stroke: color-mix(in srgb, var(--frame) 55%, white);
-  stroke-width: 2;
+  stroke: var(--color-accent);
+  stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.menu-card p {
+/* Sem conta: o convite e cinco cartas da era GX em leque (só enfeite). */
+.home-welcome {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.home-welcome .actions {
+  margin: 0.5rem 0 0;
+}
+
+.showcase {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0 0.5rem;
+  padding-inline: 1rem;
+}
+
+.showcase img {
+  width: clamp(5rem, 20vw, 9rem);
+  height: auto;
+  margin-inline: -0.9rem;
+  border-radius: 6px;
+  box-shadow: 0 14px 28px -12px rgb(0 0 0 / 0.8);
+  transform: rotate(var(--tilt)) translateY(var(--lift));
+}
+
+.showcase img:nth-child(1) {
+  --tilt: -14deg;
+  --lift: 1.2rem;
+}
+
+.showcase img:nth-child(2) {
+  --tilt: -7deg;
+  --lift: 0.3rem;
+}
+
+.showcase img:nth-child(3) {
+  --tilt: 0deg;
+  --lift: 0rem;
+
+  z-index: 1;
+  box-shadow: 0 18px 40px -12px rgb(169 139 255 / 0.75);
+}
+
+.showcase img:nth-child(4) {
+  --tilt: 7deg;
+  --lift: 0.3rem;
+}
+
+.showcase img:nth-child(5) {
+  --tilt: 14deg;
+  --lift: 1.2rem;
+}
+
+.home-features {
+  display: grid;
+  gap: 0.75rem;
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+
+  @media (width >= 40rem) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.home-features li {
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+
+.home-features h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.0625rem;
+}
+
+.home-features p {
   margin: 0;
-  padding: 0.3rem 0.5rem;
-  border: 1px solid rgb(0 0 0 / 0.35);
-  background: #efe6cf;
-  color: #231c0e;
-  font-size: 0.875rem;
-  line-height: 1.35;
-}
-
-/* O que ainda não existe: moldura e ilustração apagadas; o texto continua legível. */
-.menu-card.soon {
-  background: color-mix(in srgb, var(--frame) 45%, var(--color-surface));
-}
-
-.menu-card.soon .menu-art svg {
-  opacity: 0.45;
+  color: var(--color-muted);
 }
 
 /* O andamento do projeto como as fases de um turno: barra cheia é fase pronta, meia barra
    é a fase em construção. */
 .roadmap h2 {
-  margin-top: 3rem;
+  margin-top: 2.5rem;
 }
 
 /* Oito fases: 2 por linha no celular e 4 no resto, sem uma fase sozinha na última linha. */
 .phases {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem var(--menu-gap);
+  gap: 1rem;
   margin: 1rem 0 0;
   padding: 0;
   list-style: none;
@@ -257,7 +379,7 @@ h2 {
   height: 5px;
   margin-bottom: 0.5rem;
   border-radius: 3px;
-  background: rgb(169 178 200 / 0.25);
+  background: rgb(255 255 255 / 0.1);
   content: "";
 }
 
@@ -270,7 +392,7 @@ h2 {
 }
 
 .phases li[aria-current="step"]::before {
-  background: linear-gradient(90deg, var(--color-accent) 50%, rgb(169 178 200 / 0.25) 50%);
+  background: linear-gradient(90deg, var(--color-accent) 50%, rgb(255 255 255 / 0.1) 50%);
 }
 
 .phases .code {
@@ -315,6 +437,32 @@ a {
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+}
+
+/* Barra de progresso de todo o site: o trilho escuro e o preenchimento holográfico. */
+progress {
+  width: 100%;
+  height: 0.5rem;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.1);
+  appearance: none;
+}
+
+progress::-webkit-progress-bar {
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.1);
+}
+
+progress::-webkit-progress-value {
+  border-radius: 999px;
+  background: var(--holo);
+}
+
+progress::-moz-progress-bar {
+  border-radius: 999px;
+  background: var(--holo);
 }
 
 /* Botão principal: fundo escuro com a borda holográfica (o brilho fica para o que importa).
