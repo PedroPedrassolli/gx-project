@@ -627,39 +627,77 @@ button:disabled {
   background: color-mix(in srgb, var(--frame) 40%, transparent);
 }
 
-.thumb img {
+.thumb img,
+.thumb .card-face {
   width: 100%;
-  height: auto;
+  height: 100%;
 }
 
-/* A miniatura fica por baixo, esticada, enquanto a imagem grande não chega. */
+.thumb .card-face {
+  border: 0;
+  border-radius: 0;
+}
+
+/* Carta sem imagem (as do anime, ou a imagem que não veio nem depois das novas
+   tentativas): a cor da moldura e o nome, na proporção da carta. O nome acompanha o tamanho
+   da face e some quando ela é pequena demais para ler. */
+.card-face {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  aspect-ratio: 421 / 614;
+  padding: 8%;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--frame, #8b93a7) 60%, black);
+  border-radius: 4px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--frame, #8b93a7) 65%, white),
+    var(--frame, #8b93a7)
+  );
+  color: #1d1708;
+  text-align: center;
+  container-type: inline-size;
+}
+
+.card-face-name {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: clamp(0.5rem, 13cqi, 1.1rem);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+}
+
+/* Nas miniaturas o nome já está do lado; só na mesa, onde a carta está sozinha, ele fica. */
+@container (width < 60px) {
+  .card-face-name {
+    display: none;
+  }
+}
+
+.card .card-face-name {
+  display: -webkit-box;
+}
+
+/* A miniatura fica por baixo, esticada, enquanto a imagem grande não chega. Sem imagem, a
+   face da carta fica no lugar dela, no mesmo tamanho. */
 .detail-image-box {
   position: relative;
   width: 100%;
   max-width: 268px;
+  aspect-ratio: 268 / 391;
   margin: 1rem auto;
 }
 
 .detail-image,
 .detail-image-thumb {
-  display: block;
-  width: 100%;
-  border-radius: 10px;
-}
-
-.detail-image {
-  position: relative;
-  height: auto;
-}
-
-.detail-image-thumb {
   position: absolute;
   inset: 0;
+  width: 100%;
   height: 100%;
-}
-
-img[hidden] {
-  display: none;
+  border-radius: 10px;
 }
 
 .type-line,
@@ -1572,22 +1610,20 @@ input[type="file"]::file-selector-button {
   border-bottom: 1px solid var(--color-border);
 
   img,
-  .converter-face {
+  .card-face {
     width: 3rem;
     height: auto;
     aspect-ratio: 48 / 70;
     border-radius: 3px;
+  }
+
+  img {
     background: var(--color-surface);
   }
 }
 
 .converter-cards li.chosen .converter-name {
   color: var(--color-accent);
-}
-
-.converter-face {
-  display: block;
-  background: var(--color-surface);
 }
 
 .converter-name {
@@ -1633,11 +1669,19 @@ input[type="file"]::file-selector-button {
   gap: 0.75rem;
   text-align: center;
 
-  img {
+  img,
+  .card-face {
     border: 2px solid var(--color-accent);
     border-radius: 6px;
-    background: var(--color-surface);
     box-shadow: 0 0 0.75rem color-mix(in srgb, var(--color-accent) 60%, transparent);
+  }
+
+  img {
+    background: var(--color-surface);
+  }
+
+  .card-face {
+    width: 140px;
   }
 
   .actions {
@@ -1841,6 +1885,7 @@ input[type="file"]::file-selector-button {
   }
 
   img,
+  .card-face,
   .drawn-face {
     width: 100%;
     height: auto;
@@ -2150,10 +2195,20 @@ button.pile {
   font-size: 0.625rem;
 }
 
-.card img {
+.card img,
+.card .card-face {
   width: 100%;
   height: 100%;
+}
+
+.card img {
   object-fit: cover;
+}
+
+.card .card-face {
+  padding: 4%;
+  border: 0;
+  border-radius: 0;
 }
 
 /* O que a pergunta da vez deixa usar brilha em dourado: a carta na mão ou no campo e a
@@ -2172,7 +2227,8 @@ button.pile {
 }
 
 /* Virada para baixo, mas sua: aparece escurecida. Do outro: o verso, desenho próprio. */
-.card.face-down img {
+.card.face-down img,
+.card.face-down .card-face {
   filter: brightness(0.5);
 }
 
@@ -2204,11 +2260,6 @@ button.pile {
 
 .card-stats.def {
   color: #9cc3ef;
-}
-
-.card-name {
-  padding: 0.15rem;
-  overflow-wrap: anywhere;
 }
 
 /* A mão em leque: as cartas se sobrepõem e, onde o navegador sabe contar os irmãos
@@ -2478,16 +2529,20 @@ button.pile {
 }
 
 .chain-strip img,
-.chain-face {
+.chain-strip .card-face {
   width: 1.9rem;
   height: auto;
   aspect-ratio: 56 / 82;
   border: 1px solid var(--color-accent);
   border-radius: 3px;
+}
+
+.chain-strip img {
   background: var(--color-surface);
 }
 
-.chain-strip .negated img {
+.chain-strip .negated img,
+.chain-strip .negated .card-face {
   opacity: 0.45;
 }
 
@@ -2946,7 +3001,8 @@ button.danger {
   gap: 1rem;
   align-items: start;
 
-  img {
+  img,
+  .card-face {
     width: 100%;
     height: auto;
     border-radius: 6px;
@@ -3130,7 +3186,8 @@ button.pile-card {
   cursor: pointer;
 }
 
-.pile-card img {
+.pile-card img,
+.pile-card .card-face {
   flex: none;
   width: 28px;
   height: auto;

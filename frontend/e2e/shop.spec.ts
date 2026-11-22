@@ -5,7 +5,13 @@ import { mockSession } from "./support.ts";
 const cards = [
   { id: 1, name: "Dark Magician", name_pt: "Mago Negro", card_type: "Monster", image: 46986414 },
   { id: 2, name: "Pot of Greed", name_pt: "Pote da Ganância", card_type: "Spell", image: 55144522 },
+  // Carta do anime: não tem imagem.
+  { id: 3, name: "Clear World", name_pt: "Mundo Claro", card_type: "Spell" },
 ];
+const PIXEL = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=",
+  "base64",
+);
 const shop = {
   balance: 120,
   level: 3,
@@ -36,11 +42,16 @@ const opening = [
   drawn(1, "ultra_rare", true),
   drawn(2, "common", true),
   drawn(2, "common", false),
-  drawn(2, "common", false),
+  drawn(3, "common", false),
   { ...drawn(1, "ultra_rare", false), rare_slot: true },
 ];
 
-async function mockShop(page: Page) {
+// Os pedidos de imagem que a página fez (as imagens são simuladas).
+async function mockShop(page: Page, images: string[] = []) {
+  await page.route(/\.pages\.dev\//, (route) => {
+    images.push(new URL(route.request().url()).pathname);
+    return route.fulfill({ contentType: "image/png", body: PIXEL });
+  });
   await mockSession(page, { loggedIn: true });
   await page.route("**/api/cards", (route) => route.fulfill({ json: { data: cards } }));
   await page.route("**/api/packs", (route) => route.fulfill({ json: { data: [] } }));
@@ -88,7 +99,8 @@ test("a prateleira mostra o saldo, o preço, o selo de novo e a dica dos bloquea
 test("comprar abre o pacote: as cartas aparecem uma por uma, com a raridade e as novas", async ({
   page,
 }) => {
-  const sent = await mockShop(page);
+  const images: string[] = [];
+  const sent = await mockShop(page, images);
   await page.goto("/loja");
   await page.getByRole("button", { name: "Comprar 1", exact: true }).click();
 
@@ -96,6 +108,10 @@ test("comprar abre o pacote: as cartas aparecem uma por uma, com a raridade e as
   await expect(page.getByRole("status").filter({ hasText: "cartas viradas" })).toHaveText(
     "0 de 5 cartas viradas.",
   );
+  // As imagens do pacote baixam antes de virar: a carta aparece pronta.
+  await expect
+    .poll(() => images)
+    .toEqual(expect.arrayContaining(["/cards/m/46986414.webp", "/cards/m/55144522.webp"]));
   await expect(page.getByText("Rara ou melhor")).toHaveCount(1);
   await page.getByRole("button", { name: "Virar a próxima" }).click();
   const first = page.getByRole("listitem").filter({ hasText: "Mago Negro" });
@@ -106,6 +122,10 @@ test("comprar abre o pacote: as cartas aparecem uma por uma, com a raridade e as
     "5 de 5 cartas viradas.",
   );
   await expect(page.getByText("Nova")).toHaveCount(2);
+  // A carta do anime aparece com a face e o nome, não com um quadro vazio.
+  await expect(
+    page.getByRole("listitem").filter({ hasText: "Mundo Claro" }).locator(".card-face"),
+  ).toContainText("Mundo Claro");
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(results.violations).toEqual([]);
 

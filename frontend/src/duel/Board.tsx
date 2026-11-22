@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { displayName, imageUrl, type CardSummary, type Language } from "../catalog/cards.ts";
+import { CardImage } from "../catalog/CardImage.tsx";
+import { displayName, type CardSummary, type Language } from "../catalog/cards.ts";
 import type { ChainLink, DuelEvent, FieldCard, HandCard, Side, View } from "./api.ts";
 
 // A mesa (escopo 4, "Mesa de duelo"), como numa mesa de verdade: o seu campo embaixo, com a
@@ -263,11 +264,9 @@ function PileButton(
 }
 
 function TopCard(props: Props & { code: number }) {
-  const data = props.cards.get(props.code);
-  if (data?.image === undefined) return <span className="card" aria-hidden="true" />;
   return (
     <span className="card" aria-hidden="true">
-      <img src={imageUrl(data.image, "p")} alt="" width={56} height={82} decoding="async" />
+      <CardImage card={props.cards.get(props.code)} size="p" width={56} height={82} />
     </span>
   );
 }
@@ -327,9 +326,7 @@ function PileCard(props: Props & { card: HandCard; onShow: (code: number) => voi
   const data = props.cards.get(code);
   return (
     <button type="button" className="pile-card" onClick={() => props.onShow(code)}>
-      {data?.image !== undefined && (
-        <img src={imageUrl(data.image, "p")} alt="" width={28} height={41} decoding="async" />
-      )}
+      <CardImage card={data} size="p" width={28} height={41} />
       {data ? displayName(data, props.language) : `Carta ${code}`}
     </button>
   );
@@ -373,11 +370,7 @@ function CardView(props: Props & { card: FieldCard | HandCard; place: string }) 
         aria-label={label.filter(Boolean).join(", ")}
         onClick={() => (props.onCardAt ? props.onCardAt(props.place, code) : props.onCard(code))}
       >
-        {data?.image !== undefined ? (
-          <img src={imageUrl(data.image, "p")} alt="" width={56} height={82} decoding="async" />
-        ) : (
-          <span className="card-name">{name}</span>
-        )}
+        <CardImage card={data} size="p" width={56} height={82} />
       </button>
       {/* Na mesa vale o número da posição, como nos jogos oficiais: ATK em ataque, DEF em
           defesa. Os dois inteiros cabiam só cortados numa zona de celular; o nome lido traz
@@ -419,11 +412,7 @@ function ChainStrip(props: Props & { chain: ChainLink[] }) {
             <span className="chain-number" aria-hidden="true">
               {link.link}
             </span>
-            {data?.image !== undefined ? (
-              <img src={imageUrl(data.image, "p")} alt="" width={28} height={41} decoding="async" />
-            ) : (
-              <span className="chain-face" aria-hidden="true" />
-            )}
+            <CardImage card={data} size="p" width={28} height={41} />
             <span className="visually-hidden">
               Elo {link.link}: {name}
               {link.negated && ", negado"}

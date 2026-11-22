@@ -1,4 +1,5 @@
-import { displayName, imageUrl, type CardSummary, type Language } from "../catalog/cards.ts";
+import { CardImage } from "../catalog/CardImage.tsx";
+import { displayName, type CardSummary, type Language } from "../catalog/cards.ts";
 import type { Prompt } from "./api.ts";
 import { onField, placeLabel } from "./zones.ts";
 
@@ -48,18 +49,14 @@ export function cardName(card: PromptCard, props: Pick<PromptProps, "cards" | "l
 
 // A miniatura da carta na lista de escolha (o verso, quando o jogador não a vê).
 export function CardThumb(props: { card: PromptCard; cards: Map<number, CardSummary> }) {
-  const image = props.cards.get(props.card.code)?.image;
-  if (props.card.code === 0 || image === undefined) {
-    return <span className="pick-thumb back" aria-hidden="true" />;
-  }
+  if (props.card.code === 0) return <span className="pick-thumb back" aria-hidden="true" />;
   return (
-    <img
-      className="pick-thumb"
-      src={imageUrl(image, "p")}
-      alt=""
+    <CardImage
+      card={props.cards.get(props.card.code)}
+      size="p"
       width={28}
       height={41}
-      decoding="async"
+      className="pick-thumb"
     />
   );
 }

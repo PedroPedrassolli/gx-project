@@ -1,10 +1,10 @@
-import type { ReactNode, SyntheticEvent } from "react";
+import type { ReactNode } from "react";
+import { CardImage } from "./CardImage.tsx";
 import {
   IMAGE_WIDTHS,
   cardText,
   displayName,
   frame,
-  imageUrl,
   typeLine,
   type CardDetail,
   type CardSummary,
@@ -31,26 +31,11 @@ export function Stats({ card }: { card: CardSummary }) {
   );
 }
 
-// Imagem que não carregou some: fica a cor da moldura na lista e só o texto no detalhe.
-function hide(event: SyntheticEvent<HTMLImageElement>) {
-  event.currentTarget.hidden = true;
-}
-
 // Miniatura da lista (o nome está do lado, então a imagem não tem texto alternativo).
 export function Thumb({ card }: { card: CardSummary }) {
   return (
     <span className="thumb">
-      {card.image !== undefined && (
-        <img
-          src={imageUrl(card.image, "p")}
-          alt=""
-          width={56}
-          height={82}
-          loading="lazy"
-          decoding="async"
-          onError={hide}
-        />
-      )}
+      <CardImage card={card} size="p" width={56} height={82} lazy />
     </span>
   );
 }
@@ -137,29 +122,28 @@ export function Detail({
     <article className={`detail frame-${frame(card)}`}>
       <h2 id="detail-title">{displayName(card, language)}</h2>
       {other && other !== displayName(card, language) && <p className="other-name">{other}</p>}
-      {card.image !== undefined && (
-        // A miniatura, que a lista ou a mesa já baixou, aparece na hora por baixo; a imagem
-        // grande cobre por cima quando chega (GXP-107).
-        <div key={card.id} className="detail-image-box">
-          <img
-            className="detail-image-thumb"
-            src={imageUrl(card.image, "p")}
-            alt=""
-            aria-hidden="true"
-            onError={hide}
-          />
-          <img
-            className="detail-image"
-            src={imageUrl(card.image, "m")}
-            srcSet={`${imageUrl(card.image, "m")} ${IMAGE_WIDTHS.m}w, ${imageUrl(card.image, "g")} ${IMAGE_WIDTHS.g}w`}
-            sizes={`${IMAGE_WIDTHS.m}px`}
-            width={IMAGE_WIDTHS.m}
-            height={391}
-            alt={`Imagem da carta ${displayName(card, language)}`}
-            onError={hide}
-          />
-        </div>
-      )}
+      {/* A miniatura, que a lista ou a mesa já baixou, aparece na hora por baixo; a imagem
+          grande cobre por cima quando chega (GXP-107). Sem imagem, fica a face da carta. */}
+      <div key={card.id} className="detail-image-box">
+        <CardImage
+          card={card}
+          size="p"
+          width={IMAGE_WIDTHS.p}
+          height={163}
+          className="detail-image-thumb"
+          alt={card.image === undefined ? `Carta ${displayName(card, language)}, sem imagem` : ""}
+        />
+        <CardImage
+          card={card}
+          size="m"
+          width={IMAGE_WIDTHS.m}
+          height={391}
+          className="detail-image"
+          alt={`Imagem da carta ${displayName(card, language)}`}
+          zoom
+          ifMissing="nothing"
+        />
+      </div>
       <p className="type-line">{typeLine(card)}</p>
       <Stats card={card} />
       {card.banlist && <p className="badge">{label(BANLIST, card.banlist)}</p>}

@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import {
-  cardText,
-  displayName,
-  imageUrl,
-  type CardSummary,
-  type Language,
-} from "../catalog/cards.ts";
+import { CardImage } from "../catalog/CardImage.tsx";
+import { cardText, displayName, type CardSummary, type Language } from "../catalog/cards.ts";
 import { useCardDetail } from "../catalog/data.ts";
 import { Stats } from "../catalog/parts.tsx";
 import type { ChainLink, Prompt } from "./api.ts";
@@ -140,9 +135,7 @@ export function CardActionsDialog(
             <h2 id="card-actions-title">{name}</h2>
           </header>
           <div className="card-actions-body">
-            {data?.image !== undefined && (
-              <img src={imageUrl(data.image, "m")} alt="" width={134} height={196} />
-            )}
+            <CardImage card={data} size="m" width={134} height={196} />
             <p className="actions">
               {props.actions.map((item) => (
                 <button
