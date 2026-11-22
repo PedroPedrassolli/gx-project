@@ -32,10 +32,16 @@ const shop = {
       cards_per_pack: 5,
       available: false,
       hint: "Chegue ao nível 27.",
+      progress: 11,
       new: false,
     },
   ],
 };
+// A capa de cada pacote vem do catálogo: a carta mais rara dele que tem imagem.
+const packs = [
+  { id: 10, name: "Beginner Monsters", position: 1, card_count: 3, cover: 1 },
+  { id: 11, name: "Making the Team 1", position: 2, card_count: 3, cover: 2 },
+];
 const drawn = (id: number, rarity: string, isNew: boolean) => ({ id, rarity, new: isNew });
 // A última carta de cada pacote é a de raridade aumentada: rara ou melhor, e vem marcada.
 const opening = [
@@ -54,7 +60,7 @@ async function mockShop(page: Page, images: string[] = []) {
   });
   await mockSession(page, { loggedIn: true });
   await page.route("**/api/cards", (route) => route.fulfill({ json: { data: cards } }));
-  await page.route("**/api/packs", (route) => route.fulfill({ json: { data: [] } }));
+  await page.route("**/api/packs", (route) => route.fulfill({ json: { data: packs } }));
   await page.route("**/api/shop", (route) => route.fulfill({ json: { data: shop } }));
   await page.route("**/api/shop/seen", (route) => route.fulfill({ status: 204 }));
   const sent: unknown[] = [];
@@ -74,7 +80,7 @@ test("sem login, pede para entrar", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Entre na sua conta" })).toBeVisible();
 });
 
-test("a prateleira mostra o saldo, o preço, o selo de novo e a dica dos bloqueados", async ({
+test("a prateleira mostra a capa, o saldo, o preço, o selo de novo e o caminho dos bloqueados", async ({
   page,
 }) => {
   await mockShop(page);
@@ -84,8 +90,14 @@ test("a prateleira mostra o saldo, o preço, o selo de novo e a dica dos bloquea
   await expect(page.getByText("Você tem 120 DP. Nível 3.")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Beginner Monsters Novo" })).toBeVisible();
   await seen;
+  const open = page.getByRole("listitem").filter({ hasText: "Beginner Monsters" });
+  await expect(open.locator(".pack-cover img")).toHaveAttribute("src", /46986414/);
   const locked = page.getByRole("listitem").filter({ hasText: "Making the Team 1" });
   await expect(locked).toContainText("Chegue ao nível 27.");
+  await expect(
+    locked.getByRole("progressbar", { name: "Caminho para liberar Making the Team 1" }),
+  ).toHaveAttribute("value", "11");
+  await expect(locked).toContainText("11%");
   await expect(locked).not.toContainText("Novo");
   await expect(locked.getByRole("button")).toHaveCount(0);
   // 10 pacotes custam 500: o saldo não dá, e a prateleira diz quanto falta.

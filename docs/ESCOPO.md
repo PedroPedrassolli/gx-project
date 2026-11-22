@@ -181,7 +181,7 @@
 | Salas | Lista das públicas, criar, entrar por código; sala de espera com vagas, deck escolhido e "pronto" |
 | Personagens | Os 14 na ordem (alunos, chefes, lendas), com a carta do prêmio e o bônus; bloqueado com a dica de quem vencer antes; o deck escolhido num modal; o duelo em andamento com a volta para a mesa |
 | Deck Edit | Deck em grade (Main e Extra, com a conta de monstros, magias e armadilhas) + baú + detalhe da carta por cima, com os botões do deck; no celular, Deck e Baú em abas; filtros, Destiny, validação, importar/exportar |
-| Loja | Prateleira por disponibilidade (hoje, bloqueados com dica), compra de 1 ou 10, abertura carta a carta, campo de código |
+| Loja | Prateleira por disponibilidade, cada pacote com a capa (a carta mais rara dele); bloqueados com a dica e a barra do quanto falta; compra de 1 ou 10, abertura carta a carta, campo de código |
 | Conversor | Escolher as repetidas, ver o grupo da quantidade e confirmar |
 | Coleção | Grade com filtros, % total e por pacote |
 | **Mesa de duelo** | Campo MR1 dos dois lados (5 + 5 + campo + cemitério + deck + extra + banidas). Mão em leque. Painel de detalhe. LP e fases (DP/SP/M1/BP/M2/EP). Pilha da cadeia. Log. Timer. Emotes. Botão do Destiny Draw. Desistir. A mesa cabe na tela, sem rolar, no computador e no celular |

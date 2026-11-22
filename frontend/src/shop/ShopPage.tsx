@@ -3,8 +3,8 @@ import { Link } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "../account/session.ts";
 import { CardImage, preloadCardImages } from "../catalog/CardImage.tsx";
-import { displayName } from "../catalog/cards.ts";
-import { catalogQuery, useCatalog } from "../catalog/data.ts";
+import { IMAGE_WIDTHS, displayName, type CardSummary } from "../catalog/cards.ts";
+import { useCatalog } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
 import { RARITIES, label } from "../catalog/labels.ts";
 import { SignInFirst } from "../PageNotice.tsx";
@@ -21,19 +21,24 @@ import {
 
 const number = (value: number) => value.toLocaleString("pt-BR");
 
-// A loja (escopo 3.4 e 4; GXP-86): a prateleira na ordem do jogo, com o preço em DP e a dica
-// de como liberar os bloqueados. Comprar abre os pacotes ali mesmo, carta por carta.
+// A loja (escopo 3.4 e 4; GXP-86 e GXP-133): a prateleira na ordem do jogo, cada pacote com a
+// capa, o preço em DP e, nos bloqueados, a dica e o quanto falta. Comprar abre os pacotes ali
+// mesmo, carta por carta.
 export function ShopPage() {
   usePageTitle("Loja");
   const session = useSession();
   const user = session.data?.user;
   const shop = useShop(Boolean(user));
+  // O catálogo (nome e imagem de cada carta) traz as capas e já fica pronto para a abertura.
+  const catalog = useCatalog();
   const client = useQueryClient();
-  // O catálogo (nome e imagem de cada carta) já vem enquanto o jogador escolhe o pacote: a
-  // abertura não espera por ele.
-  useEffect(() => {
-    void client.prefetchQuery(catalogQuery);
-  }, [client]);
+  // A capa de cada pacote: a carta que o catálogo escolheu, já com a imagem.
+  const covers = new Map(
+    catalog.data?.packs.map((pack) => [
+      pack.id,
+      pack.cover ? catalog.data?.byId.get(pack.cover) : undefined,
+    ]),
+  );
   const [opened, setOpened] = useState<{ pack: ShopPack; openings: DrawnCard[][] } | null>(null);
   const buy = useMutation({
     mutationFn: ({ pack, count }: { pack: ShopPack; count: 1 | 10 }) =>
@@ -83,6 +88,7 @@ export function ShopPage() {
           <ul className="shelf">
             {shop.data?.packs.map((pack) => (
               <li key={pack.id} className={pack.available ? "pack-tile" : "pack-tile locked"}>
+                <PackCover card={covers.get(pack.id)} locked={!pack.available} />
                 <h2>
                   {pack.name}
                   {pack.new && (
@@ -109,7 +115,14 @@ export function ShopPage() {
                           }
                           onClick={() => buy.mutate({ pack, count })}
                         >
-                          {count === 1 ? "Comprar 1" : `Comprar 10 (${number(pack.price * 10)} DP)`}
+                          {count === 1 ? (
+                            "Comprar 1"
+                          ) : (
+                            <>
+                              {"Comprar 10 "}
+                              <span className="buy-price">({number(pack.price * 10)} DP)</span>
+                            </>
+                          )}
                         </button>
                       ))}
                     </p>
@@ -122,7 +135,19 @@ export function ShopPage() {
                     )}
                   </>
                 ) : (
-                  <p className="pack-hint">{pack.hint}</p>
+                  <>
+                    <p className="pack-hint">{pack.hint}</p>
+                    {pack.progress !== null && (
+                      <p className="pack-progress">
+                        <progress
+                          max={100}
+                          value={pack.progress}
+                          aria-label={`Caminho para liberar ${pack.name}`}
+                        />
+                        <span aria-hidden="true">{pack.progress}%</span>
+                      </p>
+                    )}
+                  </>
                 )}
               </li>
             ))}
@@ -138,6 +163,22 @@ export function ShopPage() {
         </>
       )}
     </main>
+  );
+}
+
+// A capa do pacote (GXP-133): a carta mais rara dele, inclinada sobre a embalagem, e o
+// cadeado no bloqueado. É enfeite: o nome do pacote está no título logo embaixo.
+function PackCover({ card, locked }: { card: CardSummary | undefined; locked: boolean }) {
+  return (
+    <span className="pack-cover" aria-hidden="true">
+      {card && <CardImage card={card} size="m" width={IMAGE_WIDTHS.m} height={391} lazy />}
+      {locked && (
+        <svg className="pack-lock" viewBox="0 0 24 24">
+          <rect x="5" y="11" width="14" height="10" rx="2" />
+          <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+        </svg>
+      )}
+    </span>
   );
 }
 

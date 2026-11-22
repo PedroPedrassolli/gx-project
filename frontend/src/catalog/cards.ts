@@ -44,7 +44,14 @@ export function cardText(card: CardDetail, language: Language): { text?: string;
   return { text: card.text_pt };
 }
 
-export type Pack = { id: number; name: string; position: number; card_count: number };
+// cover: a carta da capa do pacote na loja (a mais rara que tem imagem).
+export type Pack = {
+  id: number;
+  name: string;
+  position: number;
+  card_count: number;
+  cover?: number;
+};
 
 export type Language = "pt" | "en";
 export type SortKey = "name" | "atk" | "def" | "level" | "type";

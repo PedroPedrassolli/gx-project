@@ -23,15 +23,15 @@ class Api::ShopControllerTest < ActionDispatch::IntegrationTest
     assert_equal 300, Economy::Ledger.balance(user)
   end
 
-  it "a prateleira traz o saldo, o nível e cada pacote, com a dica dos bloqueados" do
+  it "a prateleira traz o saldo, o nível e cada pacote, com a dica e o progresso dos bloqueados" do
     Economy::Ledger.post!(user, 300, reason: "duel", key: "partida:1")
     get api_shop_path
 
     data = response.parsed_body["data"]
     assert_equal [ 300, 1 ], data.values_at("balance", "level")
-    assert_equal({ "id" => pack_a.id, "name" => "Pack A", "price" => 50, "cards_per_pack" => 5, "available" => true, "hint" => nil, "new" => true },
-                 data["packs"].first)
-    assert_equal [ false, "Chegue ao nível 10.", false ], data["packs"].second.values_at("available", "hint", "new")
+    assert_equal({ "id" => pack_a.id, "name" => "Pack A", "price" => 50, "cards_per_pack" => 5, "available" => true, "hint" => nil,
+                   "progress" => nil, "new" => true }, data["packs"].first)
+    assert_equal [ false, "Chegue ao nível 10.", 10, false ], data["packs"].second.values_at("available", "hint", "progress", "new")
   end
 
   it "o pacote liberado aparece como novo até o jogador ver a prateleira" do

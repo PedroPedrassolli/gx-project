@@ -28,11 +28,14 @@ module Shop
       @codes = codes
     end
 
-    # { available:, hint: } para a regra de um pacote (a coluna availability).
+    # { available:, hint:, progress: } para a regra de um pacote (a coluna availability).
+    # progress: quanto do caminho o jogador já fez, de 0 a 99, para a barra da loja (GXP-133);
+    # com mais de uma regra, vale a mais adiantada. Sem nada para medir (missão, código), nil.
     def call(rule)
       parts = rules(rule).map { |each| check(each) }
-      available = parts.any? { |part| part[:available] }
-      { available:, hint: (hint(parts) unless available) }
+      return { available: true, hint: nil, progress: nil } if parts.any? { |part| part[:available] }
+
+      { available: false, hint: hint(parts), progress: parts.filter_map { |part| part[:progress] }.max }
     end
 
     private
@@ -45,22 +48,26 @@ module Shop
       when "sempre" then { available: true }
       when "dia"
         { available: rule["dia"] == @day || @level >= rule["nivel_libera"],
-          hint: "volte #{ON_DAY.fetch(rule['dia'])} ou chegue ao nível #{rule['nivel_libera']}" }
-      when "nivel" then { available: @level >= rule["nivel"], hint: "chegue ao nível #{rule['nivel']}" }
+          hint: "volte #{ON_DAY.fetch(rule['dia'])} ou chegue ao nível #{rule['nivel_libera']}", progress: share(@level, rule["nivel_libera"]) }
+      when "nivel" then { available: @level >= rule["nivel"], hint: "chegue ao nível #{rule['nivel']}", progress: share(@level, rule["nivel"]) }
       when "porcentagem_de_pacote" then percent(@packs.fetch(rule["pacote"]), rule["porcentagem"], "das cartas de #{rule['pacote']}")
       when "porcentagem_do_total" then percent(@total, rule["porcentagem"], "de todas as cartas do jogo")
       when "todos_os_desafios"
         all = Economy::Challenges::POSSIBLE.size
-        { available: @challenges >= all, hint: "conclua todos os desafios (você tem #{@challenges} de #{all})" }
+        { available: @challenges >= all, hint: "conclua todos os desafios (você tem #{@challenges} de #{all})", progress: share(@challenges, all) }
       when "missao" then { available: @missions.include?(rule["missao"]), hint: "conclua a missão #{Economy::Missions.name_of(rule['missao'])}" }
       else { available: @codes.include?(Code.normalize(rule["codigo"])), hint: "digite o código secreto na loja" }
       end
     end
 
     def percent(progress, needed, what)
+      have = progress[:owned] * 100 / [ progress[:cards], 1 ].max
       { available: progress[:owned] * 100 >= progress[:cards] * needed,
-        hint: "tenha #{needed}% #{what} (você tem #{(progress[:owned] * 100 / [ progress[:cards], 1 ].max)}%)" }
+        hint: "tenha #{needed}% #{what} (você tem #{have}%)", progress: share(have, needed) }
     end
+
+    # Quanto de um caminho o jogador já fez, em porcentagem; 100 só quando libera.
+    def share(have, needed) = [ have * 100 / needed, 99 ].min
 
     def hint(parts)
       "#{parts.pluck(:hint).join(', ou ')}.".upcase_first
