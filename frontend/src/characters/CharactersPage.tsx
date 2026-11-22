@@ -47,12 +47,6 @@ export function CharactersPage() {
         Duele contra o computador com os decks dos personagens do anime. Vencer um libera o próximo,
         e a primeira vitória contra cada um dá a carta dele.
       </p>
-      {data?.current_match_id && (
-        <p className="characters-current">
-          Você tem um duelo em andamento.{" "}
-          <Link to={`/duelo/${data.current_match_id}`}>Voltar para a mesa</Link>
-        </p>
-      )}
       {characters.isError && (
         <p role="alert" className="form-error">
           Não deu para carregar os personagens. Tente de novo daqui a pouco.
@@ -146,7 +140,9 @@ function DeckDialog(props: {
   const chosen = decks.some((deck) => String(deck.id) === deckId)
     ? deckId
     : String(decks[0]?.id ?? "");
-  // Deck que já não vale pela contagem não começa o duelo; a tela diz o que falta (GXP-117).
+  // Com outro duelo em andamento ou com um deck que já não vale pela contagem, o duelo não
+  // começa; o modal diz o porquê e leva aonde resolver (GXP-117).
+  const duel = useSession().data?.duel;
   const chosenDeck = decks.find((deck) => String(deck.id) === chosen);
   const problem = chosenDeck && deckSizeProblem(chosenDeck.counts);
   const start = useMutation({
@@ -206,10 +202,18 @@ function DeckDialog(props: {
               ))}
             </select>
           </div>
-          {problem && chosenDeck && (
+          {duel ? (
             <p id="deck-reason" className="hint">
-              {problem} <Link to={`/decks/${chosenDeck.id}`}>Abrir no Deck Edit</Link>
+              Termine o duelo em andamento antes de começar outro.{" "}
+              <Link to={`/duelo/${duel.match_id}`}>Voltar para a mesa</Link>
             </p>
+          ) : (
+            problem &&
+            chosenDeck && (
+              <p id="deck-reason" className="hint">
+                {problem} <Link to={`/decks/${chosenDeck.id}`}>Abrir no Deck Edit</Link>
+              </p>
+            )
           )}
           {start.error && (
             <p role="alert" className="form-error">
@@ -224,8 +228,8 @@ function DeckDialog(props: {
             type="submit"
             form="deck-form"
             className="cta"
-            disabled={start.isPending || Boolean(problem)}
-            aria-describedby={problem ? "deck-reason" : undefined}
+            disabled={start.isPending || Boolean(duel || problem)}
+            aria-describedby={duel || problem ? "deck-reason" : undefined}
           >
             {start.isPending ? "Começando…" : "Começar o duelo"}
           </button>

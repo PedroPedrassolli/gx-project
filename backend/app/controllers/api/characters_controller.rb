@@ -3,12 +3,12 @@
 class Api::CharactersController < Api::BaseController
   before_action :require_authentication
 
-  # GET /api/characters: os personagens na ordem e o duelo contra personagem em andamento.
+  # GET /api/characters: os personagens na ordem. O duelo em andamento vem na sessão.
   def index
     progress = Characters::Progress.new(current_user)
     signatures = Card.where(name: Characters::Roster.all.map(&:signature)).index_by(&:name)
     characters = Characters::Roster.all.map { |character| character_json(character, progress, signatures[character.signature]) }
-    render json: { data: { characters:, current_match_id: Match.against_character(current_user)&.id } }
+    render json: { data: { characters: } }
   end
 
   # POST /api/characters/:id/duels: { deck_id }. Começa o duelo com um deck do jogador e devolve

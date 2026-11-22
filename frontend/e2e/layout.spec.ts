@@ -120,7 +120,7 @@ async function mockApi(page: Page) {
       "/api/rooms": [{ ...ROOM, players: 1 }],
       "/api/rooms/ABC234": ROOM,
       "/api/matches/5": MATCH,
-      "/api/characters": { characters: CHARACTERS, current_match_id: 5 },
+      "/api/characters": { characters: CHARACTERS },
       "/api/matches/5/replay": {
         id: 5,
         turn: 1,

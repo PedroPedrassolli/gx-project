@@ -13,11 +13,12 @@ export type User = {
   dp: number; // o saldo de DP (razão, ADR 0005)
 };
 
-// duel: o duelo em andamento (para a volta à mesa de qualquer página), ou null.
+// duel: o duelo em andamento (para a volta à mesa de qualquer página), ou null. Contra
+// personagem, sem sala.
 export type Session = {
   user: User | null;
   csrf_token: string;
-  duel?: { match_id: number; room_code: string } | null;
+  duel?: { match_id: number; room_code: string | null } | null;
 };
 
 // Erro da API: a mensagem para mostrar e, em formulário, as mensagens de cada campo.

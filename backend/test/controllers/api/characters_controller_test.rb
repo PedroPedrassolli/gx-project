@@ -31,7 +31,6 @@ class Api::CharactersControllerTest < ActionDispatch::IntegrationTest
                  [ chumley["status"], chumley["wins"], chumley["bonus"], chumley.dig("signature", "name"), chumley.dig("group", "id"), chumley["deck"] ]
     assert_equal [ "unlocked", nil, nil ], [ syrus["status"], syrus["unlock_hint"], syrus["signature"] ]
     assert_equal [ "locked", "Vença Syrus para liberar." ], blair.values_at("status", "unlock_hint")
-    assert_nil data["current_match_id"]
   end
 
   it "começa o duelo com um deck do jogador e a mesa mostra o personagem" do
@@ -43,8 +42,8 @@ class Api::CharactersControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :created
     match_id = response.parsed_body.dig("data", "match_id")
-    get api_characters_path
-    assert_equal match_id, response.parsed_body.dig("data", "current_match_id")
+    get api_session_path
+    assert_equal match_id, response.parsed_body.dig("duel", "match_id")
     get api_match_path(match_id)
     data = response.parsed_body["data"]
     assert_equal [ "chumley", nil ], data.values_at("character", "room_code")

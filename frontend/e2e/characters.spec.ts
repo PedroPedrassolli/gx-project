@@ -52,9 +52,9 @@ const DECKS = [
   },
 ];
 
-async function mockCharacters(page: Page, { current = null as number | null, decks = DECKS } = {}) {
+async function mockCharacters(page: Page, { decks = DECKS } = {}) {
   await page.route("**/api/characters", (route) =>
-    route.fulfill({ json: { data: { characters: CHARACTERS, current_match_id: current } } }),
+    route.fulfill({ json: { data: { characters: CHARACTERS } } }),
   );
   await page.route("**/api/decks", (route) => route.fulfill({ json: { data: decks } }));
 }
@@ -190,12 +190,25 @@ test("enquanto o jogador escolhe, o catálogo que a mesa usa já é buscado", as
   await catalog;
 });
 
-test("o duelo em andamento aparece com o caminho de volta", async ({ page }) => {
-  await mockSession(page, { loggedIn: true });
-  await mockCharacters(page, { current: 31 });
+test("com um duelo em andamento, o modal não começa outro e leva de volta à mesa", async ({
+  page,
+}) => {
+  await mockSession(page, { loggedIn: true, duel: { match_id: 31, room_code: null } });
+  await mockCharacters(page);
   await page.goto("/personagens");
+  // O aviso do topo (o mesmo de todas as páginas) aparece uma vez só.
+  await expect(page.getByRole("link", { name: "Voltar para a mesa" })).toHaveAttribute(
+    "href",
+    "/duelo/31",
+  );
 
-  await expect(
-    page.getByRole("main").getByRole("link", { name: "Voltar para a mesa" }),
-  ).toHaveAttribute("href", "/duelo/31");
+  await page.getByRole("button", { name: "Duelar contra Chumley" }).click();
+  const dialog = page.getByRole("dialog", { name: "Duelar contra Chumley" });
+  const start = dialog.getByRole("button", { name: "Começar o duelo" });
+  await expect(start).toBeDisabled();
+  await expect(start).toHaveAccessibleDescription(/Termine o duelo em andamento/);
+  await expect(dialog.getByRole("link", { name: "Voltar para a mesa" })).toHaveAttribute(
+    "href",
+    "/duelo/31",
+  );
 });

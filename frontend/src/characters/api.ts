@@ -18,7 +18,7 @@ export type Character = {
   status: CharacterStatus;
   unlock_hint?: string; // só no bloqueado: quem vencer antes
 };
-export type Characters = { characters: Character[]; current_match_id: number | null };
+export type Characters = { characters: Character[] };
 
 export const charactersKey = ["characters"];
 
