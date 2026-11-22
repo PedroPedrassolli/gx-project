@@ -9,6 +9,7 @@ import { useCardLanguage } from "../catalog/language.ts";
 import { RARITIES, label } from "../catalog/labels.ts";
 import { SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
+import { FeaturedCard } from "./Featured.tsx";
 import {
   buyPacks,
   markPacksSeen,
@@ -39,12 +40,19 @@ export function ShopPage() {
       pack.cover ? catalog.data?.byId.get(pack.cover) : undefined,
     ]),
   );
-  const [opened, setOpened] = useState<{ pack: ShopPack; openings: DrawnCard[][] } | null>(null);
+  // A compra aberta: os pacotes, o saldo depois dela e um número que muda a cada compra
+  // ("Abrir outro" recomeça a abertura do zero).
+  const [opened, setOpened] = useState<Opened | null>(null);
   const buy = useMutation({
     mutationFn: ({ pack, count }: { pack: ShopPack; count: 1 | 10 }) =>
       buyPacks(pack, count, crypto.randomUUID()),
     onSuccess: (data, { pack }) => {
-      setOpened({ pack, openings: data.openings });
+      setOpened((old) => ({
+        pack,
+        openings: data.openings,
+        balance: data.balance,
+        number: (old?.number ?? 0) + 1,
+      }));
       // O saldo mudou (topo e loja) e a coleção ganhou cartas.
       for (const key of [shopKey, ["session"], ["collection"]]) {
         client.invalidateQueries({ queryKey: key });
@@ -76,91 +84,95 @@ export function ShopPage() {
           Você tem <strong>{number(shop.data.balance)} DP</strong>. Nível {shop.data.level}.
         </p>
       )}
-      {opened ? (
-        <Opening pack={opened.pack} openings={opened.openings} onClose={() => setOpened(null)} />
-      ) : (
-        <>
-          {buy.error && (
-            <p role="alert" className="form-error">
-              {buy.error.message}
+      {buy.error && !opened && (
+        <p role="alert" className="form-error">
+          {buy.error.message}
+        </p>
+      )}
+      <ul className="shelf">
+        {shop.data?.packs.map((pack) => (
+          <li key={pack.id} className={pack.available ? "pack-tile" : "pack-tile locked"}>
+            <PackCover card={covers.get(pack.id)} locked={!pack.available} />
+            <h2>
+              {pack.name}
+              {pack.new && (
+                <>
+                  {" "}
+                  <strong className="new-pack">Novo</strong>
+                </>
+              )}
+            </h2>
+            <p className="pack-price">
+              {number(pack.price)} DP, {pack.cards_per_pack} cartas
             </p>
-          )}
-          <ul className="shelf">
-            {shop.data?.packs.map((pack) => (
-              <li key={pack.id} className={pack.available ? "pack-tile" : "pack-tile locked"}>
-                <PackCover card={covers.get(pack.id)} locked={!pack.available} />
-                <h2>
-                  {pack.name}
-                  {pack.new && (
-                    <>
-                      {" "}
-                      <strong className="new-pack">Novo</strong>
-                    </>
-                  )}
-                </h2>
-                <p className="pack-price">
-                  {number(pack.price)} DP, {pack.cards_per_pack} cartas
+            {pack.available ? (
+              <>
+                <p className="pack-buy">
+                  {([1, 10] as const).map((count) => (
+                    <button
+                      key={count}
+                      type="button"
+                      className={count === 1 ? "cta" : undefined}
+                      disabled={buy.isPending || missing(pack, count) > 0}
+                      aria-describedby={missing(pack, count) > 0 ? `pack-${pack.id}-dp` : undefined}
+                      onClick={() => buy.mutate({ pack, count })}
+                    >
+                      {count === 1 ? (
+                        "Comprar 1"
+                      ) : (
+                        <>
+                          {"Comprar 10 "}
+                          <span className="buy-price">({number(pack.price * 10)} DP)</span>
+                        </>
+                      )}
+                    </button>
+                  ))}
                 </p>
-                {pack.available ? (
-                  <>
-                    <p className="pack-buy">
-                      {([1, 10] as const).map((count) => (
-                        <button
-                          key={count}
-                          type="button"
-                          className={count === 1 ? "cta" : undefined}
-                          disabled={buy.isPending || missing(pack, count) > 0}
-                          aria-describedby={
-                            missing(pack, count) > 0 ? `pack-${pack.id}-dp` : undefined
-                          }
-                          onClick={() => buy.mutate({ pack, count })}
-                        >
-                          {count === 1 ? (
-                            "Comprar 1"
-                          ) : (
-                            <>
-                              {"Comprar 10 "}
-                              <span className="buy-price">({number(pack.price * 10)} DP)</span>
-                            </>
-                          )}
-                        </button>
-                      ))}
-                    </p>
-                    {missing(pack, 10) > 0 && (
-                      <p id={`pack-${pack.id}-dp`} className="pack-hint">
-                        {missing(pack, 1) > 0
-                          ? `Faltam ${number(missing(pack, 1))} DP para comprar 1.`
-                          : `Faltam ${number(missing(pack, 10))} DP para comprar 10.`}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <p className="pack-hint">{pack.hint}</p>
-                    {pack.progress !== null && (
-                      <p className="pack-progress">
-                        <progress
-                          max={100}
-                          value={pack.progress}
-                          aria-label={`Caminho para liberar ${pack.name}`}
-                        />
-                        <span aria-hidden="true">{pack.progress}%</span>
-                      </p>
-                    )}
-                  </>
+                {missing(pack, 10) > 0 && (
+                  <p id={`pack-${pack.id}-dp`} className="pack-hint">
+                    {missing(pack, 1) > 0
+                      ? `Faltam ${number(missing(pack, 1))} DP para comprar 1.`
+                      : `Faltam ${number(missing(pack, 10))} DP para comprar 10.`}
+                  </p>
                 )}
-              </li>
-            ))}
-          </ul>
-          <section className="converter-link" aria-labelledby="converter-link-title">
-            <h2 id="converter-link-title">Conversor de cartas</h2>
-            <p>
-              Troque de 10 a 99 cartas repetidas por 1 carta.{" "}
-              <Link to="/loja/conversor">Abrir o conversor</Link>
-            </p>
-          </section>
-          <SecretCode onUnlocked={() => client.invalidateQueries({ queryKey: shopKey })} />
-        </>
+              </>
+            ) : (
+              <>
+                <p className="pack-hint">{pack.hint}</p>
+                {pack.progress !== null && (
+                  <p className="pack-progress">
+                    <progress
+                      max={100}
+                      value={pack.progress}
+                      aria-label={`Caminho para liberar ${pack.name}`}
+                    />
+                    <span aria-hidden="true">{pack.progress}%</span>
+                  </p>
+                )}
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
+      <section className="converter-link" aria-labelledby="converter-link-title">
+        <h2 id="converter-link-title">Conversor de cartas</h2>
+        <p>
+          Troque de 10 a 99 cartas repetidas por 1 carta.{" "}
+          <Link to="/loja/conversor">Abrir o conversor</Link>
+        </p>
+      </section>
+      <SecretCode onUnlocked={() => client.invalidateQueries({ queryKey: shopKey })} />
+      {opened && (
+        <Opening
+          opened={opened}
+          buying={buy.isPending}
+          error={opened && buy.error ? buy.error.message : undefined}
+          onBuyAgain={() => buy.mutate({ pack: opened.pack, count: 1 })}
+          onClose={() => {
+            setOpened(null);
+            buy.reset();
+          }}
+        />
       )}
     </main>
   );
@@ -247,98 +259,200 @@ function SecretCode({ onUnlocked }: { onUnlocked: () => void }) {
   );
 }
 
-// Os pacotes abertos, um por vez (GXP-108): as cartas do pacote começam viradas e aparecem
-// uma por uma (ou todas de uma vez); depois, o mesmo botão abre o próximo pacote. A última
-// carta de cada pacote avisa, ainda virada, que sai rara ou melhor.
-function Opening(props: { pack: ShopPack; openings: DrawnCard[][]; onClose: () => void }) {
+type Opened = { pack: ShopPack; openings: DrawnCard[][]; balance: number; number: number };
+
+// A abertura em tela cheia (GXP-138), num <dialog>: o Esc e o "×" fecham e o foco fica dentro.
+// O que muda a cada compra fica no Packs, que recomeça quando chega uma compra nova.
+function Opening(props: {
+  opened: Opened;
+  buying: boolean;
+  error?: string;
+  onBuyAgain: () => void;
+  onClose: () => void;
+}) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const element = dialog.current;
+    if (element && !element.open) element.showModal();
+    element?.querySelector<HTMLButtonElement>("button.card-back")?.focus();
+  }, []);
+  return (
+    <dialog
+      ref={dialog}
+      className="pack-dialog"
+      aria-labelledby="opening-title"
+      onClose={props.onClose}
+    >
+      <Packs key={props.opened.number} {...props} />
+    </dialog>
+  );
+}
+
+// Ordem das raridades, da mais comum para a mais rara.
+const RANK = ["common", "rare", "super_rare", "ultra_rare"];
+
+// A carta que vai para o meio: a mais rara do pacote; no empate, a última (a de raridade
+// aumentada, que fecha o pacote).
+function featuredIndex(cards: DrawnCard[]) {
+  let best = 0;
+  let bestRank = -1;
+  cards.forEach((card, index) => {
+    const rank = RANK.indexOf(card.rarity);
+    if (rank >= bestRank) {
+      best = index;
+      bestRank = rank;
+    }
+  });
+  return best;
+}
+
+// Os pacotes da compra, um por vez: todas as cartas começam viradas, a mais rara no meio e
+// grande. Toque em cada uma para ver, ou "Virar todas"; depois, o mesmo lugar abre o próximo
+// pacote ou, no último, "Abrir outro" compra mais um do mesmo pacote.
+function Packs(props: { opened: Opened; buying: boolean; error?: string; onBuyAgain: () => void }) {
+  const { pack, openings, balance } = props.opened;
   const catalog = useCatalog();
   const [language] = useCardLanguage();
   const [packIndex, setPackIndex] = useState(0);
-  const [shown, setShown] = useState(0);
-  const main = useRef<HTMLButtonElement>(null);
-  const cards = props.openings[packIndex] ?? [];
+  const [flipped, setFlipped] = useState<Set<number>>(new Set());
+  const list = useRef<HTMLOListElement>(null);
+  const action = useRef<HTMLButtonElement>(null);
+  // O botão da carta que virou some: depois de cada virada, o foco vai para a próxima carta
+  // ainda virada ou, no fim, para o botão principal. Dá para abrir tudo no Enter.
+  const moveFocus = useRef(true);
+  useEffect(() => {
+    if (!moveFocus.current) return;
+    moveFocus.current = false;
+    (list.current?.querySelector<HTMLButtonElement>("button.card-back") ?? action.current)?.focus();
+  });
+  const cards = openings[packIndex] ?? [];
   const byId = catalog.data?.byId;
   // As imagens do pacote aberto baixam já, antes de virar, e as do próximo, com prioridade
   // baixa: a carta aparece pronta, sem quadro vazio no meio da virada.
   useEffect(() => {
     if (!byId) return;
-    const images = (pack: DrawnCard[] | undefined) => (pack ?? []).map((item) => byId.get(item.id));
-    preloadCardImages(images(props.openings[packIndex]), "m");
-    preloadCardImages(images(props.openings[packIndex + 1]), "m", "low");
-  }, [byId, packIndex, props.openings]);
-  const done = shown >= cards.length;
-  const last = packIndex === props.openings.length - 1;
-  const many = props.openings.length > 1;
-  // O botão principal fica no mesmo lugar e muda de papel: virar, abrir o próximo, voltar.
-  const action = !done
-    ? { label: "Virar a próxima", run: () => setShown(shown + 1) }
-    : !last
-      ? {
-          label: "Abrir o próximo pacote",
-          run: () => {
-            setPackIndex(packIndex + 1);
-            setShown(0);
-          },
-        }
-      : { label: "Voltar para a loja", run: props.onClose };
+    const images = (drawn: DrawnCard[] | undefined) =>
+      (drawn ?? []).map((item) => byId.get(item.id));
+    preloadCardImages(images(openings[packIndex]), "m");
+    preloadCardImages(images(openings[packIndex + 1]), "m", "low");
+  }, [byId, packIndex, openings]);
+
+  const flip = (indexes: number[]) => {
+    moveFocus.current = true;
+    setFlipped((old) => new Set([...old, ...indexes]));
+  };
+  const featured = featuredIndex(cards);
+  const done = flipped.size >= cards.length;
+  const last = packIndex === openings.length - 1;
+  const missing = pack.price - balance;
   return (
-    <section className="opening-packs" aria-labelledby="opening-packs-title">
-      <h2 id="opening-packs-title">
-        {many
-          ? `Pacote ${packIndex + 1} de ${props.openings.length}: ${props.pack.name}`
-          : props.pack.name}
-      </h2>
-      <p className="actions">
-        <button ref={main} type="button" className="cta" onClick={action.run}>
-          {action.label}
-        </button>
-        {!done && (
-          <button
-            type="button"
-            onClick={() => {
-              setShown(cards.length);
-              main.current?.focus(); // este botão some: o foco segue no principal
-            }}
-          >
-            Virar todas
+    <div className="pack-screen">
+      <header className="pack-head">
+        <div>
+          <h2 id="opening-title">
+            {openings.length > 1
+              ? `Pacote ${packIndex + 1} de ${openings.length}: ${pack.name}`
+              : pack.name}
+          </h2>
+          <p className="muted">Pacote de {cards.length} cartas</p>
+        </div>
+        <form method="dialog">
+          <button type="submit" className="close-button" aria-label="Fechar o pacote">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
           </button>
-        )}
-        {!(done && last) && (
-          <button type="button" onClick={props.onClose}>
-            Voltar para a loja
-          </button>
-        )}
+        </form>
+      </header>
+      <p role="status" className="visually-hidden">
+        {flipped.size} de {cards.length} cartas viradas.
       </p>
-      <p role="status" className="opening-count">
-        {shown} de {cards.length} cartas viradas.
-      </p>
-      <ol className="drawn-cards" aria-label="Cartas do pacote">
+
+      <ol ref={list} className="pack-cards" aria-label="Cartas do pacote">
         {cards.map((drawn, index) => {
-          const card = catalog.data?.byId.get(drawn.id);
-          const key = `${packIndex}-${index}`;
-          if (index >= shown) {
+          const card = byId?.get(drawn.id);
+          const name = card ? displayName(card, language) : "Carta";
+          const classes = ["drawn", index === featured && "featured", `rarity-${drawn.rarity}`];
+          if (!flipped.has(index)) {
             return (
-              <li key={key} className={drawn.rare_slot ? "drawn back rare-slot" : "drawn back"}>
-                <span className="drawn-face" />
-                <span className="drawn-name">
-                  <span className="visually-hidden">Carta virada</span>
+              <li key={`${packIndex}-${index}`} className={classes.filter(Boolean).join(" ")}>
+                <button
+                  type="button"
+                  className="card-back"
+                  aria-label={`Virar a carta ${index + 1}`}
+                  onClick={() => flip([index])}
+                />
+                <span className="drawn-tags">
+                  {drawn.rare_slot ? "Rara ou melhor" : "Toque para virar"}
                 </span>
-                <span className="drawn-tags">{drawn.rare_slot && "Rara ou melhor"}</span>
+              </li>
+            );
+          }
+          if (index === featured) {
+            return (
+              <li key={`${packIndex}-${index}`} className={classes.filter(Boolean).join(" ")}>
+                <FeaturedCard card={card} name={name} rarity={drawn.rarity} isNew={drawn.new} />
               </li>
             );
           }
           return (
-            <li key={key} className={`drawn rarity-${drawn.rarity}`}>
-              <CardImage card={card} size="m" width={140} height={204} />
-              <span className="drawn-name">{card ? displayName(card, language) : "Carta"}</span>
+            <li key={`${packIndex}-${index}`} className={classes.filter(Boolean).join(" ")}>
+              <span className="face">
+                <CardImage card={card} size="m" width={IMAGE_WIDTHS.m} height={391} alt={name} />
+              </span>
               <span className="drawn-tags">
-                {label(RARITIES, drawn.rarity)}
+                <span className={`rarity rarity-${drawn.rarity}`}>
+                  {label(RARITIES, drawn.rarity)}
+                </span>
                 {drawn.new && <strong className="new-card">Nova</strong>}
               </span>
             </li>
           );
         })}
       </ol>
-    </section>
+
+      <div className="pack-actions">
+        {!done ? (
+          <button ref={action} type="button" onClick={() => flip(cards.map((_, index) => index))}>
+            Virar todas
+          </button>
+        ) : !last ? (
+          <button
+            ref={action}
+            type="button"
+            className="cta"
+            onClick={() => {
+              moveFocus.current = true;
+              setPackIndex(packIndex + 1);
+              setFlipped(new Set());
+            }}
+          >
+            Abrir o próximo pacote
+          </button>
+        ) : (
+          <button
+            ref={action}
+            type="button"
+            className="cta"
+            disabled={props.buying || missing > 0}
+            aria-describedby={missing > 0 ? "open-another-dp" : undefined}
+            onClick={props.onBuyAgain}
+          >
+            {props.buying ? "Abrindo…" : `Abrir outro (${number(pack.price)} DP)`}
+          </button>
+        )}
+        {props.error && (
+          <p role="alert" className="form-error">
+            {props.error}
+          </p>
+        )}
+        <p className="muted">
+          Saldo: {number(balance)} DP. As cartas já estão na sua coleção.
+          {done && last && missing > 0 && (
+            <span id="open-another-dp"> Faltam {number(missing)} DP para abrir outro.</span>
+          )}
+        </p>
+      </div>
+    </div>
   );
 }

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "../account/session.ts";
-import { CardImage } from "../catalog/CardImage.tsx";
 import { displayName, type CardSummary } from "../catalog/cards.ts";
 import { CardTile } from "../catalog/parts.tsx";
 import { useCatalog } from "../catalog/data.ts";
@@ -10,6 +9,7 @@ import { useCardLanguage } from "../catalog/language.ts";
 import { SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 import { converterKey, convertCards, useConverter, useConverterGroup } from "./api.ts";
+import { FeaturedCard } from "./Featured.tsx";
 
 // O conversor de cartas (escopo 3.4; GXP-90): o jogador escolhe de 10 a 99 cópias repetidas
 // e troca por 1 carta sorteada do grupo dessa quantidade. Só aparecem as cópias que dá para
@@ -55,11 +55,11 @@ export function ConverterPage() {
         <h1>Conversor de cartas</h1>
         <section className="converted" aria-labelledby="converted-title">
           <h2 id="converted-title">Você trocou {convert.data.amount} cartas por:</h2>
-          <CardImage card={card} size="m" width={140} height={204} className="converted-image" />
-          <p className="converted-name">
-            {card ? displayName(card, language) : "Carta"}
-            {convert.data.new && <strong className="new-card">Nova</strong>}
-          </p>
+          <FeaturedCard
+            card={card}
+            name={card ? displayName(card, language) : "Carta"}
+            isNew={convert.data.new}
+          />
           <p className="actions">
             <button type="button" className="cta" onClick={() => convert.reset()}>
               Converter de novo

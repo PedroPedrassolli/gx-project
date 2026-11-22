@@ -66,5 +66,9 @@ grande, campo simples) e os Tag Force.
   deck", "Tirar uma cópia" e o Destiny no rodapé, que fica à vista: dá para ler a carta e
   decidir sem fechar. No celular, Deck e Baú viram abas e a barra com o Salvar fica presa no
   topo; no computador, o baú é uma coluna parada ao lado do deck.
+- A abertura de pacote (GXP-138) é um `<dialog>` em tela cheia: a carta mais rara vai para o
+  meio, grande e com brilho (o reflexo holográfico só nas super e ultra raras, duas passadas e
+  nada com "reduzir movimento"); as outras ficam viradas para tocar. O verso das cartas é
+  desenho nosso. O resultado do conversor usa o mesmo destaque.
 - As fontes antigas (Spectral) saíram; as novas são variáveis, um arquivo para todos os pesos
   (uns 50 KB no total, contra uns 60 KB de antes).
