@@ -80,6 +80,10 @@ test("a lista em grupos, na ordem: vencido, liberado e bloqueado com a dica", as
   await expect(items.nth(0)).toContainText("Vencido 2 vezes");
   await expect(items.nth(0)).toContainText("Primeira vitória: a carta Master of Oz.");
   await expect(items.nth(1)).toContainText("Toda vitória: +120 DP.");
+  // A escada destaca o próximo a vencer.
+  await expect(items.nth(1)).toHaveClass(/next/);
+  await expect(items.nth(1)).toContainText("Próximo desafio");
+  await expect(items.nth(0)).not.toContainText("Próximo desafio");
   await expect(page.getByRole("button", { name: "Duelar contra Syrus" })).toBeVisible();
   await expect(items.nth(2)).toContainText("Vença Kaiba para liberar.");
   await expect(page.getByRole("button", { name: "Duelar contra Yugi" })).toHaveCount(0);

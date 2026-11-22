@@ -1,15 +1,52 @@
 import { Link } from "react-router";
+import { useSession } from "../account/session.ts";
+import { useCharacters } from "../characters/api.ts";
 import { usePageTitle } from "../pageTitle.ts";
+import { useOpenRooms } from "../rooms/api.ts";
+import { RoomCard } from "../rooms/RoomCard.tsx";
+import { ChallengerHero } from "./ChallengerHero.tsx";
 
-// Jogar (ADR 0015): as duas formas de duelar num lugar só. Contra os personagens, o computador
-// joga com os decks do anime; com os amigos, numa sala com código. O duelo em andamento já
-// aparece no aviso do topo, em qualquer página.
+// Jogar (ADR 0015; GXP-134): primeiro o próximo personagem, pronto para duelar; depois as
+// salas abertas agora, para entrar direto; e as duas formas de duelar, para ver tudo. O duelo
+// em andamento já aparece no aviso do topo, em qualquer página.
 export function PlayPage() {
   usePageTitle("Jogar");
+  const user = useSession().data?.user;
+  const characters = useCharacters(Boolean(user));
+  const rooms = useOpenRooms(Boolean(user));
+  const open = rooms.data ?? [];
 
   return (
     <main className="page play">
       <h1>Jogar</h1>
+      {user && <ChallengerHero characters={characters.data?.characters} friends={false} />}
+
+      {user && (
+        <section aria-labelledby="open-rooms-title" className="play-rooms">
+          <h2 id="open-rooms-title">Salas abertas</h2>
+          {rooms.isSuccess && open.length === 0 && (
+            <p className="muted">
+              Nenhuma sala aberta agora. <Link to="/salas">Crie uma</Link> e mande o código para um
+              amigo.
+            </p>
+          )}
+          {open.length > 0 && (
+            <>
+              <ul className="room-cards">
+                {open.slice(0, 3).map((room) => (
+                  <RoomCard key={room.code} room={room} />
+                ))}
+              </ul>
+              <p>
+                <Link to="/salas">
+                  {open.length > 3 ? `Ver as ${open.length} salas` : "Criar ou entrar com o código"}
+                </Link>
+              </p>
+            </>
+          )}
+        </section>
+      )}
+
       <ul className="play-options">
         <li>
           <Link to="/personagens" className="play-option">

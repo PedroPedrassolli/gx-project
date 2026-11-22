@@ -2,15 +2,22 @@ import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { SESSION_KEY, useSession } from "../account/session.ts";
-import { displayName } from "../catalog/cards.ts";
+import { CardImage } from "../catalog/CardImage.tsx";
+import { IMAGE_WIDTHS, displayName } from "../catalog/cards.ts";
 import { catalogQuery } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
-import { Thumb } from "../catalog/parts.tsx";
 import { useDecks, type DeckSummary } from "../decks/api.ts";
 import { deckSizeProblem } from "../decks/deck.ts";
 import { SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
-import { byGroup, charactersKey, startDuel, useCharacters, type Character } from "./api.ts";
+import {
+  byGroup,
+  charactersKey,
+  nextCharacter,
+  startDuel,
+  useCharacters,
+  type Character,
+} from "./api.ts";
 
 const DECK_KEY = "gx-deck-contra-personagens";
 
@@ -39,6 +46,7 @@ export function CharactersPage() {
   const chosen = data?.characters.find(
     (character) => character.id === params.get("duelar") && character.status !== "locked",
   );
+  const next = data && nextCharacter(data.characters);
 
   return (
     <main className="page characters-page">
@@ -61,6 +69,7 @@ export function CharactersPage() {
                 <CharacterItem
                   key={character.id}
                   character={character}
+                  next={character.id === next?.id}
                   onDuel={() => setParams({ duelar: character.id })}
                 />
               ))}
@@ -78,18 +87,24 @@ export function CharactersPage() {
   );
 }
 
-function CharacterItem({ character, onDuel }: { character: Character; onDuel: () => void }) {
+// Um degrau da escada (GXP-134): o número (ou o ✓ de quem já foi vencido), a carta do prêmio
+// grande e o texto. O próximo a vencer ganha o destaque.
+function CharacterItem(props: { character: Character; next: boolean; onDuel: () => void }) {
+  const { character, onDuel } = props;
   const [language] = useCardLanguage();
   const card = character.signature;
   const cardName = card ? displayName(card, language) : null;
   return (
-    <li className={`character ${character.status}`}>
+    <li className={`character ${character.status}${props.next ? " next" : ""}`}>
       {/* O número do degrau só para quem vê: a lista numerada já diz a posição. */}
       <span className="character-step" aria-hidden="true">
-        {character.position}
+        {character.status === "beaten" ? "✓" : character.position}
       </span>
-      {card ? <Thumb card={card} /> : <span className="thumb" />}
+      <span className="character-card">
+        <CardImage card={card} size="m" width={IMAGE_WIDTHS.m} height={391} lazy />
+      </span>
       <div className="character-text">
+        {props.next && <p className="character-next">Próximo desafio</p>}
         <h3>{character.name}</h3>
         <p>{character.description}</p>
         <p className="hint">

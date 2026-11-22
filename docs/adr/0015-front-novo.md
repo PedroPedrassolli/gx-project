@@ -70,5 +70,9 @@ grande, campo simples) e os Tag Force.
   meio, grande e com brilho (o reflexo holográfico só nas super e ultra raras, duas passadas e
   nada com "reduzir movimento"); as outras ficam viradas para tocar. O verso das cartas é
   desenho nosso. O resultado do conversor usa o mesmo destaque.
+- Jogar (GXP-134) junta o próximo personagem (o mesmo destaque do Início) e as três primeiras
+  salas abertas; os personagens viram uma escada com a carta do prêmio; a sala aberta e o
+  lugar na sala de espera mostram a inicial de cada um, com o anel holográfico de quem está
+  pronto.
 - As fontes antigas (Spectral) saíram; as novas são variáveis, um arquivo para todos os pesos
   (uns 50 KB no total, contra uns 60 KB de antes).

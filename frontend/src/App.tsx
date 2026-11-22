@@ -4,7 +4,8 @@ import { request } from "./api.ts";
 import { useSession } from "./account/session.ts";
 import { CardImage } from "./catalog/CardImage.tsx";
 import type { CardSummary } from "./catalog/cards.ts";
-import { nextCharacter, useCharacters, type Character } from "./characters/api.ts";
+import { useCharacters } from "./characters/api.ts";
+import { ChallengerHero } from "./play/ChallengerHero.tsx";
 import { useCollection } from "./collection/api.ts";
 import { useShop } from "./shop/api.ts";
 import { currentPhase, PHASES } from "./roadmap.ts";
@@ -108,48 +109,6 @@ function DuelHero({ matchId }: { matchId: number }) {
           </Link>
         </p>
       </div>
-    </section>
-  );
-}
-
-function ChallengerHero({ characters }: { characters: Character[] | undefined }) {
-  // Enquanto a lista chega, o lugar do destaque fica reservado (a página não pula).
-  if (!characters) return <div className="home-hero loading" aria-hidden="true" />;
-  const next = nextCharacter(characters);
-  if (!next) {
-    return (
-      <section className="home-hero" aria-labelledby="hero-title">
-        <div>
-          <h2 id="hero-title">Você venceu todos os personagens</h2>
-          <p className="muted">Dá para duelar de novo contra qualquer um, ou chamar os amigos.</p>
-          <p className="actions">
-            <Link className="cta" to="/jogar">
-              Jogar
-            </Link>
-          </p>
-        </div>
-      </section>
-    );
-  }
-  const card: CardSummary | undefined = next.signature;
-  return (
-    <section className="home-hero" aria-labelledby="hero-title">
-      {card && <CardImage card={card} size="m" width={268} height={391} className="hero-card" />}
-      <div>
-        <h2 id="hero-title">Próximo desafiante: {next.name}</h2>
-        <p className="muted">{next.description}</p>
-        {card && (
-          <p className="hero-prize">A primeira vitória dá a carta {card.name_pt ?? card.name}.</p>
-        )}
-      </div>
-      <p className="actions hero-actions">
-        <Link className="cta" to={`/personagens?duelar=${next.id}`}>
-          Duelar contra {next.name}
-        </Link>
-        <Link className="cta secondary" to="/salas">
-          Duelar com amigos
-        </Link>
-      </p>
     </section>
   );
 }

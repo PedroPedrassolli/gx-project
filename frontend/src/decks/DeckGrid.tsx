@@ -169,8 +169,8 @@ export function CardActions({ card, rows, owned, onEdit }: ActionsProps) {
   const row = rows.find((item) => item.card_id === card.id && item.section === section);
   const blocked = addBlocked(rows, card.id, section);
   return (
-    <div className="card-actions">
-      <p className="card-actions-head">
+    <div className="card-deck-actions">
+      <p className="card-deck-actions-head">
         <span>
           Você tem {owned}. No deck: {copies(rows, card.id)}.
         </span>

@@ -1857,8 +1857,9 @@ html:has(.deck-bar) {
   margin-top: 0;
 }
 
-/* Os botões do deck no rodapé do detalhe da carta. */
-.card-actions {
+/* Os botões do deck no rodapé do detalhe da carta (o nome não pode ser ".card-actions": a
+   mesa de duelo tem um <dialog> com essa classe, e o display daqui o deixava aparecendo). */
+.card-deck-actions {
   display: grid;
   gap: 0.6rem;
 
@@ -1877,7 +1878,7 @@ html:has(.deck-bar) {
   }
 }
 
-.card-actions-head {
+.card-deck-actions-head {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
@@ -2031,16 +2032,37 @@ html:has(.deck-bar) {
 
 .seat {
   display: grid;
-  gap: 0.35rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.35rem 0.75rem;
+  align-content: start;
   justify-items: start;
   min-height: 8rem;
   padding: 1rem;
   border: 2px solid var(--color-border);
   border-radius: var(--radius);
   background: var(--color-surface);
+
+  > :not(.avatar-initial, strong) {
+    grid-column: 2;
+  }
+
+  .avatar-initial {
+    width: 2.75rem;
+    height: 2.75rem;
+    font-size: 1.25rem;
+  }
+}
+
+/* Quem ainda não está pronto fica com o anel cinza; o pronto, com o holográfico. */
+.seat:not(.ready) .avatar-initial {
+  background:
+    linear-gradient(var(--color-surface-2), var(--color-surface-2)) padding-box,
+    var(--color-field-border) border-box;
 }
 
 .seat strong {
+  align-self: center;
+  overflow-wrap: anywhere;
   font-family: var(--font-title);
   font-size: 1.375rem;
 }
@@ -2050,6 +2072,7 @@ html:has(.deck-bar) {
 }
 
 .seat.empty {
+  grid-template-columns: 1fr;
   place-items: center;
   border-style: dashed;
   color: var(--color-muted);
@@ -2059,9 +2082,129 @@ html:has(.deck-bar) {
   margin-top: 0;
 }
 
-/* Lista de salas: criar, entrar com o código e as abertas. */
+/* Salas (GXP-134): no celular, entrar com o código, as abertas e criar, um embaixo do outro;
+   no computador, criar à esquerda e o resto à direita. */
 .rooms-page {
-  max-width: 52rem;
+  max-width: 72rem;
+}
+
+.rooms-layout {
+  display: grid;
+  gap: 0.5rem 2.5rem;
+  align-items: start;
+
+  h2 {
+    margin-top: 1.5rem;
+  }
+
+  @media (width >= 56rem) {
+    grid-template-areas:
+      "create code"
+      "create open";
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+    .rooms-create {
+      grid-area: create;
+    }
+
+    .rooms-code {
+      grid-area: code;
+    }
+
+    .rooms-open {
+      grid-area: open;
+    }
+  }
+}
+
+/* Uma sala aberta: a inicial de quem criou, o nome, as regras em fichas e as vagas. */
+.room-cards {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.75rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.room-card {
+  position: relative;
+  display: grid;
+  grid-template-areas:
+    "avatar title seats"
+    "avatar chips chips";
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.25rem 0.75rem;
+  align-items: center;
+
+  .avatar-initial {
+    grid-area: avatar;
+    align-self: start;
+  }
+
+  h3 {
+    grid-area: title;
+  }
+
+  .room-seats {
+    grid-area: seats;
+  }
+
+  .room-chips {
+    grid-area: chips;
+  }
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+
+  h3 {
+    margin: 0;
+    font-size: 1.0625rem;
+  }
+
+  /* O link do nome cobre o cartão inteiro: o toque em qualquer lugar entra na sala. */
+  a::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+  }
+}
+
+.room-card:hover {
+  border-color: rgb(158 230 255 / 0.5);
+}
+
+.room-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.1rem 0 0;
+  padding: 0;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  list-style: none;
+
+  li {
+    padding: 0 0.45rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+  }
+}
+
+.room-seats {
+  color: var(--color-accent);
+  font-family: var(--font-title);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Em Jogar, as salas abertas entre o próximo personagem e as duas formas de duelar. */
+.play-rooms {
+  margin: 1.5rem 0;
+
+  h2 {
+    margin: 0;
+  }
 }
 
 .room-create {
@@ -4057,20 +4200,24 @@ button.pile-card {
   margin: 2rem 0 0.75rem;
 }
 
+/* Personagens (GXP-134): uma escada. Cada degrau tem o número (o ✓ de quem já foi vencido)
+   numa trilha que liga um ao outro, a carta do prêmio grande e o texto; o próximo a vencer
+   ganha o brilho. */
 .characters {
   display: grid;
-  gap: 0.75rem;
+  gap: 1rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .character {
+  position: relative;
   display: grid;
   grid-template-areas:
     "step card text"
     "step card action";
-  grid-template-columns: 2rem auto minmax(0, 1fr);
+  grid-template-columns: 2.25rem 5.5rem minmax(0, 1fr);
   gap: 0.5rem 0.9rem;
   align-items: start;
   padding: 0.75rem;
@@ -4079,20 +4226,71 @@ button.pile-card {
   background: var(--color-surface);
 }
 
-/* O número do degrau, na cor do destaque. */
-.character-step {
-  grid-area: step;
-  color: var(--color-accent);
-  font-family: var(--font-title);
-  font-size: 1.75rem;
-  font-weight: 700;
-  line-height: 1;
+/* A trilha: do número deste degrau até o número do próximo. */
+.character:not(:last-child)::after {
+  position: absolute;
+  top: 3rem;
+  bottom: -1.75rem;
+  left: calc(0.75rem + 1.125rem - 1px);
+  z-index: 1;
+  width: 2px;
+  background: var(--color-border);
+  content: "";
 }
 
-/* Enquanto a imagem não chega, a miniatura fica na cor do destaque, apagada. */
-.character .thumb {
-  --frame: var(--color-accent);
+.character.beaten:not(:last-child)::after {
+  background: rgb(158 230 255 / 0.5);
+}
+
+.character-step {
+  display: grid;
+  grid-area: step;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  box-sizing: border-box;
+  border: 2px solid var(--color-field-border);
+  border-radius: 50%;
+  background: var(--color-bg);
+  color: var(--color-muted);
+  font-family: var(--font-title);
+  font-weight: 700;
+}
+
+.character.beaten .character-step {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.character.next .character-step {
+  border-color: transparent;
+  background: var(--holo);
+  color: var(--color-bg);
+}
+
+.character.next {
+  border-color: rgb(158 230 255 / 0.5);
+  box-shadow: 0 14px 36px -18px rgb(169 139 255 / 0.9);
+}
+
+.character-card {
   grid-area: card;
+
+  img,
+  .card-face {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 8px 18px -10px rgb(0 0 0 / 0.9);
+  }
+}
+
+.character-next {
+  margin: 0 0 0.25rem;
+  color: var(--color-accent);
+  font-size: 0.8125rem;
+  font-weight: 700;
 }
 
 .character-text {
@@ -4106,6 +4304,10 @@ button.pile-card {
 
 .character-text p {
   margin: 0.25rem 0 0;
+}
+
+.character-text .character-next {
+  margin: 0 0 0.25rem;
 }
 
 .character-action {
@@ -4129,16 +4331,12 @@ button.pile-card {
   color: var(--color-muted);
 }
 
-.character.beaten {
-  border-color: var(--color-accent);
-}
-
 /* Bloqueado: a carta do prêmio apagada e a borda tracejada; o texto continua legível. */
 .character.locked {
   border-style: dashed;
 }
 
-.character.locked .thumb {
+.character.locked .character-card {
   filter: grayscale(1);
   opacity: 0.45;
 }
@@ -4146,8 +4344,12 @@ button.pile-card {
 @media (width >= 48rem) {
   .character {
     grid-template-areas: "step card text action";
-    grid-template-columns: 2.5rem auto minmax(0, 1fr) auto;
+    grid-template-columns: 2.25rem 6rem minmax(0, 1fr) auto;
     align-items: center;
+  }
+
+  .character-step {
+    align-self: start;
   }
 
   .character-action {

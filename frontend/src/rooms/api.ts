@@ -2,6 +2,28 @@ import { useQuery } from "@tanstack/react-query";
 import { request } from "../api.ts";
 import { POLL_MS, type RealtimeMode } from "../realtime/useRealtime.ts";
 
+// Uma sala pública da lista de salas abertas.
+export type RoomSummary = {
+  code: string;
+  owner: string;
+  players: number;
+  seats: number;
+  banlist: boolean;
+  destiny_draw: boolean;
+  decision_seconds: number | null;
+  duel_minutes: number | null;
+};
+
+// As salas abertas, conferidas de novo a cada 10 s (a lista das Salas e o resumo em Jogar).
+export function useOpenRooms(enabled: boolean) {
+  return useQuery({
+    queryKey: ["rooms"],
+    queryFn: async () => (await request<{ data: RoomSummary[] }>("GET", "/api/rooms")).data,
+    refetchInterval: 10_000,
+    enabled,
+  });
+}
+
 // Salas pela API (ADR 0010). O deck escolhido só vem para o dono dele (deck_id).
 export type RoomPlayer = {
   seat: number;
