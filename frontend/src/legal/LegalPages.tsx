@@ -1,6 +1,8 @@
 import { Link } from "react-router";
 import { usePageTitle } from "../pageTitle.ts";
-import { SOURCE_URL } from "./source.ts";
+// A AGPL pede que quem usa o site pela rede consiga baixar o código-fonte: o link fica só
+// aqui, na parte da licença (o Pedro pediu, em 22/11, nada no rodapé).
+const SOURCE_URL = "https://github.com/PedroPedrassolli/gx-project";
 
 // Termos de uso e política de privacidade (GXP-40), aprovados pelo Pedro em 08/11/2026.
 // Mudou o texto? Troque a data da versão e avise no site, como os próprios textos prometem.
@@ -40,8 +42,8 @@ export function TermsPage() {
       <ol>
         <li>
           <strong>O que é o GX Project.</strong> Um projeto de fã, sem fins lucrativos, para jogar
-          duelos de cartas online. O código é aberto (AGPL-3.0) e está no{" "}
-          <a href={SOURCE_URL}>GitHub</a>. Não temos ligação com a Konami nem aprovação dela;
+          duelos de cartas online. O código é aberto, sob a licença AGPL-3.0 (
+          <a href={SOURCE_URL}>código-fonte</a>). Não temos ligação com a Konami nem aprovação dela;
           Yu-Gi-Oh! é marca registrada da Konami. Os dados das cartas vêm da Yugipedia (CC BY-SA) e
           as imagens, do YGOPRODeck.
         </li>

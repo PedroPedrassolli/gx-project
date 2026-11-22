@@ -4,7 +4,6 @@ import { Link, NavLink, Outlet, useLocation } from "react-router";
 import { request, type User } from "./api.ts";
 import { useLogOut, useSession } from "./account/session.ts";
 import { SPAM_HINT } from "./account/spamHint.ts";
-import { SOURCE_URL } from "./legal/source.ts";
 import { markNavigation, usePageTitle } from "./pageTitle.ts";
 
 // Moldura de todas as páginas: a barra do topo (o nome do site, o menu e a conta), os avisos
@@ -164,9 +163,6 @@ function SiteFooter() {
         </li>
         <li>
           <Link to="/privacidade">Privacidade</Link>
-        </li>
-        <li>
-          <a href={SOURCE_URL}>Código-fonte</a> (AGPL-3.0)
         </li>
       </ul>
     </footer>

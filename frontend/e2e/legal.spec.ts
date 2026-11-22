@@ -24,10 +24,6 @@ test("o rodapé tem o aviso de fã e os créditos", async ({ page }) => {
   await page.goto("/entrar");
   await expect(footer(page)).toContainText("Yu-Gi-Oh! é marca registrada da Konami");
   await expect(footer(page).getByRole("link", { name: "Yugipedia" })).toBeVisible();
-  await expect(footer(page).getByRole("link", { name: "Código-fonte" })).toHaveAttribute(
-    "href",
-    "https://github.com/PedroPedrassolli/gx-project",
-  );
 });
 
 test("a política diz quem cuida dos dados e como falar com ele", async ({ page }) => {
