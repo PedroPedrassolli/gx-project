@@ -33,9 +33,9 @@ class Api::DecksControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     _(data).must_equal [ { "id" => first.id, "name" => "Deck inicial", "updated_at" => first.updated_at.as_json,
-                           "counts" => { "main" => 40, "extra" => 0, "side" => 15 } },
+                           "counts" => { "main" => 40, "extra" => 0 } },
                          { "id" => second.id, "name" => "Rascunho", "updated_at" => second.updated_at.as_json,
-                           "counts" => { "main" => 0, "extra" => 0, "side" => 0 } } ]
+                           "counts" => { "main" => 0, "extra" => 0 } } ]
   end
 
   it "mostra o deck com as cartas, se é válido e os erros" do
@@ -60,24 +60,24 @@ class Api::DecksControllerTest < ActionDispatch::IntegrationTest
   end
 
   it "salva deck incompleto como rascunho, com os erros, e soma carta repetida na seção" do
-    post api_decks_path, params: { name: "Guerreiros", cards: [ row("Armed Ninja"), row("Armed Ninja"), row("Exiled Force", "side") ] }, as: :json
+    post api_decks_path, params: { name: "Guerreiros", cards: [ row("Armed Ninja"), row("Armed Ninja"), row("Exiled Force") ] }, as: :json
 
     assert_response :created
     _(data["name"]).must_equal "Guerreiros"
-    _(data["cards"]).must_equal [ row("Armed Ninja", "main", 2).stringify_keys, row("Exiled Force", "side").stringify_keys ]
+    _(data["cards"]).must_equal [ row("Armed Ninja", "main", 2).stringify_keys, row("Exiled Force").stringify_keys ]
     _(data["valid"]).must_equal false
-    _(data["errors"]).must_equal [ "O Main Deck precisa ter de 40 a 60 cartas (tem 2).", "Armed Ninja: você tem 1 e o deck usa 2." ]
+    _(data["errors"]).must_equal [ "O Main Deck precisa ter de 40 a 60 cartas (tem 3).", "Armed Ninja: você tem 1 e o deck usa 2." ]
   end
 
   it "recusa nome vazio, seção que não existe, mais de 3 cópias numa linha e carta fora do pool" do
-    cards = [ row("Armed Ninja", "baú"), row("Exiled Force", "main", 2), row("Exiled Force", "main", 2),
+    cards = [ row("Armed Ninja", "side"), row("Exiled Force", "main", 2), row("Exiled Force", "main", 2),
               { card_id: 0, section: "main", quantity: 1, destiny: false } ]
     post api_decks_path, params: { name: "", cards: }, as: :json
 
     assert_response :unprocessable_content
     _(response.parsed_body["error"]["fields"]).must_equal({
       "name" => [ "não pode ficar em branco" ],
-      "cards" => [ "Armed Ninja: a seção \"baú\" não existe.", "Exiled Force: de 1 a 3 cópias por seção (tem 4).",
+      "cards" => [ "Armed Ninja: a seção \"side\" não existe.", "Exiled Force: de 1 a 3 cópias por seção (tem 4).",
                    "A carta 0 não está no pool." ]
     })
     _(user.decks.count).must_equal 1
@@ -90,7 +90,7 @@ class Api::DecksControllerTest < ActionDispatch::IntegrationTest
       assert_response :unprocessable_content
       _(response.parsed_body["error"]["fields"]).must_equal({ "cards" => [ "precisa ser uma lista de até 200 cartas" ] })
     end
-    _(starter.deck_cards.sum(:quantity)).must_equal 55
+    _(starter.deck_cards.sum(:quantity)).must_equal 40
 
     post validate_api_decks_path, params: { cards: { "a" => "b" } }, as: :json
     assert_response :unprocessable_content
@@ -115,7 +115,7 @@ class Api::DecksControllerTest < ActionDispatch::IntegrationTest
     patch api_deck_path(starter), params: { name: "Samurais" }, as: :json
 
     _(starter.reload.name).must_equal "Samurais"
-    _(starter.deck_cards.sum(:quantity)).must_equal 55
+    _(starter.deck_cards.sum(:quantity)).must_equal 40
   end
 
   it "apaga o deck" do

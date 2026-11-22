@@ -1106,11 +1106,11 @@ input[type="file"]::file-selector-button {
   align-content: start;
 }
 
-/* Main, Extra e Side: três abas do mesmo tamanho; a aberta fica dourada, como o botão
+/* Main e Extra: duas abas do mesmo tamanho; a aberta fica dourada, como o botão
    principal. */
 .sections {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.4rem;
 }
 

@@ -1,6 +1,8 @@
 module Decks
   # Formato .ydk do YGOPro e do EDOPro (ADR 0009): um código por cópia, nas seções #main,
   # #extra e !side. Não tem Destiny. Carta do anime vai com o código do script da engine.
+  # O Decks::Import deixa o Side de fora (GXP-125); o deck daqui escreve o !side vazio, que os
+  # outros programas esperam.
   module Ydk
     HEADERS = { "#main" => "main", "#extra" => "extra", "!side" => "side" }.freeze
 

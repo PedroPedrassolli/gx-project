@@ -6,7 +6,6 @@ type Room = {
   code: string;
   public: boolean;
   mode: string;
-  best_of: number;
   banlist: boolean;
   destiny_draw: boolean;
   decision_seconds: number | null;
@@ -24,7 +23,6 @@ const ROOM: Room = {
   code: "ABC234",
   public: true,
   mode: "1x1",
-  best_of: 1,
   banlist: true,
   destiny_draw: true,
   decision_seconds: 90,
@@ -39,19 +37,19 @@ const DECKS = [
     id: 7,
     name: "Heróis",
     updated_at: "2026-11-14T12:00:00Z",
-    counts: { main: 40, extra: 0, side: 0 },
+    counts: { main: 40, extra: 0 },
   },
   {
     id: 8,
     name: "Vazio",
     updated_at: "2026-11-14T12:00:00Z",
-    counts: { main: 3, extra: 0, side: 0 },
+    counts: { main: 3, extra: 0 },
   },
   {
     id: 9,
     name: "Proibidas",
     updated_at: "2026-11-14T12:00:00Z",
-    counts: { main: 40, extra: 0, side: 0 },
+    counts: { main: 40, extra: 0 },
   },
 ];
 

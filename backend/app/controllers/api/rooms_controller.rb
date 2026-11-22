@@ -210,7 +210,7 @@ class Api::RoomsController < Api::BaseController
     # Em duelo, a sala diz qual é a partida (quem recarregar a página vai para ela).
     match_id = room.matches.where(status: "dueling").pick(:id) unless room.waiting?
     seat = room.players.find { |player| player.user_id == viewer_id }&.seat
-    room.slice(:code, :public, :mode, :best_of, :banlist, :destiny_draw, :status, :owner_id)
+    room.slice(:code, :public, :mode, :banlist, :destiny_draw, :status, :owner_id)
         .merge(seats: room.seats, players:, match_id:, opening: Rooms::Opening.new(room).view(seat)).compact
         .merge(room.slice(:decision_seconds, :duel_minutes)) # nulo (sem limite) também vai
   end

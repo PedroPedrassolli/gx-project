@@ -10,6 +10,10 @@
 > nunca achariam alguém. No lugar, entram os duelos contra personagens (seção 3.10). O DP e o
 > nível ficaram bem mais fáceis (seção 3.5), e o duelo passa a ser jogado com modais, sem
 > perguntas embaixo da mesa (seção 4).
+>
+> **Mudança de 22/11/2026 (pedido do Pedro):** saiu a partida melhor de 3 (Match) e, com ela,
+> o Side Deck: quem quiser joga a revanche. O deck tem só Main e Extra. A F6 virou o front
+> novo, que vem antes do social e do acabamento (F7).
 
 ---
 
@@ -67,7 +71,7 @@
 | Duelo em rede local | Salas públicas ou privadas (código de 6 caracteres) |
 | Duelo contra os personagens da história | Personagens do anime com os decks deles, numa ordem para liberar (3.10) |
 | Tag Duel (dupla) | **Removido** em 20/11/2026: poucos jogadores |
-| Match | Match (melhor de 3) **com Side Deck** (0 a 15 cartas) e troca entre os duelos |
+| Match (melhor de 3) com Side Deck | **Removido** em 22/11/2026: cada partida é um duelo, e quem quiser joga a revanche |
 | Calendário do jogo (dia da semana) | Dia da semana real, no fuso America/Sao_Paulo |
 | Pacotes por UMD/nota de prova | Liberados por **desafios** equivalentes (mapeamento na F0) |
 | Códigos secretos na loja | Mantidos (campo de código na loja) |
@@ -98,7 +102,7 @@
 - Conta nova recebe o **deck inicial do jogo de referência**.
 
 ### 3.3 Deck Edit
-- Vários decks por conta, cada um com nome, Main (40–60), Extra (0–15) e Side (0–15). Até 3 cópias somando os três, respeitando a banlist e a coleção.
+- Vários decks por conta, cada um com nome, Main (40–60) e Extra (0–15). Sem Side Deck desde 22/11/2026. Até 3 cópias somando os dois, respeitando a banlist e a coleção.
 - Filtros: nome, tipo de carta, atributo, tipo de monstro, nível, faixa de ATK/DEF, pacote, só as novas, só as que o jogador tem. Ordenação por nome, ATK, DEF, nível, tipo e data de obtenção.
 - Marcar cartas como **Destiny** (quantas quiser).
 - Validação ao vivo no front e definitiva no backend. Importar e exportar em texto e no formato `.ydk`.
@@ -122,13 +126,13 @@
 ### 3.6 Modos
 | Modo | Entrada | Formato |
 | --- | --- | --- |
-| Sala 1x1 | Pública ou privada (código) | Single ou Match (com Side) |
-| Personagens | Escolher um personagem já liberado (3.10) | Single ou Match |
+| Sala 1x1 | Pública ou privada (código) | Um duelo |
+| Personagens | Escolher um personagem já liberado (3.10) | Um duelo |
 
-- Opções da sala: formato, banlist (do jogo ou sem banlist), Destiny Draw ligado/desligado e tempo por turno.
+- Opções da sala: banlist (do jogo ou sem banlist), Destiny Draw ligado/desligado e tempo por turno.
 - Sala: revanche com um clique; o dono expulsa jogadores antes de começar. Convite de amigo chega dentro do app.
 - Sem fila automática e sem dupla (20/11/2026): com poucos jogadores, a fila quase nunca acharia alguém.
-- Match: entre os duelos, 3 min para trocar o Side Deck (o deck final é validado). Quem perdeu o duelo anterior escolhe quem começa.
+- Sem melhor de 3 (22/11/2026): para jogar três vezes, basta a revanche.
 
 ### 3.7 Duelo
 - Regras: MR1 pela engine (seção 5.3) e a banlist escolhida.
@@ -176,15 +180,14 @@
 | Lobby | Salas, Personagens, Loja, Deck Edit, Coleção, Conversor, Desafios, Perfil, Amigos, Replays; DP e nível no topo |
 | Salas | Lista das públicas, criar, entrar por código; sala de espera com vagas, deck escolhido e "pronto" |
 | Personagens | Os 14 na ordem (alunos, chefes, lendas), com a carta do prêmio e o bônus; bloqueado com a dica de quem vencer antes; o deck escolhido num modal; o duelo em andamento com a volta para a mesa |
-| Deck Edit | Baú + deck (abas Main/Extra/Side) + painel da carta; filtros, Destiny, validação, importar/exportar |
+| Deck Edit | Baú + deck (abas Main/Extra) + painel da carta; filtros, Destiny, validação, importar/exportar |
 | Loja | Prateleira por disponibilidade (hoje, bloqueados com dica), compra de 1 ou 10, abertura carta a carta, campo de código |
 | Conversor | Escolher as repetidas, ver o grupo da quantidade e confirmar |
 | Coleção | Grade com filtros, % total e por pacote |
 | **Mesa de duelo** | Campo MR1 dos dois lados (5 + 5 + campo + cemitério + deck + extra + banidas). Mão em leque. Painel de detalhe. LP e fases (DP/SP/M1/BP/M2/EP). Pilha da cadeia. Log. Timer. Emotes. Botão do Destiny Draw. Desistir. A mesa cabe na tela, sem rolar, no computador e no celular |
 | Prompts do duelo | Um componente por tipo de pergunta da engine (seção 5.3), num modal: dá para jogar sem rolar a página, inclusive no celular. A carta que pode ser usada brilha; tocar nela abre as ações. Dá para minimizar o modal e olhar a mesa antes de responder (20/11/2026) |
 | Resultado | Bônus linha a linha, total de DP, subida de nível, desafios novos; revanche, replay, reportar. Contra personagem: a carta ganha, quem ficou liberado, duelar de novo ou contra o próximo |
-| Side Deck (Match) | Troca entre Main e Side com timer de 3 min |
-| Perfil / Desafios | Nível, estatísticas, lista dos 104 desafios com progresso |
+| Perfil / Desafios | Nível, estatísticas, lista dos desafios com progresso (os 104 do jogo, menos os 2 de Match) |
 | Replays | Player com linha do tempo (avançar, voltar, pular para o turno) |
 | Configurações | Animações, pergunta de cadeia, som, idioma do texto das cartas |
 | Admin | Seção 3.8 |
@@ -249,7 +252,7 @@ React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──
 ### 5.7 Modelo de dados
 - **Contas:** `users` (email, apelido, faixa_idade, nível, dp_ganho_total, role, banned_at); `friendships`, `blocks`, `reports`.
 - **Catálogo:** `cards` (passcode, nomes, textos, tipo, atributo, raça, nível, atk, def, flags); `packs` (nome, preço, regra_disponibilidade jsonb, ordem); `pack_cards` (raridade, peso); `banlists` + `banlist_entries`; `converter_groups` + `converter_group_cards`; `challenges`, `bonus_rules` (seed YAML).
-- **Coleção:** `collections` (user, card, qtd, obtida_em); `decks` + `deck_cards` (secao main/extra/side, destiny bool); `user_challenges`.
+- **Coleção:** `collections` (user, card, qtd, obtida_em); `decks` + `deck_cards` (secao main/extra, destiny bool); `user_challenges`.
 - **Economia:** `dp_transactions` (motivo, valor, saldo_apos, ref polimórfica), `pack_openings` (semente, cartas).
 - **Partidas:** `rooms` (código, pública, modo, formato, opções jsonb); `queue_entries`; `matches` (sala, modo, formato, semente, status, vencedor, duel_no, iniciado/terminado); `match_players` (time, posição, deck snapshot jsonb); `match_responses` (seq, player, bytes); `match_stats` (jsonb por jogador).
 
@@ -278,7 +281,7 @@ saiu na conferência: pede cartão para ativar e cobra o excedente (ADR 0004).
 ---
 
 ## 6. Qualidade
-- **Testes:** backend com Minitest (POROs, requests e transações de DP/loja); **contrato da engine** (duelos roteirizados com semente fixa → estado esperado, com um teste por mecânica: MR1, Fusão, Ritual, Sincro, Destiny Draw, Match/Side); um teste por bônus do Anexo A e por desafio; front com funções puras (reducer do duelo, filtros, validação) e Playwright + axe com 2 navegadores (1x1) e 4 (Tag).
+- **Testes:** backend com Minitest (POROs, requests e transações de DP/loja); **contrato da engine** (duelos roteirizados com semente fixa → estado esperado, com um teste por mecânica: MR1, Fusão, Ritual, Sincro, Destiny Draw); um teste por bônus do Anexo A e por desafio; front com funções puras (reducer do duelo, filtros, validação) e Playwright + axe com 2 navegadores (1x1) e 4 (Tag).
 - **Consultas:** Bullet nos testes de API (N+1 e `includes` sem uso derrubam o teste).
 - **Segurança:** Brakeman e bundler-audit; Rack::Attack; cookie `SameSite` + token CSRF; sorteios e informação oculta só no servidor; segredos só nos painéis.
 - **Desempenho:** p95 de ação < 300 ms; uma mensagem por jogador por ação; replay de 30 dias.
@@ -302,11 +305,12 @@ saiu na conferência: pede cartão para ativar e cobra o excedente (ADR 0004).
 | F3 Duelo 1x1 em sala | Salas, mesa, todos os prompts, timer, reconexão, replay | 1x1 completo sem travar |
 | F4 Economia e loja | Bônus, nível, desafios, loja, conversor, anti-farm | Resultado mostra os bônus e o DP compra pacote |
 | F5 Duelos contra personagens | Computador que joga pela engine, decks dos personagens, ordem para liberar, carta-símbolo (3.10) | Dá para vencer o último personagem, e ele é difícil |
-| F6 Partidas melhor de 3 | Match com Side nas salas e contra personagens | Match completo, com troca do Side |
+| F6 Front novo | Todas as telas refeitas com um sistema de design próprio, da navegação à mesa de duelo, no computador e no celular (GXP-126) | Telas novas com e2e, axe e orçamento de desempenho verdes |
 | F7 Social e acabamento | Amigos, convites, replays, admin, acessibilidade, celular | Lighthouse/axe sem erro crítico |
 
 Até 20/11/2026, a F5 era "Fila + Match" e a F6 era o Tag (duelo em dupla). A fila e a dupla saíram
-do escopo; o Match foi para a F6.
+do escopo; o Match foi para a F6. Em 22/11/2026 o Match também saiu, com o Side Deck, e a F6 virou
+o front novo.
 
 ## 9. Backlog da F0
 1. `GXP-1` Esqueleto: backend, frontend, CI, Vercel, LICENSE AGPL-3.0, `/up` e `/up/db`.
@@ -339,7 +343,7 @@ do escopo; o Match foi para a F6.
 | 5 | GX Project / `GXP` |
 | 6 | Cartas, regras e economia do jogo de referência, com as mudanças da seção 2 |
 | 7 | ~~Parceiro vê a mão do companheiro sempre~~ (sem dupla desde 20/11/2026) |
-| 8 | Match com Side Deck |
+| 8 | ~~Match com Side Deck~~ (sem melhor de 3 desde 22/11/2026) |
 | 9 | Idade mínima de 13 anos |
 
 ---
@@ -357,7 +361,7 @@ Fonte: Yugipedia (página de bônus e desafios do jogo de referência). Fórmula
 | 06 | Turnos | 2/turno se vencer, 1 se não | Igual |
 | 07 | Vitória em Tag | 50 | **Removido** (sem dupla) |
 | 08 | Vitória em rede | 50 | Vale em toda vitória |
-| 09 | Vitória em Match | 50 | Igual |
+| 09 | Vitória em Match | 50 | **Removido** (sem melhor de 3) |
 | 10 | Subir de nível | 400 | 100, com o nível a cada 300 DP (20/11/2026) |
 | 11 | Duelista (nível do deck do NPC) | 90 × nível do deck | 90 × faixa do oponente (1–10) |
 | 12 | Oponente sem cartas para comprar | 20 | Igual |
@@ -376,7 +380,7 @@ Fonte: Yugipedia (página de bônus e desafios do jogo de referência). Fórmula
 1. Lista das 3.501 cartas, com os passcodes, incluindo as do anime e de DLC. Feito: `cartas.yml` e `extras.yml`, com 3.496 cartas (faltam 5, ver o README da pasta).
 2. Todos os pacotes: nome, preço, cartas e raridade por carta, regra de disponibilidade (dia, nível, %, código, UMD/nota). Páginas de cada pacote do jogo no Yugipedia. Feito: `pacotes.yml` (48 pacotes) e `disponibilidade.yml` (8 pendentes no Anexo C).
 3. Chances por raridade dentro do pacote, se existir fonte. Não achado: valem os pesos do admin (3.4); pergunta no Anexo C.
-4. Deck inicial. Feito: `deck_inicial.yml` (principal, side e 3 Destiny).
+4. Deck inicial. Feito: `deck_inicial.yml` (principal, side e 3 Destiny; sem Side Deck, as cartas do side vão só para a coleção).
 5. Tabela do conversor de cartas (grupo por quantidade). Feito: `conversor.yml`.
 6. Os 104 desafios com as condições. Feito: `desafios.yml` (texto original em inglês).
 7. Regra de subida de nível. Não achado: vale a regra provisória (3.5); pergunta no Anexo C.

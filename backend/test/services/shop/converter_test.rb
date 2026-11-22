@@ -19,8 +19,7 @@ class Shop::ConverterTest < ActiveSupport::TestCase
 
   it "o que dá para converter: fica uma cópia de cada carta e o que o deck que mais usa precisa" do
     two_decks = [ user.decks.create!(name: "A"), user.decks.create!(name: "B") ]
-    two_decks.first.deck_cards.create!(card: trap_hole, section: "main", quantity: 2)
-    two_decks.first.deck_cards.create!(card: trap_hole, section: "side", quantity: 1)
+    two_decks.first.deck_cards.create!(card: trap_hole, section: "main", quantity: 3)
     two_decks.second.deck_cards.create!(card: trap_hole, section: "main", quantity: 2)
 
     # Trap Hole: 8 - 3 (o deck A usa 3); Night Assailant: 6 - 1; Clear Wall: a única cópia fica.

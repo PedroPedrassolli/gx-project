@@ -8,6 +8,8 @@ module Decks
   # Seção com ou sem a palavra "Deck" e os dois pontos; quantidade com ou sem "x". Linha
   # em branco ou com "#" é ignorada; carta antes de qualquer seção vai para o Main.
   module Text
+    # O Side fica para ler o deck de outro jogo: o Decks::Import deixa as cartas dele de fora
+    # (GXP-125), então o deck daqui nunca escreve essa seção.
     SECTIONS = { "main" => "Main Deck", "extra" => "Extra Deck", "side" => "Side Deck" }.freeze
     SECTION_LINE = /\A(main|extra|side)(\s+deck)?:?\z/i
     CARD_LINE = /\A([1-9]\d*)\s*x?\s+(.+?)(\s+\(destiny\))?\z/i

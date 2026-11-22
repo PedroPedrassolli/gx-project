@@ -12,12 +12,12 @@ jogadores enquanto a partida não começa.
 
 ## Decisão
 
-1. **Duas tabelas:** `rooms` (código, dono, pública, modo, `best_of`, banlist, Destiny
+1. **Duas tabelas:** `rooms` (código, dono, pública, modo, banlist, Destiny
    Draw, tempo de resposta e do duelo, situação) e `room_players` (lugar, jogador, deck
    escolhido, pronto). Os tempos e o que vale em cada um estão na ADR 0011, item 18. As opções são
    colunas, não jsonb: cada uma tem tipo e valor padrão, e o banco recusa o que não existe.
-   O formato virou `best_of` (1 agora, 3 na F5) porque `format` esconderia o
-   `Kernel#format` no modelo.
+   A coluna `best_of` (1 ou 3, para a melhor de 3) ficou sem uso em 22/11/2026, quando a
+   melhor de 3 saiu do escopo (GXP-125): o modelo a ignora e uma migração a apaga depois.
 2. **Código sem 0, O, 1 e I** (32 caracteres, uns 1 bilhão de códigos): é lido em voz alta
    ou copiado à mão.
 3. **Um jogador fica numa sala só** (índice único em `room_players.user_id`). Criar ou entrar

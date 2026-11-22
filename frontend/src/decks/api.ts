@@ -7,7 +7,7 @@ export type DeckSummary = {
   id: number;
   name: string;
   updated_at: string;
-  counts: { main: number; extra: number; side: number };
+  counts: { main: number; extra: number };
 };
 export type Deck = {
   id: number;

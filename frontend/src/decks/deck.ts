@@ -4,13 +4,12 @@ import { displayName, type CardSummary, type Language } from "../catalog/cards.t
 // validação ao vivo, com as mesmas regras e mensagens do Decks::Validator do backend
 // (escopo 3.3). A validação que vale é a do backend, ao salvar.
 
-export type Section = "main" | "extra" | "side";
+export type Section = "main" | "extra";
 export type DeckRow = { card_id: number; section: Section; quantity: number; destiny: boolean };
 
 export const SECTIONS: Record<Section, { title: string; min: number; max: number }> = {
   main: { title: "Main Deck", min: 40, max: 60 },
   extra: { title: "Extra Deck", min: 0, max: 15 },
-  side: { title: "Side Deck", min: 0, max: 15 },
 };
 export const MAX_COPIES = 3;
 const BANLIST_COPIES = { forbidden: 0, limited: 1, semi_limited: 2 };
@@ -28,22 +27,20 @@ export function copies(rows: DeckRow[], cardId: number) {
   return rows.filter((row) => row.card_id === cardId).reduce((sum, row) => sum + row.quantity, 0);
 }
 
-// A seção já tem o máximo de cartas (60 no Main, 15 no Extra e no Side).
+// A seção já tem o máximo de cartas (60 no Main e 15 no Extra).
 export function sectionFull(rows: DeckRow[], section: Section) {
   return sectionCount(rows, section) >= SECTIONS[section].max;
 }
 
 // O que já impede o deck de duelar pela contagem (GXP-117): o Main Deck fora de 40 a 60 e o
-// Extra ou o Side com mais de 15. O resto (banlist, cartas que o jogador tem) o servidor confere.
+// Extra com mais de 15. O resto (banlist, cartas que o jogador tem) o servidor confere.
 export function deckSizeProblem(counts: Record<Section, number>) {
-  const main = SECTIONS.main;
+  const { main, extra } = SECTIONS;
   if (counts.main < main.min || counts.main > main.max) {
     return `O Main Deck tem ${counts.main} cartas: precisa ter de ${main.min} a ${main.max}.`;
   }
-  for (const section of ["extra", "side"] as const) {
-    const { title, max } = SECTIONS[section];
-    if (counts[section] > max)
-      return `O ${title} tem ${counts[section]} cartas: pode ter até ${max}.`;
+  if (counts.extra > extra.max) {
+    return `O Extra Deck tem ${counts.extra} cartas: pode ter até ${extra.max}.`;
   }
   return undefined;
 }
@@ -60,11 +57,10 @@ export function addBlocked(rows: DeckRow[], cardId: number, section: Section) {
 export type DeckEdit =
   | { type: "add"; cardId: number; section: Section }
   | { type: "remove"; cardId: number; section: Section }
-  | { type: "destiny"; cardId: number }
-  | { type: "move"; cardId: number; from: Section; to: Section };
+  | { type: "destiny"; cardId: number };
 
 // Aplica uma edição e devolve as linhas novas. Adicionar para em 3 cópias no deck todo e na
-// seção cheia; mover também não enche a seção além do máximo.
+// seção cheia.
 export function editDeck(rows: DeckRow[], edit: DeckEdit): DeckRow[] {
   switch (edit.type) {
     case "add":
@@ -78,9 +74,6 @@ export function editDeck(rows: DeckRow[], edit: DeckEdit): DeckRow[] {
           ? { ...row, destiny: !row.destiny }
           : row,
       );
-    case "move":
-      if (sectionFull(rows, edit.to)) return rows;
-      return change(change(rows, edit.cardId, edit.from, -1), edit.cardId, edit.to, +1);
   }
 }
 
@@ -135,9 +128,7 @@ function cardErrors(rows: DeckRow[], card: CardSummary, name: string, owned: num
   const count = rows.reduce((sum, row) => sum + row.quantity, 0);
   const errors: string[] = [];
   if (count > MAX_COPIES)
-    errors.push(
-      `${name}: no máximo ${MAX_COPIES} cópias somando Main, Extra e Side (tem ${count}).`,
-    );
+    errors.push(`${name}: no máximo ${MAX_COPIES} cópias somando Main e Extra (tem ${count}).`);
   if (card.banlist === "forbidden") errors.push(`${name} está proibida.`);
   if (card.banlist === "limited" && count > BANLIST_COPIES.limited)
     errors.push(`${name} é limitada: no máximo 1 cópia (tem ${count}).`);

@@ -33,7 +33,7 @@ type Props = {
 };
 
 // Baú do Deck Edit (escopo 4): as cartas para pôr no deck, com os filtros do catálogo.
-// Fusão e Sincro vão para o Extra; o resto, para o Main. Qualquer uma pode ir para o Side.
+// Fusão e Sincro vão para o Extra; o resto, para o Main.
 // A carta ganha na loja ou numa missão aparece como nova até o jogador abrir o detalhe dela
 // (GXP-42), e dá para ver só as novas ou pôr as mais recentes primeiro.
 export function Chest(props: Props) {
@@ -189,10 +189,7 @@ export function Chest(props: Props) {
         {results.slice(0, shown).map((card) => {
           const name = displayName(card, language);
           const deckSection = goesToExtra(card) ? "extra" : "main";
-          // Os dois botões podem estar bloqueados pelo mesmo motivo: ele aparece uma vez só.
-          const blockedMain = addBlocked(rows, card.id, deckSection);
-          const blockedSide = addBlocked(rows, card.id, "side");
-          const reason = [...new Set([blockedMain, blockedSide])].filter(Boolean).join(" ");
+          const reason = addBlocked(rows, card.id, deckSection);
           const reasonId = `chest-reason-${card.id}`;
           return (
             <li
@@ -224,20 +221,11 @@ export function Chest(props: Props) {
                 <button
                   type="button"
                   aria-label={`Pôr ${name} no ${deckSection === "extra" ? "Extra" : "Main"} Deck`}
-                  disabled={Boolean(blockedMain)}
-                  aria-describedby={blockedMain ? reasonId : undefined}
+                  disabled={Boolean(reason)}
+                  aria-describedby={reason ? reasonId : undefined}
                   onClick={() => props.onAdd(card.id, deckSection)}
                 >
                   + {deckSection === "extra" ? "Extra" : "Main"}
-                </button>
-                <button
-                  type="button"
-                  aria-label={`Pôr ${name} no Side Deck`}
-                  disabled={Boolean(blockedSide)}
-                  aria-describedby={blockedSide ? reasonId : undefined}
-                  onClick={() => props.onAdd(card.id, "side")}
-                >
-                  + Side
                 </button>
               </span>
             </li>

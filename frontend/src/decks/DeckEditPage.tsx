@@ -254,23 +254,6 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
                         Destiny
                       </label>
                     )}
-                    {section !== "extra" && (
-                      <button
-                        type="button"
-                        disabled={sectionFull(rows, section === "main" ? "side" : "main")}
-                        aria-label={`Mandar uma cópia de ${cardName(row.card_id)} para o ${section === "main" ? "Side" : "Main"}`}
-                        onClick={() =>
-                          edit({
-                            type: "move",
-                            cardId: row.card_id,
-                            from: section,
-                            to: section === "main" ? "side" : "main",
-                          })
-                        }
-                      >
-                        {section === "main" ? "→ Side" : "→ Main"}
-                      </button>
-                    )}
                   </li>
                 ))}
             </ul>

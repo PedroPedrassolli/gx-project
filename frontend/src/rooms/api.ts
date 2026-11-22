@@ -27,7 +27,6 @@ export type Room = {
   code: string;
   public: boolean;
   mode: string;
-  best_of: number;
   banlist: boolean;
   destiny_draw: boolean;
   decision_seconds: number | null; // null: sem limite

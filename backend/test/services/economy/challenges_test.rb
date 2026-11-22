@@ -25,11 +25,12 @@ class Economy::ChallengesTest < ActiveSupport::TestCase
 
   def done(**changes) = Economy::Challenges.completed(facts(**changes))
 
-  it "são 104, numerados na ordem do jogo, e 3 ainda não dá para concluir" do
+  it "são 104, numerados na ordem do jogo; 3 não dá para concluir e os 2 de Match nem aparecem" do
     list = Economy::Challenges::LIST
 
     assert_equal (1..104).to_a, list.pluck(:number)
     assert_equal [ 25, 38, 39 ], list.reject { |challenge| challenge[:check] }.pluck(:number)
+    assert_equal (1..104).to_a - [ 25, 38 ], Economy::Challenges::SHOWN.pluck(:number)
     assert_equal "Acertar a moeda 10 vezes seguidas", Economy::Challenges.label(104)
     assert_equal [ "Empatar um duelo", "Vencer com Exodia", "Vencer com um deck só com monstros do tipo Réptil" ],
                  [ 26, 35, 88 ].map { |number| Economy::Challenges.label(number) }

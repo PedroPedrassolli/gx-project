@@ -7,7 +7,7 @@ class Decks::StarterDeckTest < ActiveSupport::TestCase
 
   before { load_starter_deck_cards }
 
-  it "dá as cartas e o deck montado e válido, com Side e 3 Destiny" do
+  it "dá as cartas e o deck montado e válido, com 3 Destiny; as do Side vão só para a coleção" do
     travel_to Time.zone.local(2026, 11, 8, 12) do
       Decks::StarterDeck.give_to(user)
     end
@@ -15,7 +15,7 @@ class Decks::StarterDeckTest < ActiveSupport::TestCase
     deck = user.decks.sole
     _(deck.name).must_equal "Deck inicial"
     _(deck.deck_cards.where(section: "main").sum(:quantity)).must_equal 40
-    _(deck.deck_cards.where(section: "side").sum(:quantity)).must_equal 15
+    _(deck.deck_cards.where.not(section: "main").count).must_equal 0
     _(deck.deck_cards.where(destiny: true).count).must_equal 3
     _(user.collection_cards.sum(:quantity)).must_equal 55
     _(user.collection_cards.pluck(:obtained_at).uniq).must_equal [ Time.zone.local(2026, 11, 8, 12) ]
