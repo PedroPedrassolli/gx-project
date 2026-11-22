@@ -62,5 +62,9 @@ grande, campo simples) e os Tag Force.
   antigo.
 - Os testes de ponta a ponta mudam junto com cada tela; o de layout confere também 1024 px, a
   largura em que o menu passa para o topo.
+- No Deck Edit (GXP-132), o detalhe da carta abre por cima em qualquer largura, com "Pôr no
+  deck", "Tirar uma cópia" e o Destiny no rodapé, que fica à vista: dá para ler a carta e
+  decidir sem fechar. No celular, Deck e Baú viram abas e a barra com o Salvar fica presa no
+  topo; no computador, o baú é uma coluna parada ao lado do deck.
 - As fontes antigas (Spectral) saíram; as novas são variáveis, um arquivo para todos os pesos
   (uns 50 KB no total, contra uns 60 KB de antes).

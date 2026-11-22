@@ -3,36 +3,26 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { ApiError, request } from "../api.ts";
 import { useSession } from "../account/session.ts";
-import {
-  displayName,
-  frame,
-  type CardSummary,
-  type Language,
-  type Pack,
-} from "../catalog/cards.ts";
-import { CardPanel, WIDE, useMediaQuery } from "../catalog/CardPanel.tsx";
+import type { CardSummary, Language, Pack } from "../catalog/cards.ts";
+import { CardPanel } from "../catalog/CardPanel.tsx";
 import { useCatalog } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
 import { useCollection } from "../collection/api.ts";
 import { useDeck, type Deck } from "./api.ts";
 import { Chest } from "./Chest.tsx";
-import { allowDrop, dragRow, droppedCard } from "./drag.ts";
+import { CardActions, DeckSection } from "./DeckGrid.tsx";
+import { allowDrop, droppedCard } from "./drag.ts";
 import {
-  MAX_COPIES,
-  SECTIONS,
-  addBlocked,
-  copies,
   deckErrors,
   editDeck,
+  goesToExtra,
   sectionCount,
-  sectionFull,
   type DeckEdit,
   type DeckRow,
-  type Section,
 } from "./deck.ts";
 import { usePageTitle } from "../pageTitle.ts";
 
-// Deck Edit (escopo 3.3 e 4): as seções do deck, a validação ao vivo e salvar.
+// Deck Edit (escopo 3.3 e 4): o deck em grade, o baú, a validação ao vivo e salvar.
 export function DeckEditPage() {
   usePageTitle("Editar deck");
   const id = Number(useParams().id);
@@ -87,11 +77,11 @@ type EditorProps = {
 function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps) {
   const [rows, setRows] = useState<DeckRow[]>(deck.cards);
   const [selected, setSelected] = useState(0);
-  const wide = useMediaQuery(WIDE);
+  // No celular, o deck e o baú são abas; no computador, ficam lado a lado e a aba some.
+  const [tab, setTab] = useState<"deck" | "chest">("deck");
   const packNames = useMemo(() => new Map(packs.map((item) => [item.id, item.name])), [packs]);
   const cardList = useMemo(() => [...cards.values()], [cards]);
   const [name, setName] = useState(deck.name);
-  const [section, setSection] = useState<Section>("main");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const warnings: string[] =
     (useLocation().state as { warnings?: string[] } | null)?.warnings ?? [];
@@ -119,19 +109,43 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
     },
   });
   const edit = (change: DeckEdit) => setRows((old) => editDeck(old, change));
-  const cardName = (cardId: number) => {
+  // A carta que cai no deck vai para a seção dela: Fusão e Sincro no Extra, o resto no Main.
+  const drop = (cardId: number) => {
     const card = cards.get(cardId);
-    return card ? displayName(card, language) : `Carta ${cardId}`;
+    if (card) edit({ type: "add", cardId, section: goesToExtra(card) ? "extra" : "main" });
   };
-  // A linha do deck leva a cor da moldura da carta, como na lista do baú.
-  const cardFrame = (cardId: number) => {
-    const card = cards.get(cardId);
-    return card ? `frame-${frame(card)}` : undefined;
-  };
+  const selectedCard = cards.get(selected);
 
   return (
     <main className="page deck-page">
       <h1>{deck.name}</h1>
+      {/* Presa no topo enquanto a página rola: a troca de aba (no celular) e o Salvar. */}
+      <div className="deck-bar">
+        <div className="segmented deck-tabs" role="group" aria-label="Deck ou baú">
+          <button type="button" aria-pressed={tab === "deck"} onClick={() => setTab("deck")}>
+            Deck <span className="count">{sectionCount(rows, "main")}</span>
+          </button>
+          <button type="button" aria-pressed={tab === "chest"} onClick={() => setTab("chest")}>
+            Baú
+          </button>
+        </div>
+        <button
+          type="button"
+          className="cta"
+          disabled={save.isPending || !unsaved}
+          onClick={() => save.mutate()}
+        >
+          {save.isPending ? "Salvando…" : unsaved ? "Salvar" : "Salvo"}
+        </button>
+        <span role="status" className="visually-hidden">
+          {save.isSuccess && !unsaved ? "Deck salvo." : ""}
+        </span>
+      </div>
+      {save.error && (
+        <p role="alert" className="form-error deck-error">
+          {save.error instanceof ApiError ? save.error.message : "Sem conexão. Tente de novo."}
+        </p>
+      )}
       {warnings.length > 0 && (
         <section aria-labelledby="warnings-title" className="warnings">
           <h2 id="warnings-title">Ficou de fora da importação</h2>
@@ -143,7 +157,79 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
         </section>
       )}
 
-      <div className="deck-layout">
+      <div className="deck-layout" data-tab={tab}>
+        <section
+          aria-labelledby="deck-title"
+          className="deck-panel"
+          onDragOver={(event) => allowDrop(event, "deck")}
+          onDrop={(event) => {
+            const cardId = droppedCard(event);
+            if (cardId) drop(cardId);
+          }}
+        >
+          <h2 id="deck-title" className="panel-title">
+            Deck
+          </h2>
+          <div className="form-field">
+            <label htmlFor="deck-name">Nome do deck</label>
+            <input
+              id="deck-name"
+              type="text"
+              maxLength={40}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+            />
+          </div>
+
+          <div aria-live="polite">
+            {errors.length === 0 ? (
+              <p className="ok">Deck válido.</p>
+            ) : (
+              <ul className="deck-errors" aria-label="Problemas do deck">
+                {errors.map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {(["main", "extra"] as const).map((section) => (
+            <DeckSection
+              key={section}
+              section={section}
+              rows={rows}
+              cards={cards}
+              language={language}
+              selected={selected}
+              onSelect={setSelected}
+              onEdit={edit}
+            />
+          ))}
+
+          <p className="deck-actions">
+            {unsaved ? (
+              <span className="muted">Salve para exportar.</span>
+            ) : (
+              <>
+                <a href={`/api/decks/${deck.id}/export.ydk`} download>
+                  Exportar .ydk
+                </a>
+                <a href={`/api/decks/${deck.id}/export.txt`} download>
+                  Exportar texto
+                </a>
+              </>
+            )}
+            <button
+              type="button"
+              className="danger"
+              disabled={remove.isPending}
+              onClick={() => (confirmDelete ? remove.mutate() : setConfirmDelete(true))}
+            >
+              {confirmDelete ? "Confirmar: apagar o deck" : "Apagar deck"}
+            </button>
+          </p>
+        </section>
+
         <Chest
           cards={cardList}
           packs={packs}
@@ -155,164 +241,28 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
           onAdd={(cardId, to) => edit({ type: "add", cardId, section: to })}
           onRemove={(cardId, from) => edit({ type: "remove", cardId, section: from })}
         />
-        <div className="deck-side">
-          {selected > 0 && (
-            <CardPanel
-              cardId={selected}
-              language={language}
-              onLanguage={onLanguage}
-              packs={packNames}
-              wide={wide}
-              onClose={() => setSelected(0)}
+      </div>
+
+      {/* O detalhe abre por cima, em qualquer tela, com os botões do deck para a carta. */}
+      {selected > 0 && (
+        <CardPanel
+          cardId={selected}
+          language={language}
+          onLanguage={onLanguage}
+          packs={packNames}
+          wide={false}
+          onClose={() => setSelected(0)}
+        >
+          {selectedCard && (
+            <CardActions
+              card={selectedCard}
+              rows={rows}
+              owned={owned.get(selected) ?? 0}
+              onEdit={edit}
             />
           )}
-          <section aria-labelledby="deck-title" className="deck-panel">
-            <h2 id="deck-title">Deck</h2>
-            <div className="form-field">
-              <label htmlFor="deck-name">Nome do deck</label>
-              <input
-                id="deck-name"
-                type="text"
-                maxLength={40}
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-              />
-            </div>
-
-            <div className="sections" role="group" aria-label="Seção do deck">
-              {(Object.keys(SECTIONS) as Section[]).map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  aria-pressed={section === item}
-                  onClick={() => setSection(item)}
-                  onDragOver={(event) => allowDrop(event, "deck")}
-                  onDrop={(event) => {
-                    const cardId = droppedCard(event);
-                    if (cardId) edit({ type: "add", cardId, section: item });
-                  }}
-                >
-                  {SECTIONS[item].title} ({sectionCount(rows, item)})
-                </button>
-              ))}
-            </div>
-
-            {(Object.keys(SECTIONS) as Section[])
-              .filter((item) => sectionFull(rows, item))
-              .map((item) => (
-                <p key={item} className="hint deck-full">
-                  {SECTIONS[item].title} cheio: tire uma carta para pôr outra.
-                </p>
-              ))}
-
-            <ul
-              className="deck-rows"
-              aria-label={SECTIONS[section].title}
-              onDragOver={(event) => allowDrop(event, "deck")}
-              onDrop={(event) => {
-                const cardId = droppedCard(event);
-                if (cardId) edit({ type: "add", cardId, section });
-              }}
-            >
-              {rows
-                .filter((row) => row.section === section)
-                .map((row) => (
-                  <li
-                    key={`${row.card_id}-${row.section}`}
-                    className={cardFrame(row.card_id)}
-                    draggable
-                    onDragStart={(event) => dragRow(event, row.card_id, section)}
-                  >
-                    <span className="row-name">
-                      {row.quantity}× {cardName(row.card_id)}
-                      {copies(rows, row.card_id) >= MAX_COPIES && (
-                        <span className="row-max"> (já tem {MAX_COPIES} no deck)</span>
-                      )}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label={`Tirar uma cópia de ${cardName(row.card_id)}`}
-                      onClick={() => edit({ type: "remove", cardId: row.card_id, section })}
-                    >
-                      −
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`Pôr mais uma cópia de ${cardName(row.card_id)}`}
-                      disabled={Boolean(addBlocked(rows, row.card_id, section))}
-                      onClick={() => edit({ type: "add", cardId: row.card_id, section })}
-                    >
-                      +
-                    </button>
-                    {section === "main" && (
-                      <label className="choice">
-                        <input
-                          type="checkbox"
-                          checked={row.destiny}
-                          onChange={() => edit({ type: "destiny", cardId: row.card_id })}
-                        />
-                        Destiny
-                      </label>
-                    )}
-                  </li>
-                ))}
-            </ul>
-
-            <div aria-live="polite">
-              {errors.length === 0 ? (
-                <p className="ok">Deck válido.</p>
-              ) : (
-                <ul className="deck-errors" aria-label="Problemas do deck">
-                  {errors.map((error) => (
-                    <li key={error}>{error}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <p className="deck-actions">
-              <button
-                type="button"
-                className="cta"
-                disabled={save.isPending || !unsaved}
-                onClick={() => save.mutate()}
-              >
-                {save.isPending ? "Salvando…" : "Salvar"}
-              </button>
-              {save.isSuccess && !unsaved && <span role="status">Deck salvo.</span>}
-              {save.error && (
-                <span role="alert" className="form-error">
-                  {save.error instanceof ApiError
-                    ? save.error.message
-                    : "Sem conexão. Tente de novo."}
-                </span>
-              )}
-            </p>
-            <p className="deck-actions">
-              {unsaved ? (
-                <span className="muted">Salve para exportar.</span>
-              ) : (
-                <>
-                  <a href={`/api/decks/${deck.id}/export.ydk`} download>
-                    Exportar .ydk
-                  </a>
-                  <a href={`/api/decks/${deck.id}/export.txt`} download>
-                    Exportar texto
-                  </a>
-                </>
-              )}
-              <button
-                type="button"
-                className="danger"
-                disabled={remove.isPending}
-                onClick={() => (confirmDelete ? remove.mutate() : setConfirmDelete(true))}
-              >
-                {confirmDelete ? "Confirmar: apagar o deck" : "Apagar deck"}
-              </button>
-            </p>
-          </section>
-        </div>
-      </div>
+        </CardPanel>
+      )}
     </main>
   );
 }

@@ -26,6 +26,7 @@ type Props = {
   wide: boolean;
   onClose: () => void;
   className?: string;
+  children?: ReactNode; // o que a página põe embaixo do detalhe (no Deck Edit, os botões do deck)
 };
 
 // O detalhe da carta escolhida, igual em todas as páginas. Na tela larga, um painel que a
@@ -48,19 +49,27 @@ export function CardPanel(props: Props) {
   ) : (
     <h2 id="detail-title">{detail.isError ? "Carta não encontrada." : "Carregando a carta…"}</h2>
   );
-  if (!props.wide) return <CardDialog onClose={props.onClose}>{body}</CardDialog>;
+  if (!props.wide) {
+    return (
+      <CardDialog onClose={props.onClose} footer={props.children}>
+        {body}
+      </CardDialog>
+    );
+  }
   return (
     <section
       className={["card-detail", props.className].filter(Boolean).join(" ")}
       aria-labelledby="detail-title"
     >
       {body}
+      {props.children}
     </section>
   );
 }
 
 // O <dialog> nativo cuida do foco, do Esc e do fundo; clicar fora fecha onde o closedby existe.
-function CardDialog(props: { onClose: () => void; children: ReactNode }) {
+// O rodapé (o que a página pôs e o "Fechar") fica preso embaixo, à vista com o texto comprido.
+function CardDialog(props: { onClose: () => void; footer?: ReactNode; children: ReactNode }) {
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     if (!dialog.current?.open) dialog.current?.showModal();
@@ -74,11 +83,14 @@ function CardDialog(props: { onClose: () => void; children: ReactNode }) {
       onClose={props.onClose}
     >
       {props.children}
-      <form method="dialog">
-        <button type="submit" autoFocus>
-          Fechar
-        </button>
-      </form>
+      <div className="dialog-footer">
+        {props.footer}
+        <form method="dialog">
+          <button type="submit" autoFocus>
+            Fechar
+          </button>
+        </form>
+      </div>
     </dialog>
   );
 }
