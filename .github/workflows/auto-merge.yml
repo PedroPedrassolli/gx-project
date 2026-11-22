@@ -23,10 +23,8 @@ on:
   pull_request:
     types: [unlabeled, ready_for_review]
 
-permissions:
-  actions: write # ler as execuções da CI e disparar o "Banco de produção"
-  contents: write
-  pull-requests: write
+# Nada no workflow; o job pede só o que usa (GXP-111).
+permissions: {}
 
 env:
   JIRA_SITE: pedrassolli.atlassian.net
@@ -40,6 +38,10 @@ jobs:
       github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    permissions:
+      actions: write # ler as execuções da CI e disparar o "Banco de produção"
+      contents: write
+      pull-requests: write
     concurrency:
       group: auto-merge-${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha }}
     steps:
