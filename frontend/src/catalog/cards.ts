@@ -26,9 +26,23 @@ export type CardDetail = CardSummary & {
   name_in_game?: string;
   text?: string;
   text_pt?: string;
+  text_pt_unofficial?: boolean; // o português é tradução nossa, não a oficial
   packs?: { id: number; rarity: string }[];
-  source: string;
+  source?: string; // sem ele, a carta ainda é só o resumo do catálogo (o detalhe está chegando)
 };
+
+// O texto da carta no idioma escolhido e o aviso que vai embaixo dele, quando há: sem
+// português, aparece o inglês; e o português pode ser tradução nossa, não a oficial (GXP-106).
+export function cardText(card: CardDetail, language: Language): { text?: string; note?: string } {
+  if (language === "en") return { text: card.text };
+  if (!card.text_pt) {
+    return { text: card.text, note: "Sem texto em português: este é o texto em inglês." };
+  }
+  if (card.text_pt_unofficial) {
+    return { text: card.text_pt, note: "Tradução não oficial, feita pelo GX Project." };
+  }
+  return { text: card.text_pt };
+}
 
 export type Pack = { id: number; name: string; position: number; card_count: number };
 
@@ -64,6 +78,12 @@ export const EMPTY_FILTERS: Filters = {
   sort: "name",
   order: "asc",
 };
+
+// Algum filtro (ou o pacote) está fora do padrão: só aí "Limpar filtros" faz sentido.
+export function filtersChanged(filters: Filters, pack: string) {
+  const keys = Object.keys(EMPTY_FILTERS) as (keyof Filters)[];
+  return pack !== "" || keys.some((key) => filters[key] !== EMPTY_FILTERS[key]);
+}
 
 // Imagens das cartas no Cloudflare Pages (ADR 0004), em WebP com 3 larguras: p (112) na
 // lista, m (268) e g (813, a da imagem original) no detalhe.

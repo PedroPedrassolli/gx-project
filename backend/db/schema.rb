@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_20_050000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_21_030000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -66,7 +66,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_050000) do
     t.text "text"
     t.text "text_pt"
     t.integer "image_code"
+    t.boolean "text_pt_unofficial", default: false, null: false
     t.index ["engine_code"], name: "index_cards_on_engine_code", unique: true
+  end
+
+  create_table "character_wins", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "character", null: false
+    t.integer "wins", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "character"], name: "index_character_wins_on_user_id_and_character", unique: true
   end
 
   create_table "code_unlocks", force: :cascade do |t|
@@ -152,6 +162,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_050000) do
     t.boolean "always_chain", default: false, null: false
     t.jsonb "rewards"
     t.boolean "mission_win", default: false, null: false
+    t.string "character"
     t.index ["match_id", "team"], name: "index_match_players_on_match_id_and_team", unique: true
     t.index ["user_id"], name: "index_match_players_on_user_id"
   end
@@ -324,6 +335,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_20_050000) do
   add_foreign_key "banlist_entries", "cards"
   add_foreign_key "card_conversions", "cards"
   add_foreign_key "card_conversions", "users"
+  add_foreign_key "character_wins", "users"
   add_foreign_key "code_unlocks", "users"
   add_foreign_key "collection_cards", "cards"
   add_foreign_key "collection_cards", "users"

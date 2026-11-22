@@ -16,12 +16,18 @@ export function App() {
     <main className="page home">
       <header>
         <h1>GX Project</h1>
-        <p className="lead">Monte seu deck com as cartas da era GX e duele online com os amigos.</p>
+        <p className="lead">
+          Monte seu deck com as cartas da era GX e duele online com os amigos ou contra os
+          personagens do anime.
+        </p>
       </header>
 
       <ul className="table-menu" aria-label="Atalhos">
         <MenuCard title="Duelo" to="/salas" frame="effect" art={<DuelArt />}>
           Crie uma sala e mande o código para um amigo duelar com você.
+        </MenuCard>
+        <MenuCard title="Personagens" to="/personagens" frame="synchro" art={<CharactersArt />}>
+          Duele contra o computador com os decks dos personagens do anime.
         </MenuCard>
         <MenuCard title="Decks" to="/decks" frame="spell" art={<DeckArt />}>
           Monte, confira e importe os seus decks.
@@ -31,9 +37,6 @@ export function App() {
         </MenuCard>
         <MenuCard title="Desafios" to="/desafios" frame="trap" art={<ChallengesArt />}>
           Missões que liberam pacotes e os 104 desafios do jogo.
-        </MenuCard>
-        <MenuCard title="Cartas" to="/cartas" frame="normal" art={<CardsArt />}>
-          Todas as cartas do jogo, com busca e texto em português.
         </MenuCard>
         <MenuCard title="Coleção" to="/colecao" frame="fusion" art={<CollectionArt />}>
           Quanto você já tem de cada pacote.
@@ -101,11 +104,12 @@ const DeckArt = () => (
   </Art>
 );
 
-const CardsArt = () => (
+// Um duelista: a cabeça, os ombros e uma carta na mão.
+const CharactersArt = () => (
   <Art>
-    <rect x="8" y="8" width="20" height="29" rx="2" />
-    <circle cx="31" cy="30" r="7" />
-    <path d="m36 35 6 6" />
+    <circle cx="20" cy="15" r="6" />
+    <path d="M8 40c0-8 5-13 12-13s12 5 12 13" />
+    <rect x="30" y="16" width="10" height="15" rx="1.5" transform="rotate(12 35 23)" />
   </Art>
 );
 

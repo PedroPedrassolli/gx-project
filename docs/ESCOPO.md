@@ -2,7 +2,14 @@
 
 > Repo `gx-project` (público, AGPL-3.0) · Jira `GXP` · Slack `#gx-project` · Rails 8 API + React.
 > Objetivo: as cartas, as regras e a economia de um jogo portátil de 2008 (aqui chamado de
-> **jogo de referência**), só PvP online, com melhorias pontuais.
+> **jogo de referência**), com duelos online entre amigos e contra personagens do anime
+> controlados pelo computador, e melhorias pontuais.
+>
+> **Mudanças de 20/11/2026 (pedido do Pedro):** é um projeto pequeno, para jogar com a família
+> e os amigos. Saíram o duelo em dupla (Tag) e a fila automática: com poucos jogadores, quase
+> nunca achariam alguém. No lugar, entram os duelos contra personagens (seção 3.10). O DP e o
+> nível ficaram bem mais fáceis (seção 3.5), e o duelo passa a ser jogado com modais, sem
+> perguntas embaixo da mesa (seção 4).
 
 ---
 
@@ -56,9 +63,10 @@
 
 | Jogo de referência | GX Project |
 | --- | --- |
-| História, parceiros NPC, minigames, galeria | **Removido.** Só PvP online |
-| Duelo em rede local | Fila aberta + salas públicas ou privadas (código de 6 caracteres) |
-| Parceiro vê a mão do companheiro (só em parte do tempo) | **Vê sempre**, inclusive no próprio turno |
+| História, parceiros NPC, minigames, galeria | **Removido.** Duelos online e contra personagens (3.10) |
+| Duelo em rede local | Salas públicas ou privadas (código de 6 caracteres) |
+| Duelo contra os personagens da história | Personagens do anime com os decks deles, numa ordem para liberar (3.10) |
+| Tag Duel (dupla) | **Removido** em 20/11/2026: poucos jogadores |
 | Match | Match (melhor de 3) **com Side Deck** (0 a 15 cartas) e troca entre os duelos |
 | Calendário do jogo (dia da semana) | Dia da semana real, no fuso America/Sao_Paulo |
 | Pacotes por UMD/nota de prova | Liberados por **desafios** equivalentes (mapeamento na F0) |
@@ -68,7 +76,7 @@
 | Bônus de duelista (90 × nível do deck do NPC) | 90 × faixa de nível do oponente (1–10) |
 | Bônus de vitória em rede | Vale em todo duelo (todo duelo é online) |
 | Economia sem limite | Mesmos valores + anti-farm por cima (seção 3.5) |
-| Destiny Draw nas configurações | Opção da sala; a fila segue o padrão do jogo |
+| Destiny Draw nas configurações | Opção da sala; contra personagens, ligado |
 | Interface, músicas e animações do jogo | **Interface original**, sons livres (CC0), animações 2D simples |
 
 ---
@@ -84,7 +92,7 @@
 
 ### 3.2 Cartas e coleção
 - O pool é exatamente o do jogo de referência, com cartas originais do anime e Sincro (sem Sincro Sombrio).
-- O texto de cada carta é o da época (pré-errata) quando existir, em inglês, ou em português quando houver tradução. A interface é em português.
+- O texto de cada carta é o da época (pré-errata) quando existir. Em português, vale a tradução oficial; sem ela, a nossa, com o aviso de que não é oficial (ADR 0014). A interface é em português.
 - Imagens: YGOPRODeck, baixadas uma vez e hospedadas por nós, em WebP com 3 tamanhos. Cartas do anime sem imagem mostram só o texto.
 - Coleção: quantidade por carta, % total e por pacote (essa % é condição de desbloqueio na loja).
 - Conta nova recebe o **deck inicial do jogo de referência**.
@@ -99,51 +107,57 @@
 ### 3.4 Loja, pacotes e conversor
 - Pacotes, preço, conteúdo, raridade por carta e regra de disponibilidade **iguais ao jogo de referência** (dados levantados na F0).
 - Regras de disponibilidade suportadas: sempre; dia da semana, com nível que libera todos os dias; nível mínimo; % de outro pacote; % de todas as cartas; código secreto; desafio concluído; qualquer uma de várias regras. Pacote bloqueado aparece com a dica de como liberar. A regra de cada pacote está em `backend/db/seeds/jogo/disponibilidade.yml` (ADR 0006).
-- Compra de 1 ou 10 pacotes. O sorteio é feito no servidor, com semente registrada, e cada abertura fica guardada. Toda a compra roda numa transação, com chave de idempotência.
-- Probabilidade por raridade: o jogo de referência não informa (Anexo B). Cada carta do pacote sorteia primeiro a raridade, com os pesos comum 75, rara 18, super rara 5 e ultra rara 2 (padrão, no admin), só entre as raridades que o pacote tem, e depois uma carta dessa raridade (ADR 0005).
+- Compra de 1 ou 10 pacotes, abertos um por vez. O sorteio é feito no servidor, com semente registrada, e cada abertura fica guardada. Toda a compra roda numa transação, com chave de idempotência.
+- Probabilidade por raridade: o jogo de referência não informa (Anexo B). Cada carta do pacote sorteia primeiro a raridade, com os pesos comum 75, rara 18, super rara 5 e ultra rara 2 (padrão, no admin), só entre as raridades que o pacote tem, e depois uma carta dessa raridade. A última carta do pacote é a de raridade aumentada: sai rara ou melhor (ADR 0005).
 - **Conversor:** de 10 a 99 cartas repetidas (nunca uma carta que está num deck sem cópia sobrando) → 1 carta do grupo da quantidade, igual à tabela do jogo.
 
 ### 3.5 Economia (DP, nível e desafios)
-- **DP no fim de cada duelo:** soma dos bônus do Anexo A, calculada a partir das estatísticas do duelo. A tela de resultado mostra linha por linha.
-- **Nível:** inspirado no jogo de referência, onde o nível acompanha o DP ganho e os pacotes liberam entre os níveis 21 e 50: sobe 1 nível a cada 1.000 DP **ganhos** (não gastos), do 1 ao 99, com o valor no admin (ADR 0005).
+- **DP no fim de cada duelo:** soma dos bônus do Anexo A, calculada a partir das estatísticas do duelo, mais dois prêmios do projeto (20/11/2026: o Pedro pediu tudo bem mais fácil, também para quem perde): 300 para todo duelo e mais 200 para quem vence. A tela de resultado mostra linha por linha.
+- **Nível:** inspirado no jogo de referência, onde o nível acompanha o DP ganho e os pacotes liberam entre os níveis 21 e 50: sobe 1 nível a cada 300 DP **ganhos em duelos** (não gastos), do 1 ao 99 (o nível 50 chega em uns 25 duelos). Cada nível novo paga 100 DP, que não contam para o próximo nível (ADR 0005).
 - **Desafios:** os 104, avaliados no fim do duelo pelas estatísticas e pela composição do deck. O progresso fica visível no perfil.
 - **Missões:** liberam o que no jogo saía por minigame, torneio, história ou download: os 8 pacotes que não têm outra regra (quatro torneios) e as 18 cartas que não saem em pacote (carta da semana e visitante do abismo). Lista e números padrão em `backend/db/seeds/missoes.yml`, com os valores no admin.
 - **Razão de DP** (`dp_transactions`): todo crédito e débito tem motivo e saldo. O saldo nunca é editado direto.
-- **Anti-farm** (valores no admin): teto diário de DP vindo de salas (sugestão: 3.000); contra o mesmo oponente no mesmo dia: 100% → 50% → 25% → 0; duelo com menos de 3 turnos ou menos de 2 min só paga a derrota (10 DP); contas com menos de 7 dias têm metade do teto; limite de cadastros por IP.
+- **Anti-farm** (valores no admin): duelo com menos de 3 turnos ou menos de 2 min paga só 10 DP; teto diário de 15.000 DP vindo de duelos; limite de cadastros por IP. O corte por jogar de novo com a mesma pessoa no dia e a metade do teto nas contas novas saíram em 20/11/2026: o projeto é para jogar com a família e os amigos.
 
-### 3.6 Modos e matchmaking
+### 3.6 Modos
 | Modo | Entrada | Formato |
 | --- | --- | --- |
-| Fila 1x1 | Fila aberta | Single |
-| Fila Tag | Sozinho ou com parceiro | Single |
 | Sala 1x1 | Pública ou privada (código) | Single ou Match (com Side) |
-| Sala Tag | Pública ou privada, 4 vagas | Single ou Match (com Side) |
+| Personagens | Escolher um personagem já liberado (3.10) | Single ou Match |
 
 - Opções da sala: formato, banlist (do jogo ou sem banlist), Destiny Draw ligado/desligado e tempo por turno.
-- Fila: pareamento por faixa de nível, que vai abrindo com o tempo de espera. Dá para cancelar. Quem abandona várias vezes espera cada vez mais para voltar.
 - Sala: revanche com um clique; o dono expulsa jogadores antes de começar. Convite de amigo chega dentro do app.
+- Sem fila automática e sem dupla (20/11/2026): com poucos jogadores, a fila quase nunca acharia alguém.
 - Match: entre os duelos, 3 min para trocar o Side Deck (o deck final é validado). Quem perdeu o duelo anterior escolhe quem começa.
 
 ### 3.7 Duelo
 - Regras: MR1 pela engine (seção 5.3) e a banlist escolhida.
 - **Servidor autoritativo:** cada jogador recebe só o que pode ver.
-- **No Tag, o parceiro vê a mão do companheiro o tempo todo.**
-- Quem começa: pedra, papel e tesoura entre os dois jogadores (no Tag, entre os líderes das duplas). Quem ganha escolhe ir primeiro ou segundo.
+- Quem começa: pedra, papel e tesoura entre os dois jogadores. Quem ganha escolhe ir primeiro ou segundo. Contra personagem, quem começa é sorteado.
 - Pergunta de cadeia: por padrão, o jogador só é consultado se tiver resposta possível. Configurações: "sempre perguntar" e velocidade das animações.
 - Destiny Draw igual ao jogo, quando a sala permitir.
 - Timer por turno e por decisão. Desistência. Reconexão com o estado completo. Desconexão vira derrota depois do prazo.
 - Tempo máximo de duelo (padrão 60 min), com desempate por LP.
 - Replay de todo duelo (guardado 30 dias). Botão "reportar bug de carta".
-- Sem chat livre: só emotes. No Tag, há também "pings" para o parceiro (ex.: "espera", "pode atacar").
+- Sem chat livre: só emotes.
 
 ### 3.8 Admin (dentro do próprio front, por papel)
 - Jogadores: busca, banimento e ajuste de DP (sempre com motivo).
 - Denúncias.
 - Banlists e pesos de raridade.
-- Valores do anti-farm e flags (ligar/desligar fila, loja, Tag).
+- Valores do anti-farm e flags (ligar/desligar loja e personagens).
+
+### 3.10 Duelos contra personagens (F5)
+- Personagens do anime controlados pelo computador, cada um com o deck dele no jogo de referência (os do GX estão nele). Yugi, Kaiba e Joey não estão: usam o deck deles em outro jogo da série, com as cartas fora do pool trocadas. A lista, a fonte de cada deck e as trocas ficam em `db/seeds/jogo/personagens.yml` (ADR 0013).
+- **O deck é embaralhado a cada duelo**, como o de qualquer jogador. O computador não trapaceia: vê só a mesa que um jogador veria (Duel::View) e responde às mesmas perguntas da engine, pela mesma validação.
+- **Ordem para liberar:** vencer um personagem libera o próximo. O último é o mais duro, mas dá para vencer.
+- Lista (21/11/2026): alunos da Academia (Chumley, Syrus, Blair, Alexis, Chazz, Bastion), chefes (Zane, Crowler, Jesse, Aster, Jaden) e lendas de Duel Monsters (Joey, Kaiba e o Yugi por último). Os vilões do GX ficam para depois, se o Pedro quiser.
+- **Prêmio:** o DP do duelo, como contra um amigo (sem o "vitória em rede"), mais um bônus na vitória que cresce com a ordem (60 DP no primeiro, 840 no Yugi). Na primeira vitória contra cada personagem, a carta-símbolo dele (ex.: vencer o Yugi dá um Mago Negro). Desistir ou deixar o tempo passar contra o computador paga como duelo curto.
+- A dificuldade vem do deck e de como o computador joga: os alunos erram de propósito às vezes, os chefes menos e as lendas jogam o melhor que sabem. Nunca de cartas a mais ou de ver o que o jogador tem.
+- Sem banlist nos dois lados: os decks dos personagens no jogo de referência também não seguem a dele.
 
 ### 3.9 Fora do escopo
-- IA e singleplayer.
+- Computador que aprende ou que trapaceia (o da 3.10 segue regras simples, com a mesa que um jogador veria).
 - Torneios, espectador e ranking público (ficam para a v2).
 - Dinheiro real.
 - Chat livre.
@@ -159,15 +173,16 @@
 | Tela | Conteúdo principal |
 | --- | --- |
 | Entrar / Cadastro / Senha | Formulários com verificação de idade e de e-mail |
-| Lobby | Fila 1x1, Fila Tag, Salas, Loja, Deck Edit, Coleção, Conversor, Perfil, Amigos, Replays; DP e nível no topo |
+| Lobby | Salas, Personagens, Loja, Deck Edit, Coleção, Conversor, Desafios, Perfil, Amigos, Replays; DP e nível no topo |
 | Salas | Lista das públicas, criar, entrar por código; sala de espera com vagas, deck escolhido e "pronto" |
+| Personagens | Os 14 na ordem (alunos, chefes, lendas), com a carta do prêmio e o bônus; bloqueado com a dica de quem vencer antes; o deck escolhido num modal; o duelo em andamento com a volta para a mesa |
 | Deck Edit | Baú + deck (abas Main/Extra/Side) + painel da carta; filtros, Destiny, validação, importar/exportar |
 | Loja | Prateleira por disponibilidade (hoje, bloqueados com dica), compra de 1 ou 10, abertura carta a carta, campo de código |
 | Conversor | Escolher as repetidas, ver o grupo da quantidade e confirmar |
 | Coleção | Grade com filtros, % total e por pacote |
-| **Mesa de duelo** | Campo MR1 dos dois lados (5 + 5 + campo + cemitério + deck + extra + banidas). Mão em leque. Painel de detalhe. LP e fases (DP/SP/M1/BP/M2/EP). Pilha da cadeia. Log. Timer. Emotes. Botão do Destiny Draw. Desistir. No Tag: mão do parceiro e indicador de quem joga |
-| Prompts do duelo | Um componente por tipo de pergunta da engine (seção 5.3) |
-| Resultado | Bônus linha a linha, total de DP, subida de nível, desafios novos; revanche, replay, reportar |
+| **Mesa de duelo** | Campo MR1 dos dois lados (5 + 5 + campo + cemitério + deck + extra + banidas). Mão em leque. Painel de detalhe. LP e fases (DP/SP/M1/BP/M2/EP). Pilha da cadeia. Log. Timer. Emotes. Botão do Destiny Draw. Desistir. A mesa cabe na tela, sem rolar, no computador e no celular |
+| Prompts do duelo | Um componente por tipo de pergunta da engine (seção 5.3), num modal: dá para jogar sem rolar a página, inclusive no celular. A carta que pode ser usada brilha; tocar nela abre as ações. Dá para minimizar o modal e olhar a mesa antes de responder (20/11/2026) |
+| Resultado | Bônus linha a linha, total de DP, subida de nível, desafios novos; revanche, replay, reportar. Contra personagem: a carta ganha, quem ficou liberado, duelar de novo ou contra o próximo |
 | Side Deck (Match) | Troca entre Main e Side com timer de 3 min |
 | Perfil / Desafios | Nível, estatísticas, lista dos 104 desafios com progresso |
 | Replays | Player com linha do tempo (avançar, voltar, pular para o turno) |
@@ -190,22 +205,22 @@ React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──
 ```
 - **Imagens das cartas:** Cloudflare Pages, direto para o navegador (ADR 0004).
 - **Mesmo domínio:** o `vercel.json` repassa `/api/*` para o Rails, então o cookie de sessão é do próprio site.
-- **Sem worker:** o pareamento acontece quando alguém entra na fila; o timeout é cobrado pelo oponente (o front dele chama a API depois do prazo); limpezas rodam numa Action agendada.
+- **Sem worker:** o timeout é cobrado pelo oponente (o front dele chama a API depois do prazo); limpezas rodam numa Action agendada. Contra personagem, o computador responde na mesma requisição do jogador.
 
 ### 5.2 Módulos do backend (POROs simples, um por arquivo)
 - **Contas:** `Accounts` (cadastro, sessão, verificação, LGPD, idade); `Social` (amigos, bloqueio, denúncia).
 - **Cartas e decks:** `Catalog` (cartas, pacotes, banlists, grupos do conversor, deck inicial, desafios e tabela de bônus; dados versionados em `db/seeds/*.yml`); `Decks` (`DeckValidator`, importação/exportação).
 - **Economia:** `Economy::Ledger` (débito e crédito atômicos); `BonusCalculator` (puro: estatísticas → linhas de bônus); `LevelService`; `ChallengeEvaluator`; `AntiFarm`.
 - **Loja:** `Shop::Availability` (dia, nível, %, código, desafio); `Shop::PackOpener` (sorteio com semente); `Shop::Converter`.
-- **Partidas:** `Matchmaking::Queue`, `Matchmaking::Rooms`.
-- **Duelo:** `Duel::Engine` (wrapper FFI); `Duel::Session` (reconstrói pelo replay; cache LRU no processo); `Duel::MessageParser` (bytes → eventos tipados); `Duel::ViewProjector` (visão por jogador, com a mão do parceiro no Tag); `Duel::ResponseGuard` (sequência e formato); `Duel::StatsCollector` (alimenta bônus e desafios); `Duel::Timeouts`.
+- **Partidas:** `Rooms` e `Matches`; contra personagem, um jogador que responde pela engine (F5).
+- **Duelo:** `Duel::Engine` (wrapper FFI); `Duel::Session` (reconstrói pelo replay; cache LRU no processo); `Duel::MessageParser` (bytes → eventos tipados); `Duel::ViewProjector` (visão por jogador); `Duel::ResponseGuard` (sequência e formato); `Duel::StatsCollector` (alimenta bônus e desafios); `Duel::Timeouts`.
 - **Realtime:** interface `Publisher` com `AblyPublisher` (produção) e `MemoryPublisher` (dev e CI), e o endpoint de token.
 - **Ops:** relatório de bug → Jira + Slack; tarefas de limpeza.
 
 ### 5.3 Engine
 - Fonte: `ygopro-core` do Project Ignis (fork do edo9300) + `CardScripts`, fixados num commit e compilados no `Dockerfile.vercel`. O banco das cartas da engine (`BabelCDB`, em SQLite) entra junto, só como referência (ver o ADR da engine).
 - Ruby chama a engine via `ffi`, com as funções `OCG_CreateDuel`, `OCG_DuelNewCard`, `OCG_StartDuel`, `OCG_DuelProcess`, `OCG_DuelGetMessage`, `OCG_DuelSetResponse`, `OCG_DuelQuery*` e `OCG_DestroyDuel`.
-- Modo de regra: **MR1**. Tag pelo suporte nativo de times da engine.
+- Modo de regra: **MR1**.
 - Destiny Draw: um script Lua de regra carregado no início do duelo. A escolha do jogador vira uma resposta registrada, o que mantém o replay determinístico.
 - **Estado = semente + decks + lista de respostas.** Cada ação reconstrói o duelo pelo replay, com cache em memória quando a instância está quente. Meta: < 300 ms no p95.
 - Perguntas da engine que viram prompt na tela (lista fechada pelo header fixado): `SELECT_IDLECMD`, `SELECT_BATTLECMD`, `SELECT_CHAIN`, `SELECT_EFFECTYN`, `SELECT_YESNO`, `SELECT_OPTION`, `SELECT_CARD`, `SELECT_UNSELECT_CARD`, `SELECT_TRIBUTE`, `SELECT_SUM`, `SELECT_PLACE`, `SELECT_DISFIELD`, `SELECT_POSITION`, `SELECT_COUNTER`, `SORT_CARD`, `SORT_CHAIN`, `ANNOUNCE_RACE`, `ANNOUNCE_ATTRIB`, `ANNOUNCE_CARD`, `ANNOUNCE_NUMBER`, `ROCK_PAPER_SCISSORS`.
@@ -219,9 +234,9 @@ React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──
 
 ### 5.5 Contrato do realtime
 - Um canal por jogador: `private:user:{id}`. O token do Ably, emitido pelo Rails, só permite assinar esse canal.
-- Eventos: `match.found`, `room.updated`, `invite.received`; `duel.delta` (`seq`, `events[]`, `prompt?`, `timers`); `duel.ended` (resultado + bônus).
+- Eventos: `room.updated`, `invite.received`; `duel.delta` (`seq`, `events[]`, `prompt?`, `timers`); `duel.ended` (resultado + bônus).
 - Se faltar um `seq` no meio, o front chama `GET /api/matches/:id/state` e continua de lá.
-- O cliente só abre a conexão dentro de fila, sala ou duelo, e fecha depois de 2 min com a aba oculta. Se o Ably estourar o limite, o front cai para polling a cada 2 s.
+- O cliente só abre a conexão dentro de sala ou duelo, e fecha depois de 2 min com a aba oculta. Se o Ably estourar o limite, o front cai para polling a cada 2 s.
 
 ### 5.6 API (REST JSON, prefixo `/api`)
 - **Contas:** `session`, `registrations`, `passwords`, `me` (+ `export`, `destroy`).
@@ -243,6 +258,7 @@ React (Vercel) ──HTTP /api──▶ Rails 8 API (container na Vercel) ──
 - O estado do duelo fica num `useReducer` que aplica os `duel.delta` em ordem de `seq`.
 - Imagens: miniatura na lista, normal no campo, grande no zoom. Lazy load. As cartas do próprio deck são pré-carregadas antes do duelo.
 - Animações 2D com CSS e a Web Animations API, com controle de velocidade.
+- Ação que não faz sentido agora fica com o botão desativado (apagado) e, quando o motivo não é óbvio, ele aparece em texto ao lado: falta de DP na loja, deck incompleto na sala e contra personagem, sala cheia, 3 cópias ou seção cheia no Deck Edit, máximo do conversor, limite de 50 decks (GXP-117).
 
 ### 5.9 Planos gratuitos (conferidos na F0: ADR 0004)
 | Serviço | Uso | Limite que importa |
@@ -262,7 +278,7 @@ saiu na conferência: pede cartão para ativar e cobra o excedente (ADR 0004).
 ---
 
 ## 6. Qualidade
-- **Testes:** backend com Minitest (POROs, requests e transações de DP/loja); **contrato da engine** (duelos roteirizados com semente fixa → estado esperado, com um teste por mecânica: MR1, Fusão, Ritual, Sincro, Tag, Destiny Draw, Match/Side); um teste por bônus do Anexo A e por desafio; front com funções puras (reducer do duelo, filtros, validação) e Playwright + axe com 2 navegadores (1x1) e 4 (Tag).
+- **Testes:** backend com Minitest (POROs, requests e transações de DP/loja); **contrato da engine** (duelos roteirizados com semente fixa → estado esperado, com um teste por mecânica: MR1, Fusão, Ritual, Sincro, Destiny Draw, Match/Side); um teste por bônus do Anexo A e por desafio; front com funções puras (reducer do duelo, filtros, validação) e Playwright + axe com 2 navegadores (1x1) e 4 (Tag).
 - **Consultas:** Bullet nos testes de API (N+1 e `includes` sem uso derrubam o teste).
 - **Segurança:** Brakeman e bundler-audit; Rack::Attack; cookie `SameSite` + token CSRF; sorteios e informação oculta só no servidor; segredos só nos painéis.
 - **Desempenho:** p95 de ação < 300 ms; uma mensagem por jogador por ação; replay de 30 dias.
@@ -285,10 +301,12 @@ saiu na conferência: pede cartão para ativar e cobra o excedente (ADR 0004).
 | F2 Contas e Deck Edit | Contas, LGPD, deck inicial, coleção, Deck Edit completo | Montar e validar deck com Side e Destiny |
 | F3 Duelo 1x1 em sala | Salas, mesa, todos os prompts, timer, reconexão, replay | 1x1 completo sem travar |
 | F4 Economia e loja | Bônus, nível, desafios, loja, conversor, anti-farm | Resultado mostra os bônus e o DP compra pacote |
-| F5 Fila + Match | Fila 1x1, Match com Side | Pareamento em < 30 s com gente na fila |
-| **MVP / beta aberto** | | |
-| F6 Tag | Salas e fila 2x2, mão do parceiro, pings | Tag completo, inclusive em Match |
+| F5 Duelos contra personagens | Computador que joga pela engine, decks dos personagens, ordem para liberar, carta-símbolo (3.10) | Dá para vencer o último personagem, e ele é difícil |
+| F6 Partidas melhor de 3 | Match com Side nas salas e contra personagens | Match completo, com troca do Side |
 | F7 Social e acabamento | Amigos, convites, replays, admin, acessibilidade, celular | Lighthouse/axe sem erro crítico |
+
+Até 20/11/2026, a F5 era "Fila + Match" e a F6 era o Tag (duelo em dupla). A fila e a dupla saíram
+do escopo; o Match foi para a F6.
 
 ## 9. Backlog da F0
 1. `GXP-1` Esqueleto: backend, frontend, CI, Vercel, LICENSE AGPL-3.0, `/up` e `/up/db`.
@@ -309,7 +327,7 @@ saiu na conferência: pede cartão para ativar e cobra o excedente (ADR 0004).
 | Limites gratuitos | Médio | Seção 5.9, medição e plano B (VM Oracle Always Free com Action Cable; ela pede cartão, então é decisão do Pedro) |
 | Farm de DP | Médio | Anti-farm (3.5) |
 | LGPD | Médio | 13+, exclusão e exportação, coleta mínima |
-| Tamanho (a F3 é a maior fase) | Alto | MVP antes do Tag |
+| Tamanho (a F3 é a maior fase) | Alto | Fases pequenas; a dupla e a fila saíram (20/11/2026) |
 
 ## 11. Decisões
 | # | Decisão |
@@ -317,10 +335,10 @@ saiu na conferência: pede cartão para ativar e cobra o excedente (ADR 0004).
 | 1 | Repo público AGPL-3.0 |
 | 2 | Engine do Project Ignis (MR1 + pré-errata) |
 | 3 | Ably para realtime; Supabase só para o banco |
-| 4 | Fila aberta + salas públicas ou privadas |
+| 4 | Salas públicas ou privadas (a fila saiu em 20/11/2026) |
 | 5 | GX Project / `GXP` |
 | 6 | Cartas, regras e economia do jogo de referência, com as mudanças da seção 2 |
-| 7 | Parceiro vê a mão do companheiro sempre |
+| 7 | ~~Parceiro vê a mão do companheiro sempre~~ (sem dupla desde 20/11/2026) |
 | 8 | Match com Side Deck |
 | 9 | Idade mínima de 13 anos |
 
@@ -337,10 +355,10 @@ Fonte: Yugipedia (página de bônus e desafios do jogo de referência). Fórmula
 | 04 | Derrota | 10 | Igual |
 | 05 | Empate | 50 | Igual |
 | 06 | Turnos | 2/turno se vencer, 1 se não | Igual |
-| 07 | Vitória em Tag | 50 | Igual |
+| 07 | Vitória em Tag | 50 | **Removido** (sem dupla) |
 | 08 | Vitória em rede | 50 | Vale em toda vitória |
 | 09 | Vitória em Match | 50 | Igual |
-| 10 | Subir de nível | 400 | Igual |
+| 10 | Subir de nível | 400 | 100, com o nível a cada 300 DP (20/11/2026) |
 | 11 | Duelista (nível do deck do NPC) | 90 × nível do deck | 90 × faixa do oponente (1–10) |
 | 12 | Oponente sem cartas para comprar | 20 | Igual |
 | 13–23 | Formas de vencer | Rápida em ≤ 5 turnos 10 · virada 20 · no turno do oponente 20 · no turno do parceiro 10 · LP < 1000 20 · LP < 100 100 · sem sofrer dano 10 · LP > 20.000 100 · exatamente 5.730 LP 573 · deck < 10 20 · deck = 0 100 | Igual |
@@ -364,18 +382,18 @@ Fonte: Yugipedia (página de bônus e desafios do jogo de referência). Fórmula
 7. Regra de subida de nível. Não achado: vale a regra provisória (3.5); pergunta no Anexo C.
 8. Banlist padrão. Feito: `banlist.yml`.
 9. Condição exata do Destiny Draw e se ele vem ligado por padrão. Feito: regra pela Yugipedia (ADR 0001); ligado por padrão, confirmado pelo Pedro.
-10. LP do Tag Duel. Feito: 8000, configurável, confirmado pelo Pedro.
+10. LP do Tag Duel. Feito: 8000, configurável, confirmado pelo Pedro. (O Tag saiu do escopo em 20/11/2026.)
 
 Fontes: Yugipedia (CC BY-SA, dar crédito), guias do GameFAQs e Supercheats (só para conferir), YGOPRODeck (dados e imagens), BabelCDB/CardScripts (passcodes e scripts).
 
 ## Anexo C: conferência de memória do jogo
 - [x] Como se decide quem começa (cara ou coroa, ou pedra-papel-tesoura)? Pedra, papel e tesoura entre os jogadores (no Tag, entre os líderes); quem ganha escolhe ir primeiro ou segundo (3.7).
 - [x] Quando o botão de Destiny Draw aparece? Segue a regra do jogo (pesquisada: em apuros com PV até 4000, até a segunda Fase de Compra).
-- [x] LP da dupla no Tag (8000?) Sim, 8000, configurável.
+- [x] LP da dupla no Tag (8000?) Sim, 8000, configurável. (O Tag saiu do escopo em 20/11/2026.)
 - [x] Destiny Draw vem ligado por padrão? Sim.
 - [x] O layout das telas (seção 1.3) bate com o que você lembra? Algo marcante ficou de fora? Inspirado no GX, com interface original, bonita e simples.
 - [x] O que cada pacote de UMD/nota de prova deve exigir aqui? Pela fonte: os dois pacotes de UMD também saem no jogo por "todos os desafios", e fica essa regra.
 - [x] Como liberar os 8 pacotes que no jogo dependem de minigame, torneio ou história? Por missões (3.5): cada pacote ficou com o torneio que o jogo já dava como alternativa.
 - [x] Como conseguir aqui as cartas que no jogo saem só por DLC (13) ou num minigame (5)? Por missões (3.5): a carta da semana, na ordem dos downloads, e o visitante do abismo.
-- [x] Você lembra quanto DP sobe um nível? Regra inspirada no jogo: 1 nível a cada 1.000 DP ganhos (3.5).
+- [x] Você lembra quanto DP sobe um nível? Regra inspirada no jogo: 1 nível a cada 1.000 DP ganhos (3.5). Em 20/11/2026 ficou a cada 300, a pedido do Pedro.
 - [x] Você lembra das chances por raridade dos pacotes? Decisão nossa: pesos 75, 18, 5 e 2 (3.4).

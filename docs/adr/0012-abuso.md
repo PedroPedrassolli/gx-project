@@ -29,8 +29,8 @@ A F3 ainda não paga DP; a F4 paga, com o anti-farm do [ADR 0005](0005-economia.
 6. **A partida já guarda o que o anti-farm da F4 precisa:** os jogadores
    (`match_players.user_id`), os turnos (`turn`), o começo e o fim (`started_at`,
    `finished_at`) e o motivo (`finish_reason`). Desistência e tempo esgotado contam como
-   qualquer fim: duelo curto paga só a derrota, e o mesmo oponente no mesmo dia rende cada vez
-   menos.
+   qualquer fim: duelo curto paga só 10 DP. (O corte contra o mesmo oponente no dia saiu em
+   20/11/2026: o projeto é para jogar com a família e os amigos.)
 
 ## Consequências
 

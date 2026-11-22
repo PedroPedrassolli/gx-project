@@ -18,7 +18,10 @@ class Api::CollectionsController < Api::BaseController
   # lista, marca todas.
   def seen
     cards = current_user.collection_cards.where(seen_at: nil)
-    cards = cards.where(card_id: Array(params[:card_ids]).first(MAX_SEEN).map(&:to_i)) if params.key?(:card_ids)
+    if params.key?(:card_ids)
+      ids = params[:card_ids]
+      cards = cards.where(card_id: ids.is_a?(Array) ? ids.first(MAX_SEEN).filter_map { |id| integer_param(id) } : [])
+    end
     cards.update_all(seen_at: Time.current)
     head :no_content
   end

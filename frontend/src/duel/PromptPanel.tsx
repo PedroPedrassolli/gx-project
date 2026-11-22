@@ -9,6 +9,7 @@ import {
   ZoneChoice,
 } from "./Announcements.tsx";
 import { CardChoice, SortChoice, UnselectChoice } from "./CardChoice.tsx";
+import { commands, phaseCommands } from "./commands.ts";
 import { hintText, systemText } from "./hints.ts";
 import {
   cardLabel,
@@ -21,22 +22,9 @@ import {
 import { placeLabel } from "./zones.ts";
 
 // As perguntas da engine para o jogador (escopo 4, "Prompts do duelo"): cada tipo vira um
-// formulário com botões, que manda a escolha em JSON (o servidor monta os bytes).
+// formulário com botões, que manda a escolha em JSON (o servidor monta os bytes). Desde o
+// GXP-99 o formulário abre num modal (DuelDialogs.tsx), por cima da mesa.
 type Props = PromptProps;
-
-const IDLE: [string, string, string][] = [
-  ["summonable", "summon", "Invocar"],
-  ["spsummonable", "spsummon", "Invocar por Invocação-Especial"],
-  ["repositionable", "reposition", "Mudar a posição de"],
-  ["msetable", "mset", "Baixar"],
-  ["ssetable", "sset", "Baixar"],
-  ["activatable", "activate", "Ativar"],
-];
-
-const BATTLE: [string, string, string][] = [
-  ["attackable", "attack", "Atacar com"],
-  ["activatable", "activate", "Ativar"],
-];
 
 const POSITIONS: [number, string][] = [
   [0x1, "Ataque, com a face para cima"],
@@ -45,20 +33,17 @@ const POSITIONS: [number, string][] = [
   [0x8, "Defesa, com a face para baixo"],
 ];
 
-export function PromptPanel(props: Props) {
-  const { prompt } = props;
+// O formulário da pergunta, sem o título (o modal mostra o título).
+export function PromptBody(props: Props) {
   return (
-    <section className="prompt-panel" aria-labelledby="prompt-title">
-      <h2 id="prompt-title">{title(prompt, props)}</h2>
-      <fieldset disabled={props.pending}>
-        <legend className="visually-hidden">Escolha</legend>
-        {body(props)}
-      </fieldset>
-    </section>
+    <fieldset disabled={props.pending}>
+      <legend className="visually-hidden">Escolha</legend>
+      {body(props)}
+    </fieldset>
   );
 }
 
-function title(prompt: Prompt, props: Props) {
+export function promptTitle(prompt: Prompt, props: Omit<Props, "prompt">) {
   switch (prompt.type) {
     case "select_idlecmd":
       return "Fase principal: o que fazer?";
@@ -114,36 +99,8 @@ function body(props: Props): ReactNode {
   const { prompt, onAnswer } = props;
   switch (prompt.type) {
     case "select_idlecmd":
-      return (
-        <>
-          <Commands {...props} groups={IDLE} />
-          <p className="actions">
-            {Boolean(prompt.to_bp) && (
-              <Choice label="Ir para a Batalha" onClick={() => onAnswer({ command: "battle" })} />
-            )}
-            {Boolean(prompt.to_ep) && (
-              <Choice label="Encerrar o turno" onClick={() => onAnswer({ command: "end" })} />
-            )}
-          </p>
-        </>
-      );
     case "select_battlecmd":
-      return (
-        <>
-          <Commands {...props} groups={BATTLE} />
-          <p className="actions">
-            {Boolean(prompt.to_m2) && (
-              <Choice
-                label="Ir para a Principal 2"
-                onClick={() => onAnswer({ command: "main2" })}
-              />
-            )}
-            {Boolean(prompt.to_ep) && (
-              <Choice label="Encerrar o turno" onClick={() => onAnswer({ command: "end" })} />
-            )}
-          </p>
-        </>
-      );
+      return <CommandList {...props} />;
     case "select_chain":
       return (
         <p className="actions">
@@ -220,26 +177,31 @@ function body(props: Props): ReactNode {
   }
 }
 
-// Ações sobre cartas (invocar, ativar, atacar...), uma lista por tipo de ação.
-function Commands(props: Props & { groups: [string, string, string][] }) {
+// Todas as ações da fase principal ou da batalha numa lista ("Todas as ações"): serve para
+// a carta que não está à vista na mesa (no deck, por exemplo), para o teclado e para o leitor
+// de tela. Tocar na carta que brilha abre só as ações dela.
+function CommandList(props: Props) {
   return (
     <>
-      {props.groups.map(([key, command, verb]) => {
-        const items = list(props.prompt, key);
-        if (items.length === 0) return null;
-        return (
-          <p key={key} className="actions">
-            {items.map((card, index) => (
-              <Choice
-                key={index}
-                label={`${verb} ${cardLabel(card, props)}`}
-                detail={card.text}
-                onClick={() => props.onAnswer({ command, index })}
-              />
-            ))}
-          </p>
-        );
-      })}
+      <p className="actions command-list">
+        {commands(props.prompt).map((item) => (
+          <Choice
+            key={`${item.command}-${item.index}`}
+            label={`${item.prefix} ${cardLabel(item.card, props)}`}
+            detail={item.card.text}
+            onClick={() => props.onAnswer({ command: item.command, index: item.index })}
+          />
+        ))}
+      </p>
+      <p className="actions">
+        {phaseCommands(props.prompt).map((item) => (
+          <Choice
+            key={item.command}
+            label={item.label}
+            onClick={() => props.onAnswer({ command: item.command })}
+          />
+        ))}
+      </p>
     </>
   );
 }

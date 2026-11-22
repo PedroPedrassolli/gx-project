@@ -13,7 +13,7 @@ export const PLAYER = {
 export const PASSWORD = "duelista123";
 const TOKEN = "token-de-teste";
 
-type Duel = { match_id: number; room_code: string };
+type Duel = { match_id: number; room_code: string | null };
 
 // API de sessão falsa: lembra quem está logado e confere o token CSRF, como o Rails. duel é
 // o duelo em andamento que o GET /api/session devolve.

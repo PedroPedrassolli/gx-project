@@ -1,8 +1,8 @@
 # Dados do jogo de referência
 
 Cartas, pacotes, deck inicial, conversor, desafios e banlist do jogo de referência, tirados da
-Yugipedia em 07/11/2026 pelo `bin/rails dados:jogo`. Só o `disponibilidade.yml` é escrito à
-mão. As decisões estão no [ADR 0006](../../../../docs/adr/0006-dados-do-jogo.md).
+Yugipedia em 07/11/2026 pelo `bin/rails dados:jogo`. O `disponibilidade.yml`, o
+`personagens.yml` e o `traducoes.yml` são escritos à mão. As decisões estão no [ADR 0006](../../../../docs/adr/0006-dados-do-jogo.md).
 
 | Arquivo | O que tem | Anexo B |
 | --- | --- | --- |
@@ -14,6 +14,8 @@ mão. As decisões estão no [ADR 0006](../../../../docs/adr/0006-dados-do-jogo.
 | `desafios.yml` | os 104 desafios, com o texto original em inglês | 6 |
 | `banlist.yml` | banlist padrão do jogo | 8 |
 | `extras.yml` | cartas que saem por DLC e num minigame | 1 |
+| `personagens.yml` | os personagens da F5 na ordem, com o deck de cada um, as trocas e a carta-símbolo (escrito à mão, a partir das listas da Yugipedia; ADR 0013) | — |
+| `traducoes.yml` | nossa tradução para o português dos 1.009 textos sem tradução oficial que possa aparecer, com o inglês traduzido ao lado (escrito à mão; ADR 0014) | 1 |
 | `cobertura.yml` | o pool cruzado com a engine e as imagens: as exceções à regra geral, com a decisão de cada carta (gerado por `bin/rails dados:cobertura`) | GXP-7 |
 
 Os itens 9 (Destiny Draw) e 10 (PV do Tag) estão no ADR 0001.
@@ -44,7 +46,9 @@ que juntam outros. Pode rodar quantas vezes quiser. Mudou o pool? Rode também o
   nenhum dos dois.
 - 213 cartas mudaram de nome depois do jogo (`nome_no_jogo`).
 - 2.221 monstros, 723 magias e 552 armadilhas, todos com texto em inglês; 2.574 têm nome e
-  2.521 têm texto em português. 24 monstros têm ATK "?" e 17 têm DEF "?" (ficam sem valor).
+  2.521 têm texto em português. Com o `traducoes.yml`, toda carta do pool tem texto em português:
+  1.009 são tradução nossa (954 sem tradução oficial, 47 com o texto da época e 8 com o oficial
+  quebrado na fonte). 24 monstros têm ATK "?" e 17 têm DEF "?" (ficam sem valor).
 - Título do jogo sem página própria cai na página do nome puro, que às vezes é de um pacote,
   arquétipo ou episódio. Só vale página com a caixa de uma carta: o gerador tenta
   `Nome (card)`, depois a página que o aviso do topo indica e, por último, uma carta com o

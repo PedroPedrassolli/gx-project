@@ -44,6 +44,12 @@ class Api::BaseController < ApplicationController
 
   def stale_page = render_error(:forbidden, "A página ficou velha. Recarregue e tente de novo.")
 
+  # Número inteiro que vem do cliente (texto ou número, em base 10), ou nil. Lista, hash e
+  # texto que não é número viram nil, em vez de erro 500 (GXP-110).
+  def integer_param(value)
+    Integer(value.to_s, 10, exception: false) if value.is_a?(String) || value.is_a?(Integer)
+  end
+
   # O catálogo é público e muda pouco: a CDN guarda a resposta por 1 hora e, depois disso,
   # entrega a cópia velha por até 30 dias enquanto busca a nova por trás. Assim quem volta
   # depois de dias não espera o servidor acordar (uns 4 s). O navegador guarda por 5

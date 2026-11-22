@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "../account/session.ts";
@@ -40,6 +40,11 @@ export function ShopPage() {
       }
     },
   });
+
+  // Quanto DP falta para comprar: com saldo curto, o botão desativa e a prateleira diz quanto
+  // falta (GXP-117). Antes de o saldo chegar, nada falta.
+  const missing = (pack: ShopPack, count: number) =>
+    shop.data ? pack.price * count - shop.data.balance : 0;
 
   // Pacote novo na prateleira: o servidor guarda que o jogador já viu, e o destaque some na
   // próxima visita.
@@ -85,19 +90,31 @@ export function ShopPage() {
                   {number(pack.price)} DP, {pack.cards_per_pack} cartas
                 </p>
                 {pack.available ? (
-                  <p className="pack-buy">
-                    {([1, 10] as const).map((count) => (
-                      <button
-                        key={count}
-                        type="button"
-                        className={count === 1 ? "cta" : undefined}
-                        disabled={buy.isPending || (shop.data?.balance ?? 0) < pack.price * count}
-                        onClick={() => buy.mutate({ pack, count })}
-                      >
-                        {count === 1 ? "Comprar 1" : `Comprar 10 (${number(pack.price * 10)} DP)`}
-                      </button>
-                    ))}
-                  </p>
+                  <>
+                    <p className="pack-buy">
+                      {([1, 10] as const).map((count) => (
+                        <button
+                          key={count}
+                          type="button"
+                          className={count === 1 ? "cta" : undefined}
+                          disabled={buy.isPending || missing(pack, count) > 0}
+                          aria-describedby={
+                            missing(pack, count) > 0 ? `pack-${pack.id}-dp` : undefined
+                          }
+                          onClick={() => buy.mutate({ pack, count })}
+                        >
+                          {count === 1 ? "Comprar 1" : `Comprar 10 (${number(pack.price * 10)} DP)`}
+                        </button>
+                      ))}
+                    </p>
+                    {missing(pack, 10) > 0 && (
+                      <p id={`pack-${pack.id}-dp`} className="pack-hint">
+                        {missing(pack, 1) > 0
+                          ? `Faltam ${number(missing(pack, 1))} DP para comprar 1.`
+                          : `Faltam ${number(missing(pack, 10))} DP para comprar 10.`}
+                      </p>
+                    )}
+                  </>
                 ) : (
                   <p className="pack-hint">{pack.hint}</p>
                 )}
@@ -159,6 +176,7 @@ function SecretCode({ onUnlocked }: { onUnlocked: () => void }) {
           </button>
         ))}
       </div>
+      {code.length >= 16 && <p className="hint">O código tem no máximo 16 símbolos.</p>}
       <p className="actions">
         <button
           type="button"
@@ -182,49 +200,79 @@ function SecretCode({ onUnlocked }: { onUnlocked: () => void }) {
   );
 }
 
-// Os pacotes abertos: as cartas começam viradas e aparecem uma por uma (ou todas de uma vez).
+// Os pacotes abertos, um por vez (GXP-108): as cartas do pacote começam viradas e aparecem
+// uma por uma (ou todas de uma vez); depois, o mesmo botão abre o próximo pacote. A última
+// carta de cada pacote avisa, ainda virada, que sai rara ou melhor.
 function Opening(props: { pack: ShopPack; openings: DrawnCard[][]; onClose: () => void }) {
   const catalog = useCatalog();
   const [language] = useCardLanguage();
-  const cards = props.openings.flat();
+  const [packIndex, setPackIndex] = useState(0);
   const [shown, setShown] = useState(0);
+  const main = useRef<HTMLButtonElement>(null);
+  const cards = props.openings[packIndex] ?? [];
   const done = shown >= cards.length;
+  const last = packIndex === props.openings.length - 1;
   const many = props.openings.length > 1;
+  // O botão principal fica no mesmo lugar e muda de papel: virar, abrir o próximo, voltar.
+  const action = !done
+    ? { label: "Virar a próxima", run: () => setShown(shown + 1) }
+    : !last
+      ? {
+          label: "Abrir o próximo pacote",
+          run: () => {
+            setPackIndex(packIndex + 1);
+            setShown(0);
+          },
+        }
+      : { label: "Voltar para a loja", run: props.onClose };
   return (
     <section className="opening-packs" aria-labelledby="opening-packs-title">
       <h2 id="opening-packs-title">
-        {many ? `${props.openings.length} pacotes de ${props.pack.name}` : props.pack.name}
+        {many
+          ? `Pacote ${packIndex + 1} de ${props.openings.length}: ${props.pack.name}`
+          : props.pack.name}
       </h2>
       <p className="actions">
-        <button type="button" className="cta" disabled={done} onClick={() => setShown(shown + 1)}>
-          Virar a próxima
+        <button ref={main} type="button" className="cta" onClick={action.run}>
+          {action.label}
         </button>
-        <button type="button" disabled={done} onClick={() => setShown(cards.length)}>
-          Virar todas
-        </button>
-        <button type="button" onClick={props.onClose}>
-          Voltar para a loja
-        </button>
+        {!done && (
+          <button
+            type="button"
+            onClick={() => {
+              setShown(cards.length);
+              main.current?.focus(); // este botão some: o foco segue no principal
+            }}
+          >
+            Virar todas
+          </button>
+        )}
+        {!(done && last) && (
+          <button type="button" onClick={props.onClose}>
+            Voltar para a loja
+          </button>
+        )}
       </p>
       <p role="status" className="opening-count">
         {shown} de {cards.length} cartas viradas.
       </p>
-      <ol className="drawn-cards">
+      <ol className="drawn-cards" aria-label="Cartas do pacote">
         {cards.map((drawn, index) => {
           const card = catalog.data?.byId.get(drawn.id);
+          const key = `${packIndex}-${index}`;
           if (index >= shown) {
             return (
-              <li key={index} className="drawn back">
+              <li key={key} className={drawn.rare_slot ? "drawn back rare-slot" : "drawn back"}>
                 <span className="drawn-face" />
                 <span className="drawn-name">
                   <span className="visually-hidden">Carta virada</span>
                 </span>
-                <span className="drawn-tags" />
+                <span className="drawn-tags">{drawn.rare_slot && "Rara ou melhor"}</span>
               </li>
             );
           }
           return (
-            <li key={index} className={`drawn rarity-${drawn.rarity}`}>
+            <li key={key} className={`drawn rarity-${drawn.rarity}`}>
               {card?.image !== undefined ? (
                 <img
                   src={imageUrl(card.image, "m")}

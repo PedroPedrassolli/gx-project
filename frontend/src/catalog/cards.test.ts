@@ -2,6 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   EMPTY_FILTERS,
+  cardText,
+  filtersChanged,
   frame,
   imageUrl,
   matches,
@@ -111,6 +113,25 @@ test("monta a linha de tipo em português", () => {
   );
 });
 
+test("mostra o texto no idioma escolhido e avisa quando o português falta ou não é oficial", () => {
+  const card = { id: 1, name: "Pot", text: "Draw 2 cards.", source: "" };
+  assert.deepEqual(cardText(card, "en"), { text: "Draw 2 cards." });
+  assert.deepEqual(cardText(card, "pt"), {
+    text: "Draw 2 cards.",
+    note: "Sem texto em português: este é o texto em inglês.",
+  });
+  assert.deepEqual(cardText({ ...card, text_pt: "Compre 2 cards." }, "pt"), {
+    text: "Compre 2 cards.",
+  });
+  assert.deepEqual(
+    cardText({ ...card, text_pt: "Compre 2 cards.", text_pt_unofficial: true }, "pt"),
+    {
+      text: "Compre 2 cards.",
+      note: "Tradução não oficial, feita pelo GX Project.",
+    },
+  );
+});
+
 test("a imagem vem do site das imagens, no tamanho pedido", () => {
   assert.equal(
     imageUrl(46986414, "p"),
@@ -120,4 +141,11 @@ test("a imagem vem do site das imagens, no tamanho pedido", () => {
     imageUrl(46986414, "g"),
     "https://gx-project-imagens.pages.dev/cards/g/46986414.webp",
   );
+});
+
+test("só há o que limpar com algum filtro ou pacote fora do padrão", () => {
+  assert.equal(filtersChanged(EMPTY_FILTERS, ""), false);
+  assert.equal(filtersChanged({ ...EMPTY_FILTERS, q: "mago" }, ""), true);
+  assert.equal(filtersChanged({ ...EMPTY_FILTERS, sort: "atk" }, ""), true);
+  assert.equal(filtersChanged(EMPTY_FILTERS, "7"), true);
 });

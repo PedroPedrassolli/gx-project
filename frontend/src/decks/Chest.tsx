@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import {
   EMPTY_FILTERS,
   displayName,
+  filtersChanged,
   matches,
   sortCards,
   type CardSummary,
@@ -13,7 +14,7 @@ import { usePackRarities } from "../catalog/data.ts";
 import { useCollection, useMarkSeen } from "../collection/api.ts";
 import { CatalogFilters } from "../catalog/Filters.tsx";
 import { CardTile } from "../catalog/parts.tsx";
-import { copies, goesToExtra, type DeckRow, type Section } from "./deck.ts";
+import { addBlocked, copies, goesToExtra, type DeckRow, type Section } from "./deck.ts";
 import { allowDrop, dragCard, droppedRow } from "./drag.ts";
 
 const PAGE = 60;
@@ -124,6 +125,7 @@ export function Chest(props: Props) {
           setRecentFirst(false);
           reset();
         }}
+        canReset={filtersChanged(filters, pack) || !onlyOwned || onlyNew || recentFirst}
       >
         <label className="choice only-owned">
           <input
@@ -184,6 +186,11 @@ export function Chest(props: Props) {
         {results.slice(0, shown).map((card) => {
           const name = displayName(card, language);
           const deckSection = goesToExtra(card) ? "extra" : "main";
+          // Os dois botões podem estar bloqueados pelo mesmo motivo: ele aparece uma vez só.
+          const blockedMain = addBlocked(rows, card.id, deckSection);
+          const blockedSide = addBlocked(rows, card.id, "side");
+          const reason = [...new Set([blockedMain, blockedSide])].filter(Boolean).join(" ");
+          const reasonId = `chest-reason-${card.id}`;
           return (
             <li
               key={card.id}
@@ -204,11 +211,18 @@ export function Chest(props: Props) {
                   Tenho {owned.get(card.id) ?? 0} · no deck {copies(rows, card.id)}
                 </span>
                 {fresh.has(card.id) && <strong className="badge new-card">Nova</strong>}
+                {reason && (
+                  <span id={reasonId} className="chest-reason">
+                    {reason}
+                  </span>
+                )}
               </CardTile>
               <span className="chest-actions">
                 <button
                   type="button"
                   aria-label={`Pôr ${name} no ${deckSection === "extra" ? "Extra" : "Main"} Deck`}
+                  disabled={Boolean(blockedMain)}
+                  aria-describedby={blockedMain ? reasonId : undefined}
                   onClick={() => props.onAdd(card.id, deckSection)}
                 >
                   + {deckSection === "extra" ? "Extra" : "Main"}
@@ -216,6 +230,8 @@ export function Chest(props: Props) {
                 <button
                   type="button"
                   aria-label={`Pôr ${name} no Side Deck`}
+                  disabled={Boolean(blockedSide)}
+                  aria-describedby={blockedSide ? reasonId : undefined}
                   onClick={() => props.onAdd(card.id, "side")}
                 >
                   + Side

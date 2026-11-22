@@ -5,6 +5,7 @@ import { ApiError } from "../api.ts";
 import { useSession } from "../account/session.ts";
 import { catalogQuery } from "../catalog/data.ts";
 import { useDecks } from "../decks/api.ts";
+import { deckSizeProblem } from "../decks/deck.ts";
 import { PageNotice, SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 import { useRealtime } from "../realtime/useRealtime.ts";
@@ -102,6 +103,16 @@ export function RoomPage() {
   const me = data.players.find((player) => player.user_id === user.id);
   const owner = data.owner_id === user.id;
   const chosenDeck = deckId || String(me?.deck_id ?? "");
+  // Por que "Estou pronto" não faz sentido agora (GXP-117): sem deck ou com deck que já não
+  // vale pela contagem. O resto o servidor confere e responde com o que falta.
+  const deck = decks.data?.find((item) => String(item.id) === chosenDeck);
+  const notReady =
+    me && !me.ready
+      ? !chosenDeck
+        ? "Escolha um deck para ficar pronto."
+        : deck && deckSizeProblem(deck.counts)
+      : undefined;
+  const full = data.players.length >= data.seats;
   const deckErrors = ready.error instanceof ApiError ? (ready.error.fields.deck ?? []) : [];
 
   async function copyCode() {
@@ -178,7 +189,8 @@ export function RoomPage() {
             <button
               type="button"
               className="cta"
-              disabled={ready.isPending || (!me.ready && !chosenDeck)}
+              disabled={ready.isPending || Boolean(notReady)}
+              aria-describedby={notReady ? "ready-reason" : undefined}
               onClick={() => ready.mutate({ deck_id: chosenDeck, ready: !me.ready })}
             >
               {me.ready ? "Não estou pronto" : "Estou pronto"}
@@ -187,6 +199,11 @@ export function RoomPage() {
               Sair da sala
             </button>
           </p>
+          {notReady && (
+            <p id="ready-reason" className="hint">
+              {notReady}
+            </p>
+          )}
           {ready.error && (
             <div role="alert" className="form-error">
               <p>{ready.error.message}</p>
@@ -205,11 +222,17 @@ export function RoomPage() {
           <button
             type="button"
             className="cta"
-            disabled={join.isPending}
+            disabled={join.isPending || full}
+            aria-describedby={full ? "join-reason" : undefined}
             onClick={() => join.mutate()}
           >
             Entrar na sala
           </button>
+          {full && (
+            <span id="join-reason" className="hint">
+              A sala está cheia.
+            </span>
+          )}
           {join.error && (
             <span role="alert" className="form-error">
               {join.error.message}

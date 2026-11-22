@@ -11,12 +11,28 @@ class Economy::BonusCalculatorTest < ActiveSupport::TestCase
       opponent_turn: false, duel: PLAIN.merge(duel) }.merge(changes)
   end
 
-  def dp(**changes) = Economy::BonusCalculator.lines(stats(**changes)).to_h { |line| [ line[:key], line[:dp] ] }
+  # Sem os prêmios do GX Project, que têm o próprio teste: o resto são os valores do jogo.
+  PRIZES = %w[prize win_prize].freeze
+
+  def dp(**changes) = Economy::BonusCalculator.lines(stats(**changes)).to_h { |line| [ line[:key], line[:dp] ] }.except(*PRIZES)
   def labels(**changes) = Economy::BonusCalculator.lines(stats(**changes)).pluck(:label)
+
+  it "os prêmios do GX Project: 300 para todo duelo e mais 200 para quem vence, no começo da lista" do
+    win = Economy::BonusCalculator.lines(stats)
+    assert_equal [ [ "prize", "Prêmio do duelo", 300 ], [ "win_prize", "Prêmio da vitória", 200 ] ], win.first(2).map(&:values)
+    assert_equal [ [ "prize", 300 ] ], Economy::BonusCalculator.lines(stats(result: :loss)).first(2).map { |line| line.values_at(:key, :dp) }.first(1)
+    assert_not Economy::BonusCalculator.lines(stats(result: :draw)).any? { |line| line[:key] == "win_prize" }
+  end
 
   it "vitória: nível, 2 por turno, vitória em rede e 90 por faixa de nível do oponente" do
     assert_equal({ "level" => 2, "turns" => 12, "network_win" => 50, "duelist" => 180 }, dp)
     assert_includes labels, "Oponente de nível 12"
+  end
+
+  it "contra o computador: sem vitória em rede, e o bônus do personagem no lugar do Duelista" do
+    assert_equal({ "level" => 2, "turns" => 12, "character" => 840 }, dp(character: { name: "Yugi", bonus: 840 }))
+    assert_includes labels(character: { name: "Yugi", bonus: 840 }), "Vitória contra Yugi"
+    assert_equal({ "level" => 2, "loss" => 10, "turns" => 6 }, dp(result: :loss, character: { name: "Yugi", bonus: 840 }))
   end
 
   it "derrota e empate: o próprio bônus e 1 por turno; 2 por desafio concluído" do

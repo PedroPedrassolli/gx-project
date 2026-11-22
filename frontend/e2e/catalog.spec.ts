@@ -81,6 +81,8 @@ test("lista as cartas e busca pelo nome em português", async ({ page }) => {
 
 test("filtra pelo tipo de carta e pelo pacote, com a raridade", async ({ page }) => {
   await page.goto("/cartas");
+  // Sem filtro, não há o que limpar.
+  await expect(page.getByRole("button", { name: "Limpar filtros" })).toBeDisabled();
   await page.getByRole("radio", { name: "Magia" }).check();
   await expect(page.getByRole("button", { name: /Pote da Ganância/ })).toContainText("Proibida");
   await page.getByRole("button", { name: "Limpar filtros" }).click();
@@ -103,6 +105,20 @@ test("mostra o detalhe da carta e troca o idioma do texto", async ({ page }) => 
   );
 });
 
+test("avisa quando o texto em português é tradução nossa, não a oficial", async ({ page }) => {
+  await page.route("**/api/cards/1", (route) =>
+    route.fulfill({ json: { data: { ...detail, text_pt_unofficial: true } } }),
+  );
+  await page.goto("/cartas?carta=1");
+  const panel = page.getByRole("region", { name: "Mago Negro" });
+  await expect(panel).toContainText("O mago definitivo");
+  await expect(panel).toContainText("Tradução não oficial, feita pelo GX Project.");
+  await page.getByRole("radio", { name: "Inglês" }).check();
+  await expect(page.getByRole("region", { name: "Dark Magician" })).not.toContainText(
+    "Tradução não oficial",
+  );
+});
+
 test("mostra a miniatura e a imagem da carta, e esconde a que não carrega", async ({ page }) => {
   await page.goto("/cartas?carta=1");
   // A conexão com o site das imagens abre junto com a página, antes de a lista chegar.
@@ -113,6 +129,11 @@ test("mostra a miniatura e a imagem da carta, e esconde a que não carrega", asy
   await expect(thumb).toHaveAttribute("src", /\/cards\/p\/46986414\.webp$/);
   await expect(thumb).toHaveAttribute("loading", "lazy");
   await expect(page.getByRole("img", { name: "Imagem da carta Mago Negro" })).toBeVisible();
+  // Por baixo da imagem grande, a miniatura que já veio com a lista aparece na hora.
+  await expect(page.locator(".detail-image-thumb")).toHaveAttribute(
+    "src",
+    /\/cards\/p\/46986414\.webp$/,
+  );
   await expect(page.getByRole("button", { name: /Pote da Ganância/ }).locator("img")).toBeHidden();
   await expect(page.getByRole("button", { name: /Força Espelho/ }).locator("img")).toHaveCount(0);
 });

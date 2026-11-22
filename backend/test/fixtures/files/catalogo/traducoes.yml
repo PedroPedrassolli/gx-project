@@ -1,0 +1,15 @@
+# Traduções do catálogo pequeno dos testes: carta sem português (Trap Hole), texto da época
+# (Night Assailant), português oficial quebrado (Cyril) e tradução de um inglês que mudou (Clear Wall).
+- nome: "Trap Hole"
+  texto: "Destroy it."
+  texto_pt: "Destrua-o."
+- nome: "Night Assailant"
+  texto: "FLIP: Destroy 1 monster."
+  texto_pt: "VIRE: destrua 1 monstro."
+- nome: "Cyril"
+  texto: "Printed text."
+  texto_pt: "Texto impresso."
+  substitui: true
+- nome: "Clear Wall"
+  texto: "Old text."
+  texto_pt: "Texto antigo."

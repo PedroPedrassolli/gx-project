@@ -35,24 +35,26 @@ farm de DP entre contas combinadas.
    nem relógio. A tela de resultado mostra as linhas; o total vira um lançamento só.
 5. **Anti-farm também puro**, aplicado depois do bônus e antes do crédito, com os valores
    do admin (padrões do escopo, 3.5):
-   - duelo com menos de 3 turnos ou menos de 2 minutos paga só a derrota (10 DP);
-   - contra o mesmo oponente no mesmo dia: 100%, 50%, 25% e depois 0 (no Tag, o oponente é
-     a dupla adversária);
-   - teto diário para o DP vindo de salas (3.000), pela metade em contas com menos de 7
-     dias.
+   - duelo com menos de 3 turnos ou menos de 2 minutos paga só 10 DP;
+   - teto diário para o DP vindo de duelos (15.000).
    O "dia" é o de São Paulo (`America/Sao_Paulo`). O resultado traz o motivo de cada corte,
-   e a tela mostra.
+   e a tela mostra. Até 20/11/2026 havia também o corte contra o mesmo oponente no dia
+   (100%, 50%, 25% e depois 0) e a metade do teto (então 3.000) nas contas com menos de 7
+   dias; saíram porque o projeto é para jogar com a família e os amigos, sempre os mesmos.
 6. **Nível:** a fonte não traz a regra do jogo, e o Pedro pediu uma inspirada nele (Anexo
-   C, 07/11/2026). `LevelService` sobe 1 nível a cada 1.000 DP ganhos, do 1 ao 99, com o
-   valor no admin. Assim os pacotes que o jogo libera entre os níveis 21 e 50 chegam aos
-   poucos. `dp_ganho_total` soma só os créditos e é atualizado na mesma transação do
-   lançamento; cada subida paga o bônus de nível do Anexo A.
+   C, 07/11/2026). `Economy::Level` sobe 1 nível a cada 300 DP ganhos em duelos, do 1 ao 99
+   (era 1.000 até 20/11/2026, quando o Pedro pediu tudo bem mais fácil: o nível 50 chega em
+   uns 25 duelos). `dp_earned` soma os créditos, menos o do próprio nível, na mesma transação
+   do lançamento; cada subida paga 100 DP (eram 400).
 7. **Sorteio só no servidor, com semente gravada.** `Shop::PackOpener` gera a semente com
    `SecureRandom`, sorteia com `Random.new(semente)` e grava a semente e as cartas em
    `pack_openings`. A mesma semente dá as mesmas cartas, o que permite testar e auditar. A
    fonte não traz as chances do jogo, então cada carta do pacote sorteia primeiro a
    raridade, com os pesos comum 75, rara 18, super rara 5 e ultra rara 2 (padrão, no
    admin), só entre as raridades que o pacote tem, e depois uma carta dessa raridade.
+   A última carta de cada pacote é a de raridade aumentada, como no jogo: sorteia só entre
+   rara, super rara e ultra rara (18, 5 e 2), quando o pacote tem alguma, e vem marcada
+   (`rare_slot`) para a abertura avisar (pedido do Pedro em 21/11/2026; GXP-108).
    Comprar 1 ou 10 pacotes é uma transação só, com uma chave.
 8. **Conversor** (`Shop::Converter`): uma transação, com o sorteio do mesmo jeito (semente
    gravada). Nunca consome a cópia que um deck usa sem cópia sobrando (escopo, 3.4).
@@ -97,11 +99,16 @@ farm de DP entre contas combinadas.
   - **Fora, por falta de regra na fonte:** "nenhuma zona de monstro livre para o oponente"
     (51), "carta-chave do oponente" (52) e o "New Bonus" (83). Tag e Match (07, 09 e 16) vêm
     com a F5 e a F6.
+- **Prêmios do GX Project** (20/11/2026, `BonusCalculator::DUEL_PRIZE` e `WIN_PRIZE`): 300 DP
+  para todo duelo que não é curto e mais 200 para quem vence, nas primeiras linhas do
+  resultado. Antes, a derrota pagava uns 20 a 30 DP, menos que o pacote mais barato; agora
+  quem perde leva uns 400 (uns quatro pacotes) e quem vence, uns 900. Os valores do jogo de
+  referência continuam iguais, nas linhas seguintes.
 - **Anti-farm** (`Economy::AntiFarm`): duelo com menos de 3 turnos ou de 2 minutos paga só 10
-  DP; contra o mesmo oponente no dia (fuso de São Paulo), 100%, 50%, 25% e depois nada; teto de
-  3.000 DP por dia em duelos, 1.500 nas contas com menos de 7 dias. Os valores ficam em
-  constantes até existir o admin (F7).
-- **Nível:** cada nível novo paga 400 DP, que também contam para o próximo nível.
+  DP; teto de 15.000 DP por dia em duelos (fuso de São Paulo). Os valores ficam em constantes
+  até existir o admin (F7).
+- **Nível:** a cada 300 DP ganhos em duelos; cada nível novo paga 100 DP, que não contam para o
+  próximo nível (senão um nível puxaria o outro).
 - **Desafios** (GXP-88, `Economy::Challenges`): os 104 do jogo, com o texto em português e a
   condição de cada um, conferidos no fim do duelo com as estatísticas e com o deck usado
   (`user_challenges` guarda os concluídos; cada um conta uma vez). Cada desafio concluído paga
@@ -123,10 +130,9 @@ farm de DP entre contas combinadas.
   ainda não tinha (só a primeira cópia dela na compra). O pacote liberado que o jogador ainda
   não viu na prateleira aparece com o selo "Novo" (`users.seen_pack_ids`); abrir a loja
   manda `POST /api/shop/seen`, e o selo some na visita seguinte.
-- **Missões** (GXP-89, `Economy::Missions`, `db/seeds/missoes.yml`): contam as vitórias que
-  pagam DP de verdade, isto é, duelo que não é curto e até a 3ª vitória do dia contra o mesmo
-  oponente (`match_players.mission_win`). Assim, dois amigos trocando vitórias não fecham
-  missão. As de torneio liberam pacotes; a "carta da semana" dá a carta da vez, na ordem da
+- **Missões** (GXP-89, `Economy::Missions`, `db/seeds/missoes.yml`): contam as vitórias de
+  duelo que não é curto (`match_players.mission_win`). Até 20/11/2026 contava só até a 3ª
+  vitória do dia contra o mesmo oponente; saiu junto com o corte do DP. As de torneio liberam pacotes; a "carta da semana" dá a carta da vez, na ordem da
   lista, uma por semana ISO; a de 10 vitórias seguidas sorteia uma carta da lista e repete
   sempre (vitória que não conta não quebra nem soma a sequência). `mission_completions`
   guarda cada uma com o período (`once`, a semana ou a partida), com índice único: a mesma

@@ -1,13 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router";
 import { ApiError } from "../api.ts";
+import { displayName } from "../catalog/cards.ts";
+import { useCardLanguage } from "../catalog/language.ts";
+import { Thumb } from "../catalog/parts.tsx";
 import { roomAction, roomKey } from "../rooms/api.ts";
 import type { MatchState, RewardLine, Rewards } from "./api.ts";
 import { clock } from "./time.ts";
 
-// A situação do duelo embaixo da mesa: de quem é a vez e quanto tempo falta (escopo 3.7),
-// o botão de desistir e, no fim, o resultado com o caminho de volta para a sala.
+// A barra do duelo, em cima da mesa (GXP-99): de quem é a vez e quanto tempo falta (escopo
+// 3.7), os botões (frases, mais e desistir) e, no fim, o resultado num modal, com o caminho
+// de volta para a sala ou para os personagens.
 
 type Props = {
   state: MatchState;
@@ -33,40 +37,76 @@ const REASONS: Record<string, (loser: string) => string> = {
   time_limit: () => "Acabou o tempo do duelo: ganha quem tem mais PV.",
 };
 
-export function DuelStatus(props: Props) {
+export function DuelBar(props: Props & { children?: ReactNode }) {
   const { state } = props;
   const finished = state.status === "finished";
-  // No fim, o resultado fica abaixo da mesa: a página rola até ele, para o jogador ver o DP,
-  // as missões e os desafios sem procurar.
-  const area = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!finished) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    area.current?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
-  }, [finished]);
   return (
-    <div ref={area} className={finished ? "duel-status-area duel-result" : "duel-status-area"}>
-      {/* O mesmo aviso anuncia a vez e, no fim, o resultado: o leitor de tela só lê o que
-          muda dentro de uma região que já estava na página. */}
-      <div className="duel-status" role="status">
-        {finished ? <Result {...props} /> : <Turn {...props} />}
-      </div>
-      {finished ? (
-        <BackToRoom code={state.room_code} matchId={state.id} />
-      ) : (
-        <>
-          {/* Pergunta nova, prazo novo: o relógio recomeça (e volta a avisar quando zerar). */}
-          <Timers key={state.deadline_at ?? "sem-prazo"} {...props} />
-          <SurrenderButton {...props} />
-        </>
-      )}
+    <div className="duel-bar">
+      {/* O mesmo aviso anuncia a vez e, no fim, quem venceu: o leitor de tela só lê o que muda
+          dentro de uma região que já estava na página. */}
+      <p className="duel-status" role="status">
+        {finished ? resultTitle(props) : turnText(props)}
+      </p>
+      {/* Pergunta nova, prazo novo: o relógio recomeça (e volta a avisar quando zerar). */}
+      {!finished && <Timers key={state.deadline_at ?? "sem-prazo"} {...props} />}
+      <span className="duel-bar-actions">
+        {props.children}
+        {!finished && <SurrenderButton {...props} />}
+      </span>
     </div>
   );
 }
 
-function Turn({ state, names }: Props) {
+function turnText({ state, names }: Pick<Props, "state" | "names">) {
   const waiting = state.view.waiting_for ?? state.view.turn_team;
-  return <p>{waiting === state.you ? "Sua vez." : `Vez de ${names[waiting]}…`}</p>;
+  return waiting === state.you ? "Sua vez." : `Vez de ${names[waiting]}…`;
+}
+
+function resultTitle({ state, names }: Pick<Props, "state" | "names">) {
+  const winner = state.winner_team;
+  if (winner === null) return "Empate.";
+  return winner === state.you ? "Você venceu!" : `${names[winner]} venceu.`;
+}
+
+// O resultado abre sozinho quando o duelo acaba; "Ver a mesa" fecha, e a faixa das fases
+// mostra "Ver o resultado" para abrir de novo.
+export function ResultDialog(props: {
+  state: MatchState;
+  names: string[];
+  open: boolean;
+  onClose: () => void;
+}) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const element = dialog.current;
+    if (props.open && element && !element.open) element.showModal();
+    if (!props.open && element?.open) element.close();
+  }, [props.open]);
+  return (
+    <dialog
+      ref={dialog}
+      className="duel-dialog duel-result"
+      closedby="any"
+      aria-labelledby="result-title"
+      onClose={props.onClose}
+    >
+      {props.open && (
+        <>
+          <Result {...props} />
+          {props.state.character ? (
+            <BackToCharacters state={props.state} />
+          ) : (
+            <BackToRoom code={props.state.room_code} matchId={props.state.id} />
+          )}
+          <form method="dialog">
+            <button type="submit" className="secondary">
+              Ver a mesa
+            </button>
+          </form>
+        </>
+      )}
+    </dialog>
+  );
 }
 
 // O prazo da pergunta e o tempo que sobra de duelo. Fora do aviso (role="status") para o
@@ -102,11 +142,9 @@ function SurrenderButton(props: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
   return (
     <>
-      <p className="duel-actions">
-        <button type="button" className="secondary" onClick={() => dialog.current?.showModal()}>
-          Desistir
-        </button>
-      </p>
+      <button type="button" className="secondary" onClick={() => dialog.current?.showModal()}>
+        Desistir
+      </button>
       <dialog
         ref={dialog}
         className="pile-dialog"
@@ -132,19 +170,13 @@ function SurrenderButton(props: Props) {
   );
 }
 
-function Result({ state, names }: Props) {
+function Result({ state, names }: Pick<Props, "state" | "names">) {
   const winner = state.winner_team;
-  const title =
-    winner === null
-      ? "Empate."
-      : winner === state.you
-        ? "Você venceu!"
-        : `${names[winner]} venceu.`;
   const loser = winner === null ? "" : winner === state.you ? (names[1 - winner] ?? "") : "Você";
   const reason = REASONS[state.finish_reason ?? ""]?.(loser);
   return (
     <>
-      <h2>{title}</h2>
+      <h2 id="result-title">{resultTitle({ state, names })}</h2>
       {reason && <p>{reason}</p>}
       {state.rewards && <RewardsTable rewards={state.rewards} />}
     </>
@@ -166,6 +198,10 @@ function RewardsTable({ rewards }: { rewards: Rewards }) {
   const challenges = rewards.challenges ?? [];
   return (
     <>
+      {rewards.card && <NewCard card={rewards.card} />}
+      {rewards.unlocked && (
+        <p className="new-challenges">Personagem liberado: {rewards.unlocked.name}.</p>
+      )}
       {rewards.missions?.map((mission) => (
         <div key={mission.name} className="new-challenges">
           <p>
@@ -210,6 +246,47 @@ function RewardsTable({ rewards }: { rewards: Rewards }) {
         Saldo: {number(rewards.balance)} DP. Nível {rewards.level}.
       </p>
     </>
+  );
+}
+
+// A carta-símbolo da primeira vitória contra o personagem, já na coleção.
+function NewCard({ card }: { card: NonNullable<Rewards["card"]> }) {
+  const [language] = useCardLanguage();
+  return (
+    <div className="new-challenges new-card">
+      <Thumb card={card} />
+      <p>
+        Você ganhou a carta {displayName(card, language)}! Ela já está na{" "}
+        <Link to="/colecao">sua coleção</Link>.
+      </p>
+    </div>
+  );
+}
+
+// Contra personagem: enfrentar quem a vitória liberou, duelar de novo (o modal do deck abre
+// direto), a lista e o replay.
+function BackToCharacters({ state }: { state: MatchState }) {
+  const unlocked = state.rewards?.unlocked;
+  return (
+    <p className="duel-actions">
+      {unlocked && (
+        <Link className="cta" to={`/personagens?duelar=${unlocked.id}`}>
+          Duelar contra {unlocked.name}
+        </Link>
+      )}
+      <Link
+        className={unlocked ? "cta secondary" : "cta"}
+        to={`/personagens?duelar=${state.character}`}
+      >
+        Duelar de novo
+      </Link>
+      <Link className="cta secondary" to="/personagens">
+        Ver os personagens
+      </Link>
+      <Link className="cta secondary" to={`/duelo/${state.id}/replay`}>
+        Ver o replay
+      </Link>
+    </p>
   );
 }
 

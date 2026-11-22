@@ -33,13 +33,13 @@ class Api::ShopController < Api::BaseController
   # POST /api/shop/purchases: { pack_id, count (1 ou 10), key }. A mesma chave devolve a mesma
   # compra, sem cobrar de novo.
   def purchase
-    count = params[:count].to_i
+    count = integer_param(params[:count])
     key = params[:key].to_s
     unless Shop::Purchase::COUNTS.include?(count) && key.match?(/\A[\w-]{8,64}\z/)
       return render_error(:unprocessable_content, "Compre 1 ou 10 pacotes.")
     end
 
-    openings = Shop::Purchase.new(current_user, Pack.find(params[:pack_id]), count:, key:).call
+    openings = Shop::Purchase.new(current_user, Pack.find(params[:pack_id].to_s), count:, key:).call
     render json: { data: { balance: Economy::Ledger.balance(current_user), openings: openings.map(&:cards) } }, status: :created
   end
 

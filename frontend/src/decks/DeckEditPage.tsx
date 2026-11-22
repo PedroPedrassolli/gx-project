@@ -18,10 +18,14 @@ import { useDeck, type Deck } from "./api.ts";
 import { Chest } from "./Chest.tsx";
 import { allowDrop, dragRow, droppedCard } from "./drag.ts";
 import {
+  MAX_COPIES,
   SECTIONS,
+  addBlocked,
+  copies,
   deckErrors,
   editDeck,
   sectionCount,
+  sectionFull,
   type DeckEdit,
   type DeckRow,
   type Section,
@@ -193,6 +197,14 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
               ))}
             </div>
 
+            {(Object.keys(SECTIONS) as Section[])
+              .filter((item) => sectionFull(rows, item))
+              .map((item) => (
+                <p key={item} className="hint deck-full">
+                  {SECTIONS[item].title} cheio: tire uma carta para pôr outra.
+                </p>
+              ))}
+
             <ul
               className="deck-rows"
               aria-label={SECTIONS[section].title}
@@ -213,6 +225,9 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
                   >
                     <span className="row-name">
                       {row.quantity}× {cardName(row.card_id)}
+                      {copies(rows, row.card_id) >= MAX_COPIES && (
+                        <span className="row-max"> (já tem {MAX_COPIES} no deck)</span>
+                      )}
                     </span>
                     <button
                       type="button"
@@ -224,6 +239,7 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
                     <button
                       type="button"
                       aria-label={`Pôr mais uma cópia de ${cardName(row.card_id)}`}
+                      disabled={Boolean(addBlocked(rows, row.card_id, section))}
                       onClick={() => edit({ type: "add", cardId: row.card_id, section })}
                     >
                       +
@@ -241,6 +257,7 @@ function Editor({ deck, cards, packs, owned, language, onLanguage }: EditorProps
                     {section !== "extra" && (
                       <button
                         type="button"
+                        disabled={sectionFull(rows, section === "main" ? "side" : "main")}
                         aria-label={`Mandar uma cópia de ${cardName(row.card_id)} para o ${section === "main" ? "Side" : "Main"}`}
                         onClick={() =>
                           edit({

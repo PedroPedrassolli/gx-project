@@ -3,7 +3,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiError, request } from "../api.ts";
 import { Link, useParams } from "react-router";
 import { SESSION_KEY, useSession } from "../account/session.ts";
-import { NO_CARDS, NO_PACKS, useCatalog } from "../catalog/data.ts";
+import { useMediaQuery } from "../catalog/CardPanel.tsx";
+import { NO_CARDS, NO_PACKS, useCatalog, usePrefetchCardDetails } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
 import { PageNotice, SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
@@ -11,10 +12,13 @@ import { useRealtime } from "../realtime/useRealtime.ts";
 import { matchKey, respond, surrender, useMatch, type MatchState } from "./api.ts";
 import { actionablePlaces } from "./actionable.ts";
 import { Board } from "./Board.tsx";
+import { commandsByPlace, isCommandPrompt, phaseCommands } from "./commands.ts";
 import { DuelDetail } from "./DuelDetail.tsx";
+import { CardActionsDialog, CommandsDialog, PlainDialog, PromptDialog } from "./DuelDialogs.tsx";
 import { ChainStack, DuelLog } from "./DuelSide.tsx";
 import { useAlwaysChain } from "./chainSetting.ts";
-import { DuelStatus } from "./DuelStatus.tsx";
+import { visibleCodes } from "./visible.ts";
+import { DuelBar, ResultDialog } from "./DuelStatus.tsx";
 import { EmotePicker, useEmoteBubbles } from "./Emotes.tsx";
 import { withEmote, type EmotePlayer } from "./emotes.ts";
 import {
@@ -27,10 +31,14 @@ import {
   useMotion,
   type Motion,
 } from "./motion.ts";
-import { PromptPanel } from "./PromptPanel.tsx";
+import { promptTitle } from "./PromptPanel.tsx";
 
 // Mesa de duelo (escopo 4): a mesa vista pelo jogador, a vez de quem é e o detalhe da carta
 // escolhida. A mesa nova chega pelo tempo real (duel.updated) ou pela consulta de reserva.
+//
+// Desde o GXP-99 a mesa cabe na tela e nada fica embaixo dela: a carta que dá para usar
+// brilha e, tocada, abre as ações dela num modal; as outras perguntas abrem num modal que dá
+// para minimizar; ir de fase e encerrar o turno ficam na faixa das fases.
 export function DuelPage() {
   const id = useParams().id ?? "";
   usePageTitle("Duelo");
@@ -84,8 +92,20 @@ export function DuelPage() {
   const catalog = useCatalog();
   const [language] = useCardLanguage();
   const [selected, setSelected] = useState<number | null>(null);
+  // A carta tocada que tem ações, a lista de todas as ações e a pergunta minimizada valem só
+  // para a pergunta em que foram abertas (pelo número dela): a próxima começa do zero. E o
+  // "Mais" do celular e o resultado.
+  const [acting, setActing] = useState<{ place: string; code: number; seq: number } | null>(null);
+  const [allCommandsSeq, setAllCommandsSeq] = useState<number | null>(null);
+  const [minimizedSeq, setMinimizedSeq] = useState<number | null>(null);
+  const [more, setMore] = useState(false);
+  const [resultClosed, setResultClosed] = useState(false);
+  const wide = useMediaQuery("(width >= 72rem)");
   const cards = catalog.data?.byCode ?? NO_CARDS;
   const packs = catalog.data?.packNames ?? NO_PACKS;
+  usePrefetchCardDetails(
+    match.data ? visibleCodes(match.data.view).flatMap((code) => cards.get(code)?.id ?? []) : [],
+  );
   const emotes = useEmoteBubbles(match.data?.players ?? []);
   // "Sempre perguntar" (GXP-84): o navegador guarda; quando a mesa diz outra coisa (duelo
   // novo, ou a escolha mudou), manda a do navegador.
@@ -152,31 +172,89 @@ export function DuelPage() {
   const names = [0, 1].map(
     (team) => state.players.find((player) => player.team === team)?.nickname ?? "Duelista",
   );
+  const prompt = dueling ? state.view.prompt : undefined;
+  const byPlace = commandsByPlace(prompt);
+  const actingNow = acting?.seq === state.seq ? acting : null;
+  const chain = state.view.chain ?? [];
+  const common = {
+    you: state.you,
+    cards,
+    language,
+    pending: answer.isPending,
+    error: answer.error?.message,
+    onAnswer: (response: Record<string, unknown>) => answer.mutate(response),
+    onCard: setSelected,
+  };
+  const side = (
+    <>
+      <ChainStack chain={chain} you={state.you} names={names} cards={cards} language={language} />
+      <DuelLog
+        events={state.view.events ?? []}
+        you={state.you}
+        names={names}
+        cards={cards}
+        language={language}
+      />
+      <DuelSettings
+        motion={motion}
+        onMotion={setMotion}
+        alwaysChain={alwaysChain}
+        onAlwaysChain={setAlwaysChain}
+      />
+    </>
+  );
   return (
     <main className="page duel-page" ref={page}>
       <h1 className="visually-hidden">Duelo de {names.join(" contra ")}</h1>
+      <DuelBar
+        state={state}
+        names={names}
+        surrendering={giveUp.isPending}
+        onSurrender={() => giveUp.mutate()}
+        onTimeUp={() => match.refetch()}
+      >
+        {/* Contra o computador, não há quem leia as frases. */}
+        {!state.character && (
+          <EmotePicker
+            pending={say.isPending}
+            error={say.error?.message}
+            onSend={(emote) => say.mutate(emote)}
+          />
+        )}
+        {!wide && (
+          <button type="button" className="secondary" onClick={() => setMore(true)}>
+            Mais
+          </button>
+        )}
+      </DuelBar>
       <Board
         view={state.view}
         names={names}
         cards={cards}
         language={language}
         onCard={setSelected}
-        finished={state.status === "finished"}
+        onCardAt={(place, code) => {
+          if (byPlace.has(place)) setActing({ place, code, seq: state.seq });
+          else setSelected(code);
+        }}
+        finished={!dueling}
         lpChanges={motion === "off" ? undefined : lpChanges(fresh)}
         actionable={actionablePlaces(state.view.prompt)}
         emotes={emotes}
-      />
-      <DuelStatus
-        state={state}
-        names={names}
-        surrendering={giveUp.isPending}
-        onSurrender={() => giveUp.mutate()}
-        onTimeUp={() => match.refetch()}
-      />
-      <EmotePicker
-        pending={say.isPending}
-        error={say.error?.message}
-        onSend={(emote) => say.mutate(emote)}
+        chain={chain}
+        center={
+          <TurnActions
+            state={state}
+            names={names}
+            pending={answer.isPending}
+            error={prompt && isCommandPrompt(prompt) ? answer.error?.message : undefined}
+            onAnswer={common.onAnswer}
+            onAllCommands={() => setAllCommandsSeq(state.seq)}
+            onRespond={() => setMinimizedSeq(null)}
+            onResult={() => setResultClosed(false)}
+            title={prompt && !isCommandPrompt(prompt) ? promptTitle(prompt, common) : undefined}
+          />
+        }
       />
       <DuelDetail
         code={selected}
@@ -185,46 +263,114 @@ export function DuelPage() {
         language={language}
         onClose={() => setSelected(null)}
       />
-      {state.status === "dueling" && state.view.prompt && (
-        <PromptPanel
+      {wide && <div className="duel-side">{side}</div>}
+      {!wide && (
+        <PlainDialog id="more-title" title="Duelo" open={more} onClose={() => setMore(false)}>
+          <div className="duel-more">{side}</div>
+        </PlainDialog>
+      )}
+      {prompt && !isCommandPrompt(prompt) && (
+        <PromptDialog
           key={state.seq}
-          prompt={state.view.prompt}
-          you={state.you}
-          cards={cards}
-          language={language}
-          pending={answer.isPending}
-          onAnswer={(response) => answer.mutate(response)}
-          onCard={setSelected}
+          {...common}
+          prompt={prompt}
+          chain={chain}
+          names={names}
+          minimized={minimizedSeq === state.seq}
+          onMinimize={() => setMinimizedSeq(state.seq)}
         />
       )}
-      {answer.error && (
+      {prompt && isCommandPrompt(prompt) && (
+        <>
+          <CardActionsDialog
+            key={`acoes-${state.seq}`}
+            {...common}
+            code={actingNow?.code ?? null}
+            actions={actingNow ? (byPlace.get(actingNow.place) ?? []) : []}
+            onClose={() => setActing(null)}
+          />
+          <CommandsDialog
+            key={`todas-${state.seq}`}
+            {...common}
+            prompt={prompt}
+            open={allCommandsSeq === state.seq}
+            onClose={() => setAllCommandsSeq(null)}
+          />
+        </>
+      )}
+      {!dueling && (
+        <ResultDialog
+          state={state}
+          names={names}
+          open={!resultClosed}
+          onClose={() => setResultClosed(true)}
+        />
+      )}
+    </main>
+  );
+}
+
+// O que fazer agora, na faixa das fases: na sua vez de agir, ir de fase, encerrar o turno e
+// a lista de todas as ações; com uma pergunta minimizada, "Responder"; no fim, "Ver o
+// resultado"; senão, de quem é a vez. A linha tem sempre a mesma altura: a mesa não pula.
+function TurnActions(props: {
+  state: MatchState;
+  names: string[];
+  pending: boolean;
+  error?: string;
+  title?: string;
+  onAnswer: (response: Record<string, unknown>) => void;
+  onAllCommands: () => void;
+  onRespond: () => void;
+  onResult: () => void;
+}) {
+  const { state } = props;
+  const prompt = state.status === "dueling" ? state.view.prompt : undefined;
+  let content;
+  if (state.status === "finished") {
+    content = (
+      <button type="button" className="cta" onClick={props.onResult}>
+        Ver o resultado
+      </button>
+    );
+  } else if (prompt && isCommandPrompt(prompt)) {
+    content = (
+      <>
+        {phaseCommands(prompt).map((item) => (
+          <button
+            key={item.command}
+            type="button"
+            className={item.command === "end" ? "secondary" : "cta"}
+            disabled={props.pending}
+            onClick={() => props.onAnswer({ command: item.command })}
+          >
+            {item.label}
+          </button>
+        ))}
+        <button type="button" className="secondary" onClick={props.onAllCommands}>
+          Todas as ações
+        </button>
+      </>
+    );
+  } else if (prompt && props.title) {
+    content = (
+      <button type="button" className="cta" onClick={props.onRespond}>
+        Responder: {props.title}
+      </button>
+    );
+  } else {
+    const waiting = state.view.waiting_for ?? state.view.turn_team;
+    content = <span className="turn-waiting">Esperando {props.names[waiting]}…</span>;
+  }
+  return (
+    <div className="turn-actions">
+      {content}
+      {props.error && (
         <p role="alert" className="form-error duel-error">
-          {answer.error.message}
+          {props.error}
         </p>
       )}
-      <div className="duel-side">
-        <ChainStack
-          chain={state.view.chain ?? []}
-          you={state.you}
-          names={names}
-          cards={cards}
-          language={language}
-        />
-        <DuelLog
-          events={state.view.events ?? []}
-          you={state.you}
-          names={names}
-          cards={cards}
-          language={language}
-        />
-        <DuelSettings
-          motion={motion}
-          onMotion={setMotion}
-          alwaysChain={alwaysChain}
-          onAlwaysChain={setAlwaysChain}
-        />
-      </div>
-    </main>
+    </div>
   );
 }
 

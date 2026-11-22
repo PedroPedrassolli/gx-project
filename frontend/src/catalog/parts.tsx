@@ -1,6 +1,7 @@
 import type { ReactNode, SyntheticEvent } from "react";
 import {
   IMAGE_WIDTHS,
+  cardText,
   displayName,
   frame,
   imageUrl,
@@ -119,39 +120,51 @@ export function Choices(props: {
 
 export function Detail({
   card,
+  pending,
   language,
   packs,
 }: {
   card: CardDetail;
+  pending?: "loading" | "failed"; // o detalhe ainda não chegou (ou falhou): só falta o texto
   language: Language;
   packs: Map<number, string>;
 }) {
   const other = language === "pt" ? card.name : card.name_pt;
-  const text = language === "pt" ? (card.text_pt ?? card.text) : card.text;
+  const { text, note } = pending
+    ? { text: pending === "failed" ? "Não deu para carregar o texto." : "Carregando o texto…" }
+    : cardText(card, language);
   return (
     <article className={`detail frame-${frame(card)}`}>
       <h2 id="detail-title">{displayName(card, language)}</h2>
       {other && other !== displayName(card, language) && <p className="other-name">{other}</p>}
       {card.image !== undefined && (
-        <img
-          key={card.id}
-          className="detail-image"
-          src={imageUrl(card.image, "m")}
-          srcSet={`${imageUrl(card.image, "m")} ${IMAGE_WIDTHS.m}w, ${imageUrl(card.image, "g")} ${IMAGE_WIDTHS.g}w`}
-          sizes={`${IMAGE_WIDTHS.m}px`}
-          width={IMAGE_WIDTHS.m}
-          height={391}
-          alt={`Imagem da carta ${displayName(card, language)}`}
-          onError={hide}
-        />
+        // A miniatura, que a lista ou a mesa já baixou, aparece na hora por baixo; a imagem
+        // grande cobre por cima quando chega (GXP-107).
+        <div key={card.id} className="detail-image-box">
+          <img
+            className="detail-image-thumb"
+            src={imageUrl(card.image, "p")}
+            alt=""
+            aria-hidden="true"
+            onError={hide}
+          />
+          <img
+            className="detail-image"
+            src={imageUrl(card.image, "m")}
+            srcSet={`${imageUrl(card.image, "m")} ${IMAGE_WIDTHS.m}w, ${imageUrl(card.image, "g")} ${IMAGE_WIDTHS.g}w`}
+            sizes={`${IMAGE_WIDTHS.m}px`}
+            width={IMAGE_WIDTHS.m}
+            height={391}
+            alt={`Imagem da carta ${displayName(card, language)}`}
+            onError={hide}
+          />
+        </div>
       )}
       <p className="type-line">{typeLine(card)}</p>
       <Stats card={card} />
       {card.banlist && <p className="badge">{label(BANLIST, card.banlist)}</p>}
       <p className="text">{text}</p>
-      {language === "pt" && !card.text_pt && (
-        <p className="muted">Sem texto em português: este é o texto em inglês.</p>
-      )}
+      {note && <p className="muted">{note}</p>}
       {card.name_in_game && <p className="muted">No jogo: {card.name_in_game}</p>}
       {card.packs && (
         <>
@@ -165,9 +178,11 @@ export function Detail({
           </ul>
         </>
       )}
-      <p className="muted">
-        Dados da <a href={card.source}>Yugipedia</a> (CC BY-SA).
-      </p>
+      {card.source && (
+        <p className="muted">
+          Dados da <a href={card.source}>Yugipedia</a> (CC BY-SA).
+        </p>
+      )}
     </article>
   );
 }

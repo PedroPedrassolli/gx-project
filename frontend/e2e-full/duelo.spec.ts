@@ -58,8 +58,14 @@ test("duelo 1x1: sala com código, os dois prontos, jogadas, desistência, resul
   const firstName = "Jaden";
 
   // Carta baixada (quando a mão tem uma): o outro vê só o verso, porque o servidor não manda o
-  // que ela é. Baixar não abre efeito nem corrente, então a vez segue igual.
-  const set = first.getByRole("button", { name: /^Baixar .+ \(mão\)/ }).first();
+  // que ela é. Baixar não abre efeito nem corrente, então a vez segue igual. "Todas as ações"
+  // lista o que dá para fazer, sem precisar saber qual carta da mão brilha (GXP-99).
+  await first.getByRole("button", { name: "Todas as ações" }).click();
+  const set = first
+    .getByRole("dialog", { name: "Fase principal: o que fazer?" })
+    .getByRole("button", { name: /^Baixar .+ \(mão\)/ })
+    .first();
+  if ((await set.count()) === 0) await first.keyboard.press("Escape");
   if ((await set.count()) > 0) {
     await set.click();
     const field = second

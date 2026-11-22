@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { displayName, imageUrl, type CardSummary, type Language } from "../catalog/cards.ts";
-import type { DuelEvent, FieldCard, HandCard, Side, View } from "./api.ts";
+import type { ChainLink, DuelEvent, FieldCard, HandCard, Side, View } from "./api.ts";
 
 // A mesa (escopo 4, "Mesa de duelo"), como numa mesa de verdade: o seu campo embaixo, com a
 // zona de campo e o Extra à esquerda e o cemitério e o deck à direita; o do outro em cima,
@@ -30,10 +30,18 @@ type Props = {
   actionable?: Set<string>;
   // A frase que cada time mandou e ainda aparece (emotes).
   emotes?: Map<number, string>;
+  // Tocar numa carta com a chave dela ("time-local-posição"): no duelo, a carta que brilha
+  // abre as ações e as outras, o detalhe (GXP-99). Sem isso, toda carta abre o detalhe.
+  onCardAt?: (place: string, code: number) => void;
+  // O que vai na faixa das fases, embaixo da lista das fases (os botões da vez).
+  center?: ReactNode;
+  // A corrente aberta, que aparece por cima do meio da mesa.
+  chain?: ChainLink[];
 };
 
-// Uma pilha aberta: o título e as cartas, de cima (a última que entrou) para baixo.
-type Pile = { title: string; cards: HandCard[] };
+// Uma pilha aberta: o título e as cartas, de cima (a última que entrou) para baixo, cada uma
+// com a chave dela (a posição na pilha é a da engine).
+type Pile = { title: string; cards: { card: HandCard; place: string }[] };
 
 export function Board(props: Props) {
   const { view } = props;
@@ -48,13 +56,25 @@ export function Board(props: Props) {
             ? `Turno ${view.turn}, duelo encerrado`
             : `Turno ${view.turn}, vez de ${props.names[view.turn_team]}`}
         </p>
-        <ol aria-label="Fases do turno">
-          {PHASES.map(([key, label]) => (
-            <li key={key} aria-current={!props.finished && view.phase === key ? "step" : undefined}>
-              {label}
-            </li>
-          ))}
-        </ol>
+        {/* Com a corrente aberta, a corrente fica no lugar das fases (a fase não muda no meio
+            dela), na mesma altura: a mesa não pula. */}
+        <div className="phase-slot">
+          {props.chain && props.chain.length > 0 ? (
+            <ChainStrip {...props} chain={props.chain} />
+          ) : (
+            <ol className="phase-list" aria-label="Fases do turno">
+              {PHASES.map(([key, label]) => (
+                <li
+                  key={key}
+                  aria-current={!props.finished && view.phase === key ? "step" : undefined}
+                >
+                  {label}
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+        {props.center}
       </div>
       <SideArea {...props} side={mine} onPile={setPile} />
       <PileDialog {...props} pile={pile} onClose={() => setPile(null)} />
@@ -69,8 +89,13 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
   const label = (pile: string, own: string) => (props.opponent ? `${pile} de ${name}` : own);
   // data-actionable só onde há carta para usar (o atributo some quando é falso).
   const lit = (place: string) => props.actionable?.has(`${team}-${place}`) || undefined;
-  const open = (title: string, cards: HandCard[]) => () =>
-    props.onPile({ title, cards: [...cards].reverse() });
+  const open = (title: string, cards: HandCard[], location: number) => () =>
+    props.onPile({
+      title,
+      cards: cards
+        .map((card, index) => ({ card, place: `${team}-${location}-${index}` }))
+        .reverse(),
+    });
   const field = (
     <div className="field-grid">
       <div
@@ -89,7 +114,7 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
             data-place={`${team}-4-${index}`}
             data-actionable={lit(`4-${index}`)}
           >
-            {card && <CardView {...props} card={card} />}
+            {card && <CardView {...props} card={card} place={`${team}-4-${index}`} />}
           </li>
         ))}
       </ol>
@@ -101,7 +126,7 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
             data-place={`${team}-8-${index}`}
             data-actionable={lit(`8-${index}`)}
           >
-            {card && <CardView {...props} card={card} />}
+            {card && <CardView {...props} card={card} place={`${team}-8-${index}`} />}
           </li>
         ))}
       </ol>
@@ -112,7 +137,7 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
         lit={lit("16")}
         label={label("Cemitério", "Seu cemitério")}
         pile={side.grave}
-        onOpen={open(label("Cemitério", "Seu cemitério"), side.grave)}
+        onOpen={open(label("Cemitério", "Seu cemitério"), side.grave, 16)}
       />
       <div
         className="zone pile pile-deck"
@@ -133,7 +158,7 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
           label="Seu Extra"
           pile={side.extra_cards}
           hideTop
-          onOpen={open("Seu Extra", side.extra_cards)}
+          onOpen={open("Seu Extra", side.extra_cards, 64)}
         />
       ) : (
         <div
@@ -153,7 +178,7 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
     <ol className="hand" aria-label={props.opponent ? `Mão de ${name}` : "Sua mão"}>
       {side.hand.map((card, index) => (
         <li key={index} data-actionable={lit(`2-${index}`)}>
-          <CardView {...props} card={card} />
+          <CardView {...props} card={card} place={`${team}-2-${index}`} />
         </li>
       ))}
     </ol>
@@ -174,7 +199,7 @@ function SideArea(props: Props & { side: Side; opponent?: boolean; onPile: (pile
         type="button"
         className="pile-banished"
         data-actionable={lit("32")}
-        onClick={open(label("Cartas banidas", "Suas cartas banidas"), side.banished)}
+        onClick={open(label("Cartas banidas", "Suas cartas banidas"), side.banished, 32)}
       >
         Banidas {side.banished.length}
       </button>
@@ -270,14 +295,15 @@ function PileDialog(props: Props & { pile: Pile | null; onClose: () => void }) {
             <p>Nenhuma carta.</p>
           ) : (
             <ul className="pile-list">
-              {props.pile.cards.map((card, index) => (
-                <li key={index}>
+              {props.pile.cards.map(({ card, place }) => (
+                <li key={place} data-actionable={props.actionable?.has(place) || undefined}>
                   <PileCard
                     {...props}
                     card={card}
                     onShow={(code) => {
                       dialog.current?.close();
-                      props.onCard(code);
+                      if (props.onCardAt) props.onCardAt(place, code);
+                      else props.onCard(code);
                     }}
                   />
                 </li>
@@ -309,7 +335,7 @@ function PileCard(props: Props & { card: HandCard; onShow: (code: number) => voi
   );
 }
 
-function CardView(props: Props & { card: FieldCard | HandCard; place?: string }) {
+function CardView(props: Props & { card: FieldCard | HandCard; place: string }) {
   const { card } = props;
   const defense = "defense" in card && card.defense;
   if (!card.code) {
@@ -345,7 +371,7 @@ function CardView(props: Props & { card: FieldCard | HandCard; place?: string })
           .filter(Boolean)
           .join(" ")}
         aria-label={label.filter(Boolean).join(", ")}
-        onClick={() => props.onCard(code)}
+        onClick={() => (props.onCardAt ? props.onCardAt(props.place, code) : props.onCard(code))}
       >
         {data?.image !== undefined ? (
           <img src={imageUrl(data.image, "p")} alt="" width={56} height={82} decoding="async" />
@@ -377,5 +403,34 @@ function LpChange({ event }: { event?: DuelEvent }) {
       {LP_SIGNS[kind] ?? ""}
       {Number(event.amount).toLocaleString("pt-BR")}
     </span>
+  );
+}
+
+// A corrente aberta, compacta, por cima do meio da mesa: o elo mais alto à direita, porque
+// é ele que resolve primeiro. A lista inteira, com os textos, fica no histórico.
+function ChainStrip(props: Props & { chain: ChainLink[] }) {
+  return (
+    <ol className="chain-strip" aria-label={`Corrente com ${props.chain.length} elos`}>
+      {props.chain.map((link) => {
+        const data = props.cards.get(link.code);
+        const name = data ? displayName(data, props.language) : `Carta ${link.code}`;
+        return (
+          <li key={link.link} className={link.negated ? "negated" : undefined}>
+            <span className="chain-number" aria-hidden="true">
+              {link.link}
+            </span>
+            {data?.image !== undefined ? (
+              <img src={imageUrl(data.image, "p")} alt="" width={28} height={41} decoding="async" />
+            ) : (
+              <span className="chain-face" aria-hidden="true" />
+            )}
+            <span className="visually-hidden">
+              Elo {link.link}: {name}
+              {link.negated && ", negado"}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }

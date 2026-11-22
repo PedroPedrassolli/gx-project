@@ -50,8 +50,7 @@ module Catalog
     end
 
     # O que o jogador vê segue a carta que a engine roda: a carta impressa, quando a do anime
-    # usa a oficial; o texto da época, quando a carta usa a regra antiga. O texto em
-    # português é o atual: se o texto da época é outro, fica só o inglês.
+    # usa a oficial; o texto da época, quando a carta usa a regra antiga.
     def shown(card)
       exception = exceptions[GameData::Pool.key(card)]
       data = exception&.dig("motivo") == "usar_oficial" && card["impressao"] || card
@@ -59,8 +58,21 @@ module Catalog
       { name_pt: data["nome_pt"], card_type: data["tipo"], property: data["propriedade"],
         card_attribute: data["atributo"], race: data["raca"], monster_types: data["tipos"] || [],
         level: data["nivel"], attack: data["atk"], defense: data["def"], text:,
-        text_pt: (data["texto_pt"] if text == data["texto"]), source_revision: data["fonte"] }
+        **portuguese(card["nome"], data, text), source_revision: data["fonte"] }
     end
+
+    # O português oficial é do texto atual: vale quando é ele que aparece. Sem ele (ou quando
+    # veio quebrado da fonte, substitui: true), entra a nossa tradução, se for do mesmo inglês.
+    def portuguese(name, data, text)
+      ours = translations[name]
+      ours = nil unless ours&.dig("texto") == text
+      official = data["texto_pt"] if text == data["texto"]
+      return { text_pt: official, text_pt_unofficial: false } if official && !ours&.dig("substitui")
+
+      { text_pt: ours&.dig("texto_pt"), text_pt_unofficial: ours.present? }
+    end
+
+    def translations = @translations ||= load("traducoes.yml").index_by { |item| item["nome"] }
 
     # O código da engine sai da cobertura; carta "tirar_do_pool" fica sem código e não entra.
     def engine_code(card) = GameData::Pool.engine_code(card, exceptions)
