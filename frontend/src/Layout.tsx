@@ -1,18 +1,27 @@
-import { Suspense, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
+import {
+  Suspense,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Link, NavLink, Outlet, useLocation } from "react-router";
+import { Link, Outlet, useLocation } from "react-router";
 import { request, type User } from "./api.ts";
-import { useLogOut, useSession } from "./account/session.ts";
+import { useSession } from "./account/session.ts";
 import { SPAM_HINT } from "./account/spamHint.ts";
 import { markNavigation, usePageTitle } from "./pageTitle.ts";
 
-// Moldura de todas as páginas: a barra do topo (o nome do site, o menu e a conta), os avisos
-// (e-mail por confirmar, duelo em andamento) e o rodapé. No celular, a barra tem duas linhas
-// fixas: a marca e a conta em cima, o menu embaixo.
+// Moldura de todas as páginas (ADR 0015): a barra do topo (a marca, o menu e a conta), os
+// avisos (e-mail por confirmar, duelo em andamento) e o rodapé. No celular, o menu vira a
+// barra de abas fixa embaixo, perto do polegar; na mesa do duelo ela some.
 export function Layout() {
   const session = useSession();
-  const logOut = useLogOut();
   const user = session.data?.user;
+  // Enquanto a sessão não chega, o menu já é o de quem tem conta (a maioria): sem conta, ele
+  // troca quando a resposta chega.
+  const visitor = session.isSuccess && !user;
   // Fechou a aba ou o celular apagou no meio do duelo: de qualquer página, um toque volta
   // para a mesa (o prazo da resposta continua correndo no servidor).
   const duel = user ? session.data?.duel : null;
@@ -25,50 +34,40 @@ export function Layout() {
   if (pathname !== firstPath) markNavigation();
 
   return (
-    <>
+    <div className={inDuel ? "shell in-duel" : "shell"}>
       <a className="skip-link" href="#conteudo" onClick={skipToContent}>
         Pular para o conteúdo
       </a>
-      <nav className="topbar" aria-label="Principal" ref={topbar}>
+      <header className="topbar" ref={topbar}>
         <Link to="/" className="brand">
           <BrandMark />
           <span className="brand-name">GX Project</span>
         </Link>
-        <span className="topbar-links">
-          <NavLink to="/cartas">Cartas</NavLink>
-          {user && <NavLink to="/colecao">Coleção</NavLink>}
-          {user && <NavLink to="/decks">Decks</NavLink>}
-          {user && <NavLink to="/salas">Duelo</NavLink>}
-          {user && <NavLink to="/loja">Loja</NavLink>}
-        </span>
-        <span className="account">
-          {user && (
-            <>
-              <span>
-                <span className="greeting">Olá, </span>
-                <Link to="/conta">{user.nickname}</Link>
+        <nav className="mainnav" aria-label="Principal">
+          {(visitor ? VISITOR_MENU : PLAYER_MENU).map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              aria-current={item.match.test(pathname) ? "page" : undefined}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </nav>
+        {user && (
+          <div className="account">
+            <span className="wallet-chip">{user.dp.toLocaleString("pt-BR")} DP</span>
+            <span className="level-chip">Nível {user.level}</span>
+            <Link to="/conta" className="avatar-link">
+              <span className="avatar-initial" aria-hidden="true">
+                {user.nickname.charAt(0).toUpperCase()}
               </span>
-              <span className="wallet">
-                {user.dp.toLocaleString("pt-BR")} DP, nível {user.level}
-              </span>
-              <button
-                type="button"
-                className="link-button"
-                disabled={logOut.isPending}
-                onClick={() => logOut.mutate()}
-              >
-                Sair
-              </button>
-            </>
-          )}
-          {session.isSuccess && !user && (
-            <>
-              <Link to="/entrar">Entrar</Link>
-              <Link to="/cadastro">Criar conta</Link>
-            </>
-          )}
-        </span>
-      </nav>
+              <span className="nickname">{user.nickname}</span>
+            </Link>
+          </div>
+        )}
+      </header>
       {user && !user.email_verified && !inDuel && <ConfirmEmailNotice user={user} />}
       {duel && pathname !== `/duelo/${duel.match_id}` && (
         <p className="notice" role="status">
@@ -82,9 +81,120 @@ export function Layout() {
         </Suspense>
       </div>
       {!inDuel && <SiteFooter />}
-    </>
+    </div>
   );
 }
+
+type MenuItem = { to: string; label: string; icon: ReactNode; match: RegExp };
+
+// Ícones do menu: traços simples, desenho próprio.
+function Icon({ children }: { children: ReactNode }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      {children}
+    </svg>
+  );
+}
+
+const HOME_ITEM: MenuItem = {
+  to: "/",
+  label: "Início",
+  match: /^\/$/,
+  icon: (
+    <Icon>
+      <path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z" />
+    </Icon>
+  ),
+};
+
+// Com conta, as cinco áreas do jogo. "Jogar" junta personagens, salas e a mesa; a coleção
+// inclui o catálogo de todas as cartas.
+const PLAYER_MENU: MenuItem[] = [
+  HOME_ITEM,
+  {
+    to: "/jogar",
+    label: "Jogar",
+    match: /^\/(jogar|personagens|salas|duelo)/,
+    icon: (
+      <Icon>
+        <rect x="2.5" y="5" width="9" height="13" rx="1.5" transform="rotate(-12 7 11.5)" />
+        <rect x="12.5" y="5" width="9" height="13" rx="1.5" transform="rotate(12 17 11.5)" />
+      </Icon>
+    ),
+  },
+  {
+    to: "/decks",
+    label: "Decks",
+    match: /^\/decks/,
+    icon: (
+      <Icon>
+        <rect x="8" y="3" width="11" height="15" rx="1.5" />
+        <path d="M5 7v12.5A1.5 1.5 0 0 0 6.5 21H15" />
+      </Icon>
+    ),
+  },
+  {
+    to: "/colecao",
+    label: "Coleção",
+    match: /^\/(colecao|cartas)/,
+    icon: (
+      <Icon>
+        <rect x="3" y="3" width="18" height="18" rx="2" />
+        <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
+      </Icon>
+    ),
+  },
+  {
+    to: "/loja",
+    label: "Loja",
+    match: /^\/loja/,
+    icon: (
+      <Icon>
+        <path d="M6 3h12l1 4H5z" />
+        <path d="M5 7h14v14H5z" />
+        <path d="M9.5 12h5" />
+      </Icon>
+    ),
+  },
+];
+
+// Sem conta: o começo, o catálogo, entrar e criar conta.
+const VISITOR_MENU: MenuItem[] = [
+  HOME_ITEM,
+  {
+    to: "/cartas",
+    label: "Cartas",
+    match: /^\/cartas/,
+    icon: (
+      <Icon>
+        <rect x="5" y="3" width="14" height="18" rx="2" />
+        <path d="M8 7h8M8 17h5" />
+      </Icon>
+    ),
+  },
+  {
+    to: "/entrar",
+    label: "Entrar",
+    match: /^\/entrar/,
+    icon: (
+      <Icon>
+        <path d="M14 4h5v16h-5" />
+        <path d="M3 12h11M10 8l4 4-4 4" />
+      </Icon>
+    ),
+  },
+  {
+    to: "/cadastro",
+    label: "Criar conta",
+    match: /^\/cadastro/,
+    icon: (
+      <Icon>
+        <circle cx="10" cy="8" r="4" />
+        <path d="M3 21c0-4 3-7 7-7s7 3 7 7M19 8v6M16 11h6" />
+      </Icon>
+    ),
+  },
+];
 
 // A altura da barra do topo em --header-h, para a mesa do duelo saber quanto sobra da tela
 // (a barra tem duas linhas no celular e uma no computador).

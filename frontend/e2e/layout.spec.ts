@@ -4,7 +4,7 @@ import { mockSession } from "./support.ts";
 // Todas as páginas, do celular de 320 ao computador: nada mais largo que a tela, o menu do
 // topo numa linha só, a marca e a conta sem se sobrepor e nenhum painel parado mais alto que
 // a tela sem rolar (pedido do Pedro: nada de quebra de layout de um aparelho para o outro).
-const WIDTHS = [320, 390, 768, 1280];
+const WIDTHS = [320, 390, 768, 1024, 1280];
 
 const CARDS = [
   { id: 1, code: 46986414, name: "Dark Magician", name_pt: "Mago Negro", card_type: "Monster" },
@@ -154,7 +154,7 @@ function problems(page: Page) {
         found.push(`painel parado mais alto que a tela: ${element.className}`);
     }
     const rows = new Set(
-      [...document.querySelectorAll(".topbar-links a")].map((link) =>
+      [...document.querySelectorAll(".mainnav a")].map((link) =>
         Math.round(link.getBoundingClientRect().top),
       ),
     );
@@ -172,6 +172,7 @@ const PAGES: [string, string, boolean][] = [
   ["/entrar", "Entrar", false],
   ["/termos", "Termos", false],
   ["/", "Início com conta", true],
+  ["/jogar", "Jogar", true],
   ["/cartas?carta=1", "Cartas", true],
   ["/colecao", "Coleção", true],
   ["/decks", "Decks", true],

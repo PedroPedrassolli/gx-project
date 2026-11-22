@@ -8,7 +8,7 @@ test("a página inicial mostra o projeto, os atalhos e a fase atual", async ({ p
   await page.goto("/");
   const main = page.getByRole("main");
   await expect(main.getByRole("heading", { level: 1, name: "GX Project" })).toBeVisible();
-  await expect(main.getByText("Fase atual: F6, Partidas melhor de 3.")).toBeVisible();
+  await expect(main.getByText("Fase atual: F6, Front novo.")).toBeVisible();
   await expect(main.getByRole("link", { name: "Personagens" })).toHaveAttribute(
     "href",
     "/personagens",
@@ -36,8 +36,31 @@ test("com a conta aberta, a mesa tem os decks e a coleção", async ({ page }) =
   await expect(main.getByRole("link", { name: "Coleção" })).toHaveAttribute("href", "/colecao");
   await expect(page.getByRole("link", { name: "Criar conta" })).toHaveCount(0);
   await expect(
-    page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Duelo" }),
-  ).toHaveAttribute("href", "/salas");
+    page.getByRole("navigation", { name: "Principal" }).getByRole("link", { name: "Jogar" }),
+  ).toHaveAttribute("href", "/jogar");
+});
+
+test("no celular, o menu é a barra de abas embaixo, com a aba atual marcada", async ({ page }) => {
+  await mockSession(page, { loggedIn: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const menu = page.getByRole("navigation", { name: "Principal" });
+  const box = await menu.boundingBox();
+  expect(Math.round((box?.y ?? 0) + (box?.height ?? 0))).toBe(844);
+  await expect(menu.getByRole("link", { name: "Início" })).toHaveAttribute("aria-current", "page");
+
+  await menu.getByRole("link", { name: "Jogar" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Jogar" })).toBeVisible();
+  await expect(menu.getByRole("link", { name: "Jogar" })).toHaveAttribute("aria-current", "page");
+  await expect(
+    page.getByRole("main").getByRole("link", { name: /Contra os personagens/ }),
+  ).toHaveAttribute("href", "/personagens");
+  await expect(page.getByRole("main").getByRole("link", { name: /Com os amigos/ })).toHaveAttribute(
+    "href",
+    "/salas",
+  );
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+  expect(results.violations).toEqual([]);
 });
 
 test("a página inicial passa no axe sem violações, com e sem conta", async ({ page }) => {

@@ -2,19 +2,20 @@ import { useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { ApiError, request } from "../api.ts";
-import { useSession } from "./session.ts";
+import { useLogOut, useSession } from "./session.ts";
 import { TextField } from "./TextField.tsx";
 import { SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 
 const AGE_GROUPS = { "13-17": "13 a 17 anos", "18+": "18 anos ou mais" };
 
-// Minha conta (escopo 3.1): os dados da conta e os direitos da LGPD, baixar tudo o que
-// guardamos e excluir a conta (GXP-36).
+// Minha conta (escopo 3.1): os dados da conta, o "Sair" (que saiu do topo no front novo,
+// ADR 0015) e os direitos da LGPD, baixar tudo o que guardamos e excluir a conta (GXP-36).
 export function AccountPage() {
   usePageTitle("Minha conta");
   const session = useSession();
   const user = session.data?.user;
+  const logOut = useLogOut();
   const client = useQueryClient();
   const [password, setPassword] = useState("");
   const [confirming, setConfirming] = useState(false);
@@ -63,8 +64,16 @@ export function AccountPage() {
         <dt>Nível</dt>
         <dd>{user.level}</dd>
       </dl>
-      <p>
+      <p className="account-actions">
         <Link to="/desafios">Ver as missões e os desafios</Link>
+        <button
+          type="button"
+          className="cta secondary"
+          disabled={logOut.isPending}
+          onClick={() => logOut.mutate()}
+        >
+          Sair da conta
+        </button>
       </p>
 
       <h2>Seus dados</h2>

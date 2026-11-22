@@ -5,10 +5,7 @@ import { mockSession, PASSWORD } from "./support.ts";
 test("mostra os dados da conta, o link para baixar e passa no axe", async ({ page }) => {
   await mockSession(page, { loggedIn: true });
   await page.goto("/");
-  await page
-    .getByRole("navigation", { name: "Principal" })
-    .getByRole("link", { name: "JadenYuki" })
-    .click();
+  await page.getByRole("banner").getByRole("link", { name: "JadenYuki" }).click();
 
   await expect(page.getByRole("heading", { level: 1, name: "Minha conta" })).toBeVisible();
   await expect(page.getByText("jaden@example.com (ainda não confirmado)")).toBeVisible();

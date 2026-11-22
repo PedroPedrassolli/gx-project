@@ -5,17 +5,17 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import { App } from "./App.tsx";
 import { Layout, NotFound } from "./Layout.tsx";
 import { restoreStoredCatalog } from "./catalog/data.ts";
-// Fontes do tema, servidas pelo próprio site (a CSP só aceita fontes daqui): Spectral no
-// texto e Spectral SC, em versaletes como o nome das cartas, nos títulos. Só o alfabeto
-// latino, que cobre o português.
-import "@fontsource/spectral/latin-400.css";
-import "@fontsource/spectral/latin-600.css";
-import "@fontsource/spectral-sc/latin-600.css";
+// Fontes do tema Holo (ADR 0015), servidas pelo próprio site (a CSP só aceita fontes daqui):
+// Hanken Grotesk no texto e Oxanium nos títulos, números e botões. As duas são variáveis (um
+// arquivo para todos os pesos) e o navegador só baixa o alfabeto latino, que cobre o português.
+import "@fontsource-variable/hanken-grotesk/wght.css";
+import "@fontsource-variable/oxanium/index.css";
 import "./styles.css";
 
 // Cada página vira um arquivo JS baixado só quando a pessoa abre: a página inicial não
 // carrega o código do catálogo nem do Deck Edit. O Layout mostra "Carregando…" enquanto isso.
 const Catalog = lazy(() => import("./catalog/Catalog.tsx").then((m) => ({ default: m.Catalog })));
+const PlayPage = lazy(() => import("./play/PlayPage.tsx").then((m) => ({ default: m.PlayPage })));
 const CollectionPage = lazy(() =>
   import("./collection/CollectionPage.tsx").then((m) => ({ default: m.CollectionPage })),
 );
@@ -87,6 +87,7 @@ createRoot(root).render(
           <Route element={<Layout />}>
             <Route index element={<App />} />
             <Route path="cartas" element={<Catalog />} />
+            <Route path="jogar" element={<PlayPage />} />
             <Route path="colecao" element={<CollectionPage />} />
             <Route path="loja" element={<ShopPage />} />
             <Route path="loja/conversor" element={<ConverterPage />} />
