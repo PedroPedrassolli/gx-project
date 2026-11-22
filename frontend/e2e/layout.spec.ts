@@ -185,6 +185,12 @@ function problems(page: Page) {
       if (tall && !["auto", "scroll"].includes(style.overflowY))
         found.push(`painel parado mais alto que a tela: ${element.className}`);
     }
+    // Um <dialog> fechado não aparece: uma classe com display (como a de outra tela com o
+    // mesmo nome) tirava o "display: none" do navegador e deixava uma caixa vazia na mesa.
+    for (const dialog of document.querySelectorAll("dialog:not([open])")) {
+      if (getComputedStyle(dialog).display !== "none")
+        found.push(`diálogo fechado aparecendo: ${dialog.className}`);
+    }
     const rows = new Set(
       [...document.querySelectorAll(".mainnav a")].map((link) =>
         Math.round(link.getBoundingClientRect().top),

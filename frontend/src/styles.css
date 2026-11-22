@@ -1857,8 +1857,9 @@ html:has(.deck-bar) {
   margin-top: 0;
 }
 
-/* Os botões do deck no rodapé do detalhe da carta. */
-.card-actions {
+/* Os botões do deck no rodapé do detalhe da carta (o nome não pode ser ".card-actions": a
+   mesa de duelo tem um <dialog> com essa classe, e o display daqui o deixava aparecendo). */
+.card-deck-actions {
   display: grid;
   gap: 0.6rem;
 
@@ -1877,7 +1878,7 @@ html:has(.deck-bar) {
   }
 }
 
-.card-actions-head {
+.card-deck-actions-head {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
