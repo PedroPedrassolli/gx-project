@@ -6,8 +6,9 @@ module Economy
   # Decisões (ADR 0005): "vencer" é vencer na engine (desistência e tempo não concluem
   # desafio); "deck" é o Deck Principal, a não ser quando o desafio fala do Extra; "só com
   # monstros de..." pede pelo menos um monstro; e o deck de 80 cartas do original virou o de
-  # 60, que é o máximo aqui. Três ficam sem condição (nil) e não dá para concluir ainda: os
-  # dois de Match (F5) e o da trava de Yata-Garasu, que a fonte não diz como o jogo reconhece.
+  # 60, que é o máximo aqui. Três ficam sem condição (nil): os dois de Match, que nem aparecem,
+  # porque não há melhor de 3 (GXP-125), e o da trava de Yata-Garasu, que a fonte não diz como
+  # o jogo reconhece.
   module Challenges
     # O que se sabe do duelo de um jogador. counts: as contas do time (Duel::Stats#team);
     # summoned, used e finisher: nomes de cartas; main e extra: as cartas do deck (Card), com
@@ -141,6 +142,11 @@ module Economy
     ].each_with_index.map { |(label, scope, check), index| { number: index + 1, label:, scope:, check: } }.freeze
     # Os que dá para concluir hoje (os pacotes que pedem "todos os desafios" pedem estes).
     POSSIBLE = LIST.select { |challenge| challenge[:check] }.pluck(:number).freeze
+    # Os que a página mostra: todos menos os dois de Match ("vencer uma partida melhor de três"
+    # e "vencer a partida inteira com o efeito de uma carta"). Os outros mantêm o número, que é
+    # o que fica gravado em user_challenges.
+    MATCH_ONLY = [ 25, 38 ].freeze
+    SHOWN = LIST.reject { |challenge| MATCH_ONLY.include?(challenge[:number]) }.freeze
     # As cartas que os desafios olham pelo nome.
     CARD_NAMES = [ *XYZ_SERIES, *SACRED_BEASTS, "VWXYZ-Dragon Catapult Cannon", "Huge Revolution" ].freeze
 

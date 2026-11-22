@@ -2,8 +2,8 @@ module Decks
   # Regras do deck (escopo 3.3). Não lê o banco: recebe as linhas do deck, as cartas, a
   # banlist e a coleção do jogador, e devolve os erros prontos para a tela.
   class Validator
-    SIZES = { "main" => 40..60, "extra" => 0..15, "side" => 0..15 }.freeze
-    SECTION_NAMES = { "main" => "Main Deck", "extra" => "Extra Deck", "side" => "Side Deck" }.freeze
+    SIZES = { "main" => 40..60, "extra" => 0..15 }.freeze
+    SECTION_NAMES = { "main" => "Main Deck", "extra" => "Extra Deck" }.freeze
     MAX_COPIES = 3
     EXTRA_DECK_TYPES = %w[Fusion Synchro].freeze
 
@@ -70,7 +70,7 @@ module Decks
     end
 
     def copies_error(card, copies)
-      "#{card.name}: no máximo #{MAX_COPIES} cópias somando Main, Extra e Side (tem #{copies})." if copies > MAX_COPIES
+      "#{card.name}: no máximo #{MAX_COPIES} cópias somando Main e Extra (tem #{copies})." if copies > MAX_COPIES
     end
 
     def banlist_error(card, copies)
@@ -86,7 +86,7 @@ module Decks
       "#{card.name}: você tem #{owned} e o deck usa #{copies}." if copies > owned
     end
 
-    # Fusão e Sincro ficam no Extra; o Side aceita qualquer carta.
+    # Fusão e Sincro ficam no Extra; o resto, no Main.
     def place_error(card, row)
       extra_type = card.monster_types.intersect?(EXTRA_DECK_TYPES)
       if extra_type && row.section == "main"

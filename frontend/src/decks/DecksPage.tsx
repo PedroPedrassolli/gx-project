@@ -85,8 +85,7 @@ export function DecksPage() {
             <li key={deck.id}>
               <Link to={`/decks/${deck.id}`}>{deck.name}</Link>
               <span className="deck-counts">
-                <span>Main {deck.counts.main}</span> <span>Extra {deck.counts.extra}</span>{" "}
-                <span>Side {deck.counts.side}</span>
+                <span>Main {deck.counts.main}</span> <span>Extra {deck.counts.extra}</span>
               </span>
             </li>
           ))}

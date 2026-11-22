@@ -19,10 +19,10 @@ inválido pode ser salvo, nem como é o formato de texto, nem como a Destiny via
    decks, para o banco grátis não crescer sem limite.
 2. **Linhas:** uma por carta e seção, com a quantidade e a marca de Destiny. Salvar troca
    todas as linhas do deck de uma vez. Carta repetida na mesma seção do pedido é somada.
-3. **`.ydk`** (YGOPro e EDOPro): um código por cópia, nas seções `#main`, `#extra` e
-   `!side`. Exporta o passcode; carta do anime, que não tem passcode, vai com o código do
+3. **`.ydk`** (YGOPro e EDOPro): um código por cópia, nas seções `#main` e `#extra`, e
+   um `!side` vazio no fim, que os programas esperam. Exporta o passcode; carta do anime, que não tem passcode, vai com o código do
    script da engine. O formato não tem Destiny: exportar perde a marca, importar vem sem.
-4. **Texto** (nosso): título da seção (`Main Deck`, `Extra Deck`, `Side Deck`), depois uma
+4. **Texto** (nosso): título da seção (`Main Deck`, `Extra Deck`), depois uma
    linha por carta, `3 Dark Magician`, com ` (Destiny)` no fim quando for o caso. Ao
    importar, aceita `3x`, título sem "Deck", nome em inglês ou em português, sem diferenciar
    maiúsculas. Linha que não deu para ler vira aviso com o número da linha.
@@ -35,7 +35,7 @@ inválido pode ser salvo, nem como é o formato de texto, nem como a Destiny via
    com `kind` igual a `ydk` ou `text`) e `GET /api/decks/:id/export.ydk` ou `.txt` (baixa o
    arquivo). Só o dono vê e mexe.
 7. **Pedido fora do formato (revisão de 08/11/2026):** `cards` precisa ser uma lista de até
-   200 objetos (um deck cheio tem 90 cartas); outra coisa volta 422 e não apaga as cartas do
+   200 objetos (um deck cheio tem 75 cartas); outra coisa volta 422 e não apaga as cartas do
    deck. `card_id` e `quantity` que não são inteiros viram 0, que a validação recusa. O
    arquivo importado vai até 50 KB (um `.ydk` cheio tem uns 1,5 KB).
 8. **Carta nova no baú (GXP-42, F4):** "nova" é a carta que o jogador ganhou (loja, missão
@@ -46,6 +46,10 @@ inválido pode ser salvo, nem como é o formato de texto, nem como a Destiny via
    com `card_ids`); "Marcar todas como vistas" manda sem a lista. O baú avisa quantas são
    novas, filtra "só as novas" (a lista do momento em que o filtro foi ligado, para a carta
    aberta não sumir) e ordena pela data de obtenção ("Mais recentes primeiro").
+9. **Sem Side Deck (GXP-125, 22/11/2026):** sem melhor de 3, o Side não tem uso. O deck tem
+   só Main e Extra, e as linhas de Side que existiam foram apagadas (as cartas continuam na
+   coleção). Importar deixa de fora o Side do `.ydk` e do texto, com um aviso só (o `Decks::Import`;
+   os formatos continuam lendo e escrevendo a seção, como os outros programas).
 
 ## Consequências
 

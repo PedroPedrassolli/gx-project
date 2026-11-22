@@ -18,25 +18,28 @@ class Api::DeckFilesTest < ActionDispatch::IntegrationTest
     post api_session_path, params: { email: user.email, password: "duelista123" }, as: :json
   end
 
-  it "importa .ydk: pula carta fora do pool e corta em 3 cópias, avisando" do
+  it "importa .ydk: pula carta fora do pool e corta em 3 cópias, avisando; o Side fica de fora" do
     ninja = card("Armed Ninja").passcode
-    import "#main\n#{ninja}\n#{ninja}\n#{ninja}\n#{ninja}\n12345\n!side\n#{card("Millennium Shield").passcode}\n", kind: "ydk"
+    import "#main\n#{ninja}\n#{ninja}\n#{ninja}\n#{ninja}\n12345\n!side\n#{card("Millennium Shield").passcode}\n99999\n", kind: "ydk"
 
     assert_response :created
-    _(rows(user.decks.find(data["id"]))).must_equal [ [ "Armed Ninja", "main", 3, false ], [ "Millennium Shield", "side", 1, false ] ]
-    _(response.parsed_body["meta"]["warnings"]).must_equal [ "O código 12345 não está no pool.",
+    _(rows(user.decks.find(data["id"]))).must_equal [ [ "Armed Ninja", "main", 3, false ] ]
+    # A carta do Side que nem existe no pool (99999) não gera outro aviso.
+    _(response.parsed_body["meta"]["warnings"]).must_equal [ "O Side Deck do arquivo ficou de fora: aqui o deck tem só Main e Extra.",
+                                                             "O código 12345 não está no pool.",
                                                              "Armed Ninja: o arquivo tinha 4 cópias; ficaram 3." ]
     _(data["valid"]).must_equal false
   end
 
   it "importa texto com nome em português ou inglês, sem diferenciar maiúsculas" do
     card("Armed Ninja").update!(name_pt: "Ninja Armado")
-    import "Main Deck\n2 NINJA ARMADO\n1 d.d. assailant (Destiny)\nSó texto\n1 Carta Inventada\n", kind: "text", name: ""
+    import "Main Deck\n2 NINJA ARMADO\n1 d.d. assailant (Destiny)\nSó texto\n1 Carta Inventada\nSide Deck\n1 Millennium Shield\n", kind: "text", name: ""
 
     assert_response :created
     _(data["name"]).must_equal "Deck importado"
     _(rows(user.decks.find(data["id"]))).must_equal [ [ "Armed Ninja", "main", 2, false ], [ "D.D. Assailant", "main", 1, true ] ]
     _(response.parsed_body["meta"]["warnings"]).must_equal [ "Linha 4: não entendi \"Só texto\".",
+                                                             "O Side Deck do arquivo ficou de fora: aqui o deck tem só Main e Extra.",
                                                              "\"Carta Inventada\" não está no pool." ]
   end
 
@@ -70,8 +73,8 @@ class Api::DeckFilesTest < ActionDispatch::IntegrationTest
     assert_response :success
     _(response.headers["Content-Disposition"]).must_include "filename=\"Deck inicial.ydk\""
     _(response.body.lines.first(2)).must_equal [ "#created by GX Project\n", "#main\n" ]
-    _(response.body.lines.count { |line| line.match?(/\A\d+\n\z/) }).must_equal 55
-    _(Decks::Ydk.parse(response.body).sum { |row| row[:quantity] }).must_equal 55
+    _(response.body.lines.count { |line| line.match?(/\A\d+\n\z/) }).must_equal 40
+    _(Decks::Ydk.parse(response.body).sum { |row| row[:quantity] }).must_equal 40
   end
 
   it "exporta texto, com as Destiny marcadas, e o import lê de volta igual" do

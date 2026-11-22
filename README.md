@@ -40,7 +40,7 @@ A partir da F3, o tempo real dos duelos passa pelo Ably ([ADR 0002](docs/adr/000
   [política de privacidade](https://gx-project-two.vercel.app/privacidade), confirmação de e-mail,
   troca de senha, baixar os dados e excluir a conta (LGPD).
 - Coleção e decks ([ADR 0009](docs/adr/0009-decks.md)): a conta nova ganha o deck inicial;
-  o Deck Edit monta Main, Extra e Side com Destiny, valida ao vivo e importa e exporta `.ydk`.
+  o Deck Edit monta Main e Extra com Destiny, valida ao vivo e importa e exporta `.ydk`.
 - Catálogo em `/cartas`: o pool inteiro, com busca, filtros e o detalhe de cada carta, em
   português ou inglês. Os dados vêm da API em `/api/cards`, `/api/packs` e `/api/banlists`, com
   cache na CDN ([ADR 0007](docs/adr/0007-api-do-catalogo.md)). As imagens ficam num projeto

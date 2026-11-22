@@ -77,7 +77,7 @@ async function mockDeckApi(page: Page) {
               id: 7,
               name: "Heróis",
               updated_at: deck.updated_at,
-              counts: { main: 3, extra: 1, side: 0 },
+              counts: { main: 3, extra: 1 },
             },
           ],
         },
@@ -130,7 +130,7 @@ test("mostra o deck por seção e valida ao vivo", async ({ page }) => {
   expect(results.violations).toEqual([]);
 });
 
-test("marca Destiny, manda uma cópia para o Side e salva", async ({ page }) => {
+test("marca Destiny, tira uma cópia e salva", async ({ page }) => {
   let saved: { name: string; cards: unknown[] } | undefined;
   page.on("request", (request) => {
     if (request.method() === "PATCH") saved = request.postDataJSON();
@@ -141,7 +141,7 @@ test("marca Destiny, manda uma cópia para o Side e salva", async ({ page }) => 
   await page
     .getByRole("listitem")
     .filter({ hasText: "Mago Negro" })
-    .getByRole("button", { name: "Mandar uma cópia de Mago Negro para o Side" })
+    .getByRole("button", { name: "Tirar uma cópia de Mago Negro" })
     .click();
   await page.getByRole("button", { name: "Salvar" }).click();
 
@@ -151,7 +151,6 @@ test("marca Destiny, manda uma cópia para o Side e salva", async ({ page }) => 
     { card_id: 1, section: "main", quantity: 1, destiny: true },
     { card_id: 2, section: "main", quantity: 1, destiny: false },
     { card_id: 3, section: "extra", quantity: 1, destiny: false },
-    { card_id: 1, section: "side", quantity: 1, destiny: false },
   ]);
 });
 
@@ -169,7 +168,7 @@ test("lista os decks pela barra do topo e cria um novo", async ({ page }) => {
     .click();
 
   await expect(page.getByRole("listitem").filter({ hasText: "Heróis" })).toContainText(
-    "Main 3 Extra 1 Side 0",
+    "Main 3 Extra 1",
   );
   await page.getByRole("button", { name: "Criar deck novo" }).click();
   await expect(page).toHaveURL("/decks/7");
@@ -211,9 +210,8 @@ test("põe cartas do baú no deck, até 3 cópias, e mostra o detalhe", async ({
   await expect(page.getByRole("button", { name: "Main Deck (4)" })).toBeVisible();
   const magician = chest.getByRole("listitem").filter({ hasText: "Mago Negro" });
   await expect(magician).toContainText("Tenho 3 · no deck 3");
-  // Na terceira cópia, os dois botões desativam e o baú diz por quê; a linha do deck também.
+  // Na terceira cópia, o botão desativa e o baú diz por quê; a linha do deck também.
   await expect(chest.getByRole("button", { name: "Pôr Mago Negro no Main Deck" })).toBeDisabled();
-  await expect(chest.getByRole("button", { name: "Pôr Mago Negro no Side Deck" })).toBeDisabled();
   await expect(magician).toContainText("Já tem 3 no deck.");
   await expect(
     page.getByRole("button", { name: "Pôr mais uma cópia de Mago Negro" }),
@@ -272,7 +270,7 @@ test("o baú mostra também as cartas que o jogador não tem, se pedir", async (
   );
 });
 
-test("arrasta carta do baú para o Side e uma linha do deck de volta para o baú", async ({
+test("arrasta carta do baú para o Main e uma linha do deck de volta para o baú", async ({
   page,
 }) => {
   await page.goto("/decks/7");
@@ -281,15 +279,15 @@ test("arrasta carta do baú para o Side e uma linha do deck de volta para o baú
   await chest
     .getByRole("listitem")
     .filter({ hasText: "Mago Negro" })
-    .dragTo(page.getByRole("button", { name: "Side Deck (0)" }));
-  await expect(page.getByRole("button", { name: "Side Deck (1)" })).toBeVisible();
+    .dragTo(page.getByRole("button", { name: "Main Deck (3)" }));
+  await expect(page.getByRole("button", { name: "Main Deck (4)" })).toBeVisible();
 
   await page
     .getByRole("list", { name: "Main Deck" })
     .getByRole("listitem")
     .filter({ hasText: "Pote da Ganância" })
     .dragTo(chest);
-  await expect(page.getByRole("button", { name: "Main Deck (2)" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Main Deck (3)" })).toBeVisible();
 });
 
 test("no limite de 50 decks, criar e importar desativam e a página diz por quê", async ({
@@ -300,7 +298,7 @@ test("no limite de 50 decks, criar e importar desativam e a página diz por quê
     id: 100 + i,
     name: `Deck ${i + 1}`,
     updated_at: deck.updated_at,
-    counts: { main: 40, extra: 0, side: 0 },
+    counts: { main: 40, extra: 0 },
   }));
   await page.route("**/api/decks", (route) => route.fulfill({ json: { data: many } }));
   await page.goto("/decks");

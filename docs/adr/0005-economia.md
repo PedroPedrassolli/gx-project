@@ -97,8 +97,8 @@ farm de DP entre contas combinadas.
   - **Moeda:** acerto é cair o lado que o jogador disse; na carta que não pergunta, cara. O
     dado não entra (a fonte não diz o que é ganhar no dado).
   - **Fora, por falta de regra na fonte:** "nenhuma zona de monstro livre para o oponente"
-    (51), "carta-chave do oponente" (52) e o "New Bonus" (83). Tag e Match (07, 09 e 16) vêm
-    com a F5 e a F6.
+    (51), "carta-chave do oponente" (52) e o "New Bonus" (83). Os de Tag e Match (07, 09 e 16)
+    saíram com o duelo em dupla (20/11/2026) e a melhor de 3 (22/11/2026).
 - **Prêmios do GX Project** (20/11/2026, `BonusCalculator::DUEL_PRIZE` e `WIN_PRIZE`): 300 DP
   para todo duelo que não é curto e mais 200 para quem vence, nas primeiras linhas do
   resultado. Antes, a derrota pagava uns 20 a 30 DP, menos que o pacote mais barato; agora
@@ -117,8 +117,9 @@ farm de DP entre contas combinadas.
   moeda) valem ganhando ou não; "deck" é o Deck Principal, a não ser quando o desafio fala do
   Extra; "só com monstros de..." pede pelo menos um monstro; a série XYZ são as sete cartas (X,
   Y, Z e as quatro fusões); o deck de 80 cartas do original virou o de 60, o máximo aqui. Três
-  ficam sem condição e aparecem como "Em breve": os dois de Match (F5) e o da trava de
-  Yata-Garasu (a fonte não diz como o jogo reconhece). Os pacotes que pedem "todos os
+  ficam sem condição: os dois de Match (25 e 38), que saíram da página com a melhor de 3
+  (22/11/2026, GXP-125; os outros mantêm o número), e o da trava de Yata-Garasu, que aparece
+  como "Em breve" (a fonte não diz como o jogo reconhece). Os pacotes que pedem "todos os
   desafios" pedem os 101 que dá para concluir. A página `/desafios` mostra o progresso.
 - **Loja** (GXP-86): `GET /api/shop` traz o saldo, o nível e cada pacote com a dica de como
   liberar (`Shop::Availability`, pelo `disponibilidade.yml`; a dica nunca mostra o código, e
@@ -145,7 +146,7 @@ farm de DP entre contas combinadas.
 - **Conversor** (GXP-90, `Shop::Converter`, página `/loja/conversor`): de 10 a 99 cópias
   repetidas viram 1 carta sorteada do grupo da quantidade (`conversor.yml`). Decisão: só
   entram cópias repetidas, então o jogador sempre fica com uma cópia de cada carta e com as
-  cópias que o deck que mais usa a carta precisa (somando Principal, Extra e Side daquele
+  cópias que o deck que mais usa a carta precisa (somando Principal e Extra daquele
   deck). Uma transação com o jogador travado; a semente e o que foi gasto ficam em
   `card_conversions`, e a mesma chave devolve a mesma conversão. A página mostra só o que dá
   para trocar e a lista das cartas que podem sair antes de confirmar.

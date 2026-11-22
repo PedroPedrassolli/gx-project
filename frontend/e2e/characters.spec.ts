@@ -42,13 +42,13 @@ const DECKS = [
     id: 3,
     name: "Deck inicial",
     updated_at: "2026-11-21T12:00:00Z",
-    counts: { main: 40, extra: 0, side: 0 },
+    counts: { main: 40, extra: 0 },
   },
   {
     id: 4,
     name: "Heróis",
     updated_at: "2026-11-21T12:00:00Z",
-    counts: { main: 40, extra: 5, side: 0 },
+    counts: { main: 40, extra: 5 },
   },
 ];
 
@@ -153,7 +153,7 @@ test("deck incompleto não começa o duelo: o modal diz o que falta e leva ao De
         id: 5,
         name: "Rascunho",
         updated_at: "2026-11-21T12:00:00Z",
-        counts: { main: 12, extra: 0, side: 0 },
+        counts: { main: 12, extra: 0 },
       },
     ],
   });
