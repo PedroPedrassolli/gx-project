@@ -1,33 +1,78 @@
 module Catalog
   # O catálogo inteiro na memória, pronto para a API: cartas, pacotes e banlists viram
-  # hashes uma vez só, e cada pedido filtra em Ruby (são umas 3.500 cartas). Recarrega do
-  # banco a cada 5 minutos. A versão, um resumo do conteúdo, vira o ETag (ADR 0007).
+  # hashes uma vez só, e cada pedido filtra em Ruby (são umas 3.500 cartas). A versão, um
+  # resumo do conteúdo, vira o ETag (ADR 0007).
+  #
+  # Só remonta quando o banco muda (GXP-120): no máximo a cada 30 s, uma consulta barata
+  # confere o carimbo das tabelas do catálogo. Antes, remontava a cada 5 minutos, e o pedido
+  # que caía na hora esperava mais de 1 s.
   class Snapshot
-    TTL = 5.minutes
+    CHECK_EVERY = 30.seconds
     SOURCE = "https://yugipedia.com/index.php?oldid=%d".freeze
     SORTS = { "name" => :name, "atk" => :atk, "def" => :def, "level" => :level, "type" => :card_type }.freeze
+    # As colunas das cartas que a API usa: sem criar um objeto do Rails por carta, a montagem
+    # fica umas 3 vezes mais rápida.
+    COLUMNS = %i[id engine_code name name_pt card_type property card_attribute race monster_types level attack defense
+                 image_code passcode name_in_game text text_pt text_pt_unofficial source_revision].freeze
+    LOCK = Mutex.new
 
-    attr_reader :version, :loaded_at, :packs, :banlists
+    attr_reader :version, :stamp, :packs, :banlists
 
+    # Um pedido por vez: quem chega enquanto outro monta espera o mesmo catálogo, em vez de
+    # montar outro junto.
     def self.current
-      @current = nil if @current && @current.loaded_at < TTL.ago
-      @current ||= new
+      LOCK.synchronize do
+        snapshot = @current
+        next snapshot if snapshot&.checked_recently?
+
+        stamp = self.stamp
+        next snapshot.checked! if snapshot&.stamp == stamp
+
+        @current = new(stamp)
+      end
     end
 
     def self.reset! = @current = nil
 
-    def initialize
-      @loaded_at = Time.current
+    # O carimbo dos dados: o importador grava as tabelas com updated_at, e as linhas dos
+    # pacotes e da banlist são regravadas a cada importação.
+    def self.stamp
+      ApplicationRecord.connection.select_rows(<<~SQL).first
+        SELECT (SELECT max(updated_at) FROM cards), (SELECT max(updated_at) FROM packs),
+               (SELECT max(updated_at) FROM pack_cards), (SELECT max(updated_at) FROM banlist_entries),
+               (SELECT count(*) FROM pack_cards), (SELECT count(*) FROM banlist_entries)
+      SQL
+    end
+
+    # Ao subir o servidor (config/puma.rb), em segundo plano: abre a conexão com o banco e
+    # monta o catálogo antes de alguém pedir. Se falhar, fica no log, e o primeiro pedido
+    # tenta de novo.
+    def self.warm_up
+      Rails.application.executor.wrap { current }
+    rescue StandardError => error
+      Rails.logger.warn("O catálogo não aqueceu: #{error.class}: #{error.message}")
+    end
+
+    def initialize(stamp = self.class.stamp)
+      @stamp = stamp
+      @checked_at = Time.current
       @pack_cards = PackCard.pluck(:card_id, :pack_id, :rarity).group_by(&:first)
       @statuses = BanlistEntry.joins(:banlist).where(banlists: { name: Importer::DEFAULT_BANLIST })
                               .pluck(:card_id, :status).to_h
-      records = Card.order(:name, :id).to_a
-      @cards = records.map { |card| summary(card) }
-      @names = records.to_h { |card| [ card.id, plain([ card.name, card.name_pt, card.name_in_game ].compact.join(" | ")) ] }
-      @details = records.to_h { |card| [ card.id, detail(card) ] }
+      rows = Card.order(:name, :id).pluck(*COLUMNS).map { |values| COLUMNS.zip(values).to_h }
+      @cards = rows.map { |card| summary(card) }
+      @names = rows.to_h { |card| [ card[:id], plain([ card[:name], card[:name_pt], card[:name_in_game] ].compact.join(" | ")) ] }
+      @details = rows.to_h { |card| [ card[:id], detail(card) ] }
       @packs = Pack.order(:position).map { |pack| pack_row(pack) }
       @banlists = Banlist.order(:id).includes(:entries).map { |banlist| banlist_row(banlist) }
       @version = Digest::SHA256.hexdigest(JSON.generate([ @details, @packs, @banlists ]))[0, 16]
+    end
+
+    def checked_recently? = @checked_at > CHECK_EVERY.ago
+
+    def checked!
+      @checked_at = Time.current
+      self
     end
 
     # Cartas que passam nos filtros (escopo 3.3), na ordem pedida. Com pacote, cada carta
@@ -50,16 +95,16 @@ module Catalog
 
     def summary(card)
       # code: o código da carta na engine; é com ele que o duelo fala das cartas (GXP-51).
-      { id: card.id, code: card.engine_code, name: card.name, name_pt: card.name_pt, card_type: card.card_type, property: card.property,
-        attribute: card.card_attribute, race: card.race, monster_types: card.monster_types.presence,
-        level: card.level, atk: card.attack, def: card.defense, banlist: @statuses[card.id], image: card.image_code }.compact
+      { id: card[:id], code: card[:engine_code], name: card[:name], name_pt: card[:name_pt], card_type: card[:card_type],
+        property: card[:property], attribute: card[:card_attribute], race: card[:race], monster_types: card[:monster_types].presence,
+        level: card[:level], atk: card[:attack], def: card[:defense], banlist: @statuses[card[:id]], image: card[:image_code] }.compact
     end
 
     def detail(card)
-      packs = @pack_cards.fetch(card.id, []).map { |_card, pack_id, rarity| { id: pack_id, rarity: } }
-      summary(card).merge({ passcode: card.passcode, name_in_game: card.name_in_game, text: card.text,
-                            text_pt: card.text_pt, text_pt_unofficial: (true if card.text_pt_unofficial),
-                            packs: packs.presence, source: format(SOURCE, card.source_revision) }.compact)
+      packs = @pack_cards.fetch(card[:id], []).map { |_card, pack_id, rarity| { id: pack_id, rarity: } }
+      summary(card).merge({ passcode: card[:passcode], name_in_game: card[:name_in_game], text: card[:text],
+                            text_pt: card[:text_pt], text_pt_unofficial: (true if card[:text_pt_unofficial]),
+                            packs: packs.presence, source: format(SOURCE, card[:source_revision]) }.compact)
     end
 
     # Sem a regra de liberação: ela fica só no servidor (a loja diz a cada jogador o que falta),

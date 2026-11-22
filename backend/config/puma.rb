@@ -12,3 +12,7 @@ plugin :tmp_restart
 raise_exception_on_sigterm false
 
 pidfile ENV["PIDFILE"] if ENV["PIDFILE"]
+
+# Logo que o servidor sobe na Vercel, o catálogo começa a ser montado em segundo plano
+# (GXP-120): o primeiro pedido dele não espera a conexão com o banco nem a montagem.
+after_booted { Thread.new { Catalog::Snapshot.warm_up } } if ENV["RAILS_ENV"] == "production"
