@@ -69,7 +69,8 @@ export function Layout() {
         )}
       </header>
       {user && !user.email_verified && !inDuel && <ConfirmEmailNotice user={user} />}
-      {duel && pathname !== `/duelo/${duel.match_id}` && (
+      {/* No início, o duelo aberto já é o destaque da página. */}
+      {duel && pathname !== "/" && pathname !== `/duelo/${duel.match_id}` && (
         <p className="notice" role="status">
           Você tem um duelo em andamento.{" "}
           <Link to={`/duelo/${duel.match_id}`}>Voltar para a mesa</Link>

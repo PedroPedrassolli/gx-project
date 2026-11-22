@@ -22,6 +22,12 @@ export type Characters = { characters: Character[] };
 
 export const charactersKey = ["characters"];
 
+// O próximo desafiante: o primeiro liberado que o jogador ainda não venceu (a lista já vem na
+// ordem da escada). Sem nenhum, ele venceu todos.
+export function nextCharacter(characters: Character[]) {
+  return characters.find((character) => character.status === "unlocked");
+}
+
 export function useCharacters(enabled: boolean) {
   return useQuery({
     queryKey: charactersKey,
