@@ -11,7 +11,7 @@ import { usePageTitle } from "../pageTitle.ts";
 import { useRealtime } from "../realtime/useRealtime.ts";
 import { matchKey, respond, surrender, useMatch, type MatchState } from "./api.ts";
 import { actionablePlaces } from "./actionable.ts";
-import { Board } from "./Board.tsx";
+import { Board, PhaseTrack } from "./Board.tsx";
 import { commandsByPlace, isCommandPrompt, phaseCommands } from "./commands.ts";
 import { DuelDetail } from "./DuelDetail.tsx";
 import { CardActionsDialog, CommandsDialog, PlainDialog, PromptDialog } from "./DuelDialogs.tsx";
@@ -199,6 +199,37 @@ export function DuelPage() {
       />
     </>
   );
+  // A mesa e a faixa das fases usam as mesmas informações: no computador, a faixa vai para
+  // a coluna da direita (GXP-135).
+  const boardProps = {
+    view: state.view,
+    names,
+    cards,
+    language,
+    onCard: setSelected,
+    onCardAt: (place: string, code: number) => {
+      if (byPlace.has(place)) setActing({ place, code, seq: state.seq });
+      else setSelected(code);
+    },
+    finished: !dueling,
+    lpChanges: motion === "off" ? undefined : lpChanges(fresh),
+    actionable: actionablePlaces(state.view.prompt),
+    emotes,
+    chain,
+    center: (
+      <TurnActions
+        state={state}
+        names={names}
+        pending={answer.isPending}
+        error={prompt && isCommandPrompt(prompt) ? answer.error?.message : undefined}
+        onAnswer={common.onAnswer}
+        onAllCommands={() => setAllCommandsSeq(state.seq)}
+        onRespond={() => setMinimizedSeq(null)}
+        onResult={() => setResultClosed(false)}
+        title={prompt && !isCommandPrompt(prompt) ? promptTitle(prompt, common) : undefined}
+      />
+    ),
+  };
   return (
     <main className="page duel-page" ref={page}>
       <h1 className="visually-hidden">Duelo de {names.join(" contra ")}</h1>
@@ -223,35 +254,7 @@ export function DuelPage() {
           </button>
         )}
       </DuelBar>
-      <Board
-        view={state.view}
-        names={names}
-        cards={cards}
-        language={language}
-        onCard={setSelected}
-        onCardAt={(place, code) => {
-          if (byPlace.has(place)) setActing({ place, code, seq: state.seq });
-          else setSelected(code);
-        }}
-        finished={!dueling}
-        lpChanges={motion === "off" ? undefined : lpChanges(fresh)}
-        actionable={actionablePlaces(state.view.prompt)}
-        emotes={emotes}
-        chain={chain}
-        center={
-          <TurnActions
-            state={state}
-            names={names}
-            pending={answer.isPending}
-            error={prompt && isCommandPrompt(prompt) ? answer.error?.message : undefined}
-            onAnswer={common.onAnswer}
-            onAllCommands={() => setAllCommandsSeq(state.seq)}
-            onRespond={() => setMinimizedSeq(null)}
-            onResult={() => setResultClosed(false)}
-            title={prompt && !isCommandPrompt(prompt) ? promptTitle(prompt, common) : undefined}
-          />
-        }
-      />
+      <Board {...boardProps} track={!wide} />
       <DuelDetail
         code={selected}
         cards={cards}
@@ -259,7 +262,12 @@ export function DuelPage() {
         language={language}
         onClose={() => setSelected(null)}
       />
-      {wide && <div className="duel-side">{side}</div>}
+      {wide && (
+        <div className="duel-side">
+          <PhaseTrack {...boardProps} />
+          {side}
+        </div>
+      )}
       {!wide && (
         <PlainDialog id="more-title" title="Duelo" open={more} onClose={() => setMore(false)}>
           <div className="duel-more">{side}</div>

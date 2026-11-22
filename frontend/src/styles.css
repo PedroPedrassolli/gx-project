@@ -2985,7 +2985,9 @@ html:has(.deck-bar) {
       "detail board side";
     grid-template-columns: 17rem minmax(0, 1fr) 17rem;
     column-gap: 1.5rem;
-    max-width: 72rem;
+    /* A mesa usa a largura toda da tela (GXP-135): com a faixa das fases na coluna da
+       direita, as zonas crescem com a largura do meio. */
+    max-width: none;
   }
 
   .duel-page > .duel-bar {
@@ -3046,14 +3048,36 @@ html:has(.deck-bar) {
 }
 
 /* No duelo, a zona também cabe na altura: os dois campos (4 zonas), as duas mãos (perto de
-   2,1 zonas) e o resto da mesa (os nomes, a faixa das fases e os vãos: 17,5rem, medidos em
-   telas de 360 a 1920 de largura). */
+   2,5 zonas: a sua é maior, GXP-135) e o resto da mesa (os nomes, a faixa das fases e os
+   vãos: 17,5rem, medidos em telas de 360 a 1920 de largura). Sem a faixa (no computador ela
+   fica na coluna da direita), sobra mais altura para as zonas. */
 .duel-page > .board .side {
   --zone: clamp(
     1.75rem,
-    min((100cqi - 6 * var(--gap)) / 7, (100cqh - var(--board-fixed, 17.5rem)) / 6.2),
+    min((100cqi - 6 * var(--gap)) / 7, (100cqh - var(--board-fixed, 17.5rem)) / 6.5),
     5.5rem
   );
+}
+
+.duel-page > .board.no-track .side {
+  --board-fixed: 9.5rem;
+}
+
+/* O replay no celular rola a página: a mesa pela largura, os botões do replay e o histórico
+   embaixo dela (a altura fixa da mesa do duelo apertava tudo por cima dos botões). */
+@media (width < 72rem) {
+  .duel-page.replay-page {
+    grid-template-rows: none;
+    height: auto;
+  }
+
+  .replay-page > .board {
+    container-type: inline-size;
+  }
+
+  .replay-page > .board .side {
+    --zone: clamp(1.75rem, (100cqi - 6 * var(--gap)) / 7, 5.5rem);
+  }
 }
 
 /* Tela baixa (celular pequeno, notebook de 720 linhas): sem a linha do turno (a barra já diz
@@ -3071,6 +3095,10 @@ html:has(.deck-bar) {
 
   .duel-page > .board .lp {
     font-size: 1.125rem;
+  }
+
+  .duel-page > .board .side:not(.opponent) .lp {
+    font-size: 1.375rem;
   }
 }
 
@@ -3268,8 +3296,9 @@ button.pile {
   margin-inline-start: calc(var(--zone) * -0.3);
 }
 
+/* A sua mão maior que a do outro (GXP-135): é com ela que se joga. */
 .hand .card {
-  width: calc(var(--zone) * 0.85);
+  width: calc(var(--zone) * 1.05);
 }
 
 .opponent .hand .card {
@@ -3374,6 +3403,13 @@ button.pile {
   font-size: 1.375rem;
   font-weight: 600;
   font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* Os seus PV grandes, com o brilho (GXP-135); os do outro, do tamanho de antes. */
+.side:not(.opponent) .lp {
+  font-size: 1.75rem;
+  font-weight: 700;
+  text-shadow: 0 0 18px rgb(158 230 255 / 0.55);
 }
 
 /* Animações da mesa: a carta que chega na mão ou no campo e o elo novo da corrente crescem
@@ -3758,6 +3794,15 @@ button.pile {
   margin: 0;
 }
 
+.result-title {
+  font-size: 1.75rem;
+}
+
+.result-title.win {
+  color: #ffd27a;
+  text-shadow: 0 0 24px rgb(255 210 122 / 0.45);
+}
+
 .duel-result > p {
   color: var(--color-muted);
 }
@@ -3812,6 +3857,25 @@ button.danger {
   display: grid;
   gap: 1rem;
   margin: 1rem 0 0;
+}
+
+/* No computador, a faixa das fases sai do meio da mesa e abre a coluna da direita (GXP-135),
+   no mesmo cartão do histórico. */
+.duel-side > .phase-track {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+
+  .phase-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Na coluna estreita, os botões da vez um embaixo do outro, cada um numa linha só. */
+  .turn-actions {
+    grid-auto-flow: row;
+    width: 100%;
+  }
 }
 
 .chain-stack,

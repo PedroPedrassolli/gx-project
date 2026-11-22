@@ -120,6 +120,11 @@ test("mostra os dois lados da mesa, escondendo o que é do outro", async ({ page
   await expect(
     page.getByRole("list", { name: "Fases do turno" }).getByText("Batalha"),
   ).toHaveAttribute("aria-current", "step");
+  // No computador, as fases ficam na coluna da direita, fora da mesa (GXP-135).
+  await expect(
+    page.locator(".duel-side").getByRole("list", { name: "Fases do turno" }),
+  ).toBeVisible();
+  await expect(page.locator(".board").getByRole("list", { name: "Fases do turno" })).toHaveCount(0);
 
   const theirs = page.getByRole("region", { name: "Lado de Syrus" });
   await expect(theirs.getByText("PV 8000")).toBeVisible();
@@ -515,6 +520,8 @@ test("o replay passa lance a lance e turno a turno, e reproduz sozinho", async (
 
   const theirs = page.getByRole("region", { name: "Lado de Syrus" });
   await expect(page.getByText("Turno 1 de 2")).toBeVisible();
+  // No computador, as fases do replay também vão para a coluna da direita.
+  await expect(page.locator(".board").getByRole("list", { name: "Fases do turno" })).toHaveCount(0);
   await expect(page.getByText("Lance 1 de 2")).toBeVisible();
   await expect(page.getByRole("button", { name: "Anterior" })).toBeDisabled();
   await page.getByRole("button", { name: "Próximo" }).click();
@@ -1216,4 +1223,34 @@ test("tipo, atributo e nome de carta mandam a escolha certa", async ({ page }) =
   await panel.getByLabel("Nome da carta").fill("mago");
   await panel.getByRole("button", { name: "Mago Negro" }).click();
   await expect.poll(() => name).toEqual([{ seq: 3, response: { code: 46986414 } }]);
+});
+
+test("no celular, as fases ficam no meio da mesa e o replay não se sobrepõe aos botões", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockMatch(page);
+  await page.goto("/duelo/5");
+  await expect(page.locator(".board").getByRole("list", { name: "Fases do turno" })).toBeVisible();
+
+  await page.route("**/api/matches/5/replay*", (route) =>
+    route.fulfill({
+      json: {
+        data: {
+          id: 5,
+          turn: 1,
+          turns: 1,
+          you: 0,
+          players: STATE.players,
+          frames: [{ step: 0, view: { ...STATE.view, prompt: undefined } }],
+        },
+      },
+    }),
+  );
+  await page.goto("/duelo/5/replay");
+  const board = await page.locator(".board").boundingBox();
+  const controls = await page.locator(".replay-controls").boundingBox();
+  // A mesa tem altura de verdade e os botões vêm depois dela, sem cobrir nada.
+  expect(board?.height ?? 0).toBeGreaterThan(300);
+  expect((board?.y ?? 0) + (board?.height ?? 0)).toBeLessThanOrEqual(controls?.y ?? 0);
 });

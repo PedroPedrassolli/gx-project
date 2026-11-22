@@ -5,7 +5,8 @@ import type { ChainLink, DuelEvent, FieldCard, HandCard, Side, View } from "./ap
 
 // A mesa (escopo 4, "Mesa de duelo"), como numa mesa de verdade: o seu campo embaixo, com a
 // zona de campo e o Extra à esquerda e o cemitério e o deck à direita; o do outro em cima,
-// girado (o lado esquerdo dele fica à sua direita). As fases do turno no meio. Monstro em
+// girado (o lado esquerdo dele fica à sua direita). As fases do turno no meio (ou, no
+// computador, na coluna da direita). Monstro em
 // defesa fica deitado; carta sem código está virada para baixo e mostra o verso.
 const PHASES = [
   ["draw", "Compra"],
@@ -38,6 +39,9 @@ type Props = {
   center?: ReactNode;
   // A corrente aberta, que aparece por cima do meio da mesa.
   chain?: ChainLink[];
+  // false: a faixa das fases não fica no meio da mesa, porque a página a põe na coluna da
+  // direita (no computador, GXP-135) com o PhaseTrack.
+  track?: boolean;
 };
 
 // Uma pilha aberta: o título e as cartas, de cima (a última que entrou) para baixo, cada uma
@@ -48,37 +52,47 @@ export function Board(props: Props) {
   const { view } = props;
   const [mine, theirs] = view.you === 0 ? view.sides : [view.sides[1], view.sides[0]];
   const [pile, setPile] = useState<Pile | null>(null);
+  const track = props.track ?? true;
   return (
-    <div className="board">
+    <div className={track ? "board" : "board no-track"}>
       <SideArea {...props} side={theirs} opponent onPile={setPile} />
-      <div className="phase-track">
-        <p>
-          {props.finished
-            ? `Turno ${view.turn}, duelo encerrado`
-            : `Turno ${view.turn}, vez de ${props.names[view.turn_team]}`}
-        </p>
-        {/* Com a corrente aberta, a corrente fica no lugar das fases (a fase não muda no meio
-            dela), na mesma altura: a mesa não pula. */}
-        <div className="phase-slot">
-          {props.chain && props.chain.length > 0 ? (
-            <ChainStrip {...props} chain={props.chain} />
-          ) : (
-            <ol className="phase-list" aria-label="Fases do turno">
-              {PHASES.map(([key, label]) => (
-                <li
-                  key={key}
-                  aria-current={!props.finished && view.phase === key ? "step" : undefined}
-                >
-                  {label}
-                </li>
-              ))}
-            </ol>
-          )}
-        </div>
-        {props.center}
-      </div>
+      {track && <PhaseTrack {...props} />}
       <SideArea {...props} side={mine} onPile={setPile} />
       <PileDialog {...props} pile={pile} onClose={() => setPile(null)} />
+    </div>
+  );
+}
+
+// A faixa das fases: de quem é a vez, as fases (ou a corrente aberta) e os botões da vez.
+// No celular fica no meio da mesa; no computador, na coluna da direita.
+export function PhaseTrack(props: Props) {
+  const { view } = props;
+  return (
+    <div className="phase-track">
+      <p>
+        {props.finished
+          ? `Turno ${view.turn}, duelo encerrado`
+          : `Turno ${view.turn}, vez de ${props.names[view.turn_team]}`}
+      </p>
+      {/* Com a corrente aberta, a corrente fica no lugar das fases (a fase não muda no meio
+          dela), na mesma altura: a mesa não pula. */}
+      <div className="phase-slot">
+        {props.chain && props.chain.length > 0 ? (
+          <ChainStrip {...props} chain={props.chain} />
+        ) : (
+          <ol className="phase-list" aria-label="Fases do turno">
+            {PHASES.map(([key, label]) => (
+              <li
+                key={key}
+                aria-current={!props.finished && view.phase === key ? "step" : undefined}
+              >
+                {label}
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
+      {props.center}
     </div>
   );
 }

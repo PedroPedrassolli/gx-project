@@ -3,12 +3,13 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router";
 import { request } from "../api.ts";
 import { useSession } from "../account/session.ts";
+import { useMediaQuery } from "../catalog/CardPanel.tsx";
 import { NO_CARDS, NO_PACKS, useCatalog } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
 import { PageNotice, SignInFirst } from "../PageNotice.tsx";
 import { usePageTitle } from "../pageTitle.ts";
 import type { View } from "./api.ts";
-import { Board } from "./Board.tsx";
+import { Board, PhaseTrack } from "./Board.tsx";
 import { DuelDetail } from "./DuelDetail.tsx";
 import { ChainStack, DuelLog } from "./DuelSide.tsx";
 
@@ -30,6 +31,8 @@ export function ReplayPage() {
   usePageTitle("Replay");
   const session = useSession();
   const user = session.data?.user;
+  // No computador, a faixa das fases vai para a coluna da direita, como no duelo (GXP-135).
+  const wide = useMediaQuery("(width >= 72rem)");
   const [turn, setTurn] = useState(1);
   // Lance do turno; -1 é o último (voltar do começo de um turno para o fim do anterior).
   const [frame, setFrame] = useState(0);
@@ -105,16 +108,11 @@ export function ReplayPage() {
   const names = [0, 1].map(
     (team) => data.players.find((player) => player.team === team)?.nickname ?? "Duelista",
   );
+  const boardProps = { view: current.view, names, cards, language, onCard: setSelected };
   return (
-    <main className="page duel-page">
+    <main className="page duel-page replay-page">
       <h1 className="visually-hidden">Replay do duelo de {names.join(" contra ")}</h1>
-      <Board
-        view={current.view}
-        names={names}
-        cards={cards}
-        language={language}
-        onCard={setSelected}
-      />
+      <Board {...boardProps} track={!wide} />
       <div className="duel-status-area replay-controls">
         <p className="duel-status">
           Turno {turn} de {turns}
@@ -162,6 +160,7 @@ export function ReplayPage() {
         onClose={() => setSelected(null)}
       />
       <div className="duel-side">
+        {wide && <PhaseTrack {...boardProps} />}
         <ChainStack
           chain={current.view.chain ?? []}
           you={data.you}
