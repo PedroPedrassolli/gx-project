@@ -62,9 +62,13 @@ test("o menu marca a página atual", async ({ page }) => {
   ).toHaveAttribute("aria-current", "page");
 });
 
-test("o rodapé leva ao código-fonte", async ({ page }) => {
+test("o rodapé não fala do código-fonte; só a página de termos, pela AGPL", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("link", { name: "Código-fonte" })).toHaveAttribute(
+  await expect(
+    page.getByRole("contentinfo").getByRole("link", { name: /código-fonte/i }),
+  ).toHaveCount(0);
+  await page.goto("/termos");
+  await expect(page.getByRole("main").getByRole("link", { name: "código-fonte" })).toHaveAttribute(
     "href",
     "https://github.com/PedroPedrassolli/gx-project",
   );
