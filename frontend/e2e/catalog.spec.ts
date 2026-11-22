@@ -51,7 +51,7 @@ async function mockApi(page: Page) {
   });
 }
 
-// Imagens simuladas: a do Pote da Ganância não carrega, para ver que ela some.
+// Imagens simuladas: a do Pote da Ganância nunca carrega, para ver a face no lugar dela.
 const PIXEL = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=",
   "base64",
@@ -119,7 +119,7 @@ test("avisa quando o texto em português é tradução nossa, não a oficial", a
   );
 });
 
-test("mostra a miniatura e a imagem da carta, e esconde a que não carrega", async ({ page }) => {
+test("mostra a miniatura e a imagem da carta; sem imagem, a face com o nome", async ({ page }) => {
   await page.goto("/cartas?carta=1");
   // A conexão com o site das imagens abre junto com a página, antes de a lista chegar.
   await expect(
@@ -134,8 +134,30 @@ test("mostra a miniatura e a imagem da carta, e esconde a que não carrega", asy
     "src",
     /\/cards\/p\/46986414\.webp$/,
   );
-  await expect(page.getByRole("button", { name: /Pote da Ganância/ }).locator("img")).toBeHidden();
-  await expect(page.getByRole("button", { name: /Força Espelho/ }).locator("img")).toHaveCount(0);
+  // A que falha tenta de novo duas vezes e, sem jeito, vira a face da carta com o nome.
+  const failed = page.getByRole("button", { name: /Pote da Ganância/ });
+  await expect(failed.locator(".card-face")).toContainText("Pote da Ganância", { timeout: 8_000 });
+  await expect(failed.locator("img")).toHaveCount(0);
+  // A carta do anime, que não tem imagem, mostra a face desde o começo, também no detalhe.
+  const anime = page.getByRole("button", { name: /Força Espelho/ });
+  await expect(anime.locator("img")).toHaveCount(0);
+  await expect(anime.locator(".card-face")).toContainText("Força Espelho");
+  await anime.click();
+  await expect(page.getByRole("img", { name: "Carta Força Espelho, sem imagem" })).toBeVisible();
+});
+
+test("imagem que falha uma vez tenta de novo e aparece", async ({ page }) => {
+  let tries = 0;
+  await page.route(/\/cards\/p\/46986414\.webp/, (route) => {
+    tries += 1;
+    return tries === 1 ? route.abort() : route.fulfill({ contentType: "image/png", body: PIXEL });
+  });
+  await page.goto("/cartas");
+
+  const thumb = page.getByRole("button", { name: /Mago Negro/ }).locator("img");
+  await expect(thumb).toHaveAttribute("src", /46986414\.webp\?tentativa=1$/);
+  await expect(thumb).toBeVisible();
+  await expect.poll(() => thumb.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBe(1);
 });
 
 test("abre pelo link da carta e avisa quando ela não existe", async ({ page }) => {

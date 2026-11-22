@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "../account/session.ts";
-import { displayName, imageUrl } from "../catalog/cards.ts";
-import { useCatalog } from "../catalog/data.ts";
+import { CardImage, preloadCardImages } from "../catalog/CardImage.tsx";
+import { displayName } from "../catalog/cards.ts";
+import { catalogQuery, useCatalog } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
 import { RARITIES, label } from "../catalog/labels.ts";
 import { SignInFirst } from "../PageNotice.tsx";
@@ -28,6 +29,11 @@ export function ShopPage() {
   const user = session.data?.user;
   const shop = useShop(Boolean(user));
   const client = useQueryClient();
+  // O catálogo (nome e imagem de cada carta) já vem enquanto o jogador escolhe o pacote: a
+  // abertura não espera por ele.
+  useEffect(() => {
+    void client.prefetchQuery(catalogQuery);
+  }, [client]);
   const [opened, setOpened] = useState<{ pack: ShopPack; openings: DrawnCard[][] } | null>(null);
   const buy = useMutation({
     mutationFn: ({ pack, count }: { pack: ShopPack; count: 1 | 10 }) =>
@@ -210,6 +216,15 @@ function Opening(props: { pack: ShopPack; openings: DrawnCard[][]; onClose: () =
   const [shown, setShown] = useState(0);
   const main = useRef<HTMLButtonElement>(null);
   const cards = props.openings[packIndex] ?? [];
+  const byId = catalog.data?.byId;
+  // As imagens do pacote aberto baixam já, antes de virar, e as do próximo, com prioridade
+  // baixa: a carta aparece pronta, sem quadro vazio no meio da virada.
+  useEffect(() => {
+    if (!byId) return;
+    const images = (pack: DrawnCard[] | undefined) => (pack ?? []).map((item) => byId.get(item.id));
+    preloadCardImages(images(props.openings[packIndex]), "m");
+    preloadCardImages(images(props.openings[packIndex + 1]), "m", "low");
+  }, [byId, packIndex, props.openings]);
   const done = shown >= cards.length;
   const last = packIndex === props.openings.length - 1;
   const many = props.openings.length > 1;
@@ -273,17 +288,7 @@ function Opening(props: { pack: ShopPack; openings: DrawnCard[][]; onClose: () =
           }
           return (
             <li key={key} className={`drawn rarity-${drawn.rarity}`}>
-              {card?.image !== undefined ? (
-                <img
-                  src={imageUrl(card.image, "m")}
-                  alt=""
-                  width={140}
-                  height={204}
-                  loading="lazy"
-                />
-              ) : (
-                <span className="drawn-face" />
-              )}
+              <CardImage card={card} size="m" width={140} height={204} />
               <span className="drawn-name">{card ? displayName(card, language) : "Carta"}</span>
               <span className="drawn-tags">
                 {label(RARITIES, drawn.rarity)}

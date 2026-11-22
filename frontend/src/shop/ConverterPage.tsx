@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "../account/session.ts";
-import { displayName, imageUrl, type CardSummary } from "../catalog/cards.ts";
+import { CardImage } from "../catalog/CardImage.tsx";
+import { displayName, type CardSummary } from "../catalog/cards.ts";
 import { useCatalog } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
 import { SignInFirst } from "../PageNotice.tsx";
@@ -53,9 +54,7 @@ export function ConverterPage() {
         <h1>Conversor de cartas</h1>
         <section className="converted" aria-labelledby="converted-title">
           <h2 id="converted-title">Você trocou {convert.data.amount} cartas por:</h2>
-          {card?.image !== undefined && (
-            <img src={imageUrl(card.image, "m")} alt="" width={140} height={204} />
-          )}
+          <CardImage card={card} size="m" width={140} height={204} className="converted-image" />
           <p className="converted-name">
             {card ? displayName(card, language) : "Carta"}
             {convert.data.new && <strong className="new-card">Nova</strong>}
@@ -120,17 +119,7 @@ export function ConverterPage() {
               const count = chosen[card.id] ?? 0;
               return (
                 <li key={card.id} className={count > 0 ? "chosen" : undefined}>
-                  {card.image !== undefined ? (
-                    <img
-                      src={imageUrl(card.image, "p")}
-                      alt=""
-                      width={48}
-                      height={70}
-                      loading="lazy"
-                    />
-                  ) : (
-                    <span className="converter-face" />
-                  )}
+                  <CardImage card={card} size="p" width={48} height={70} lazy />
                   <span className="converter-name">
                     {name}
                     <span className="hint">
