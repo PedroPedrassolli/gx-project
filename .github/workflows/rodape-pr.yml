@@ -14,10 +14,8 @@ on:
   issue_comment: # zizmor: ignore[dangerous-triggers]
     types: [created, edited]
 
-permissions:
-  contents: read
-  issues: write
-  pull-requests: write
+# Nada no workflow; o job pede só o que usa (GXP-111).
+permissions: {}
 
 jobs:
   limpar:
@@ -36,6 +34,9 @@ jobs:
         contains(github.event.comment.body, 'Generated with [')))
     runs-on: ubuntu-24.04
     timeout-minutes: 3
+    permissions:
+      issues: write
+      pull-requests: write
     steps:
       - name: Tirar o rodapé
         env:
