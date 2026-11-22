@@ -21,7 +21,26 @@ const PACKS = Array.from({ length: 20 }, (_, index) => ({
   name: `Pacote com um nome bem comprido ${index + 1}`,
   position: index + 1,
   card_count: 3,
+  cover: 1,
 }));
+// A loja: um pacote liberado, sem DP para comprar 10, e um bloqueado com a barra.
+const SHOP = {
+  balance: 120,
+  level: 3,
+  packs: PACKS.slice(0, 4).map((pack, index) => ({
+    id: pack.id,
+    name: pack.name,
+    price: 50,
+    cards_per_pack: 5,
+    available: index % 2 === 0,
+    hint:
+      index % 2 === 0
+        ? null
+        : "Tenha 50% das cartas de Pacote com um nome bem comprido 1 (você tem 12%).",
+    progress: index % 2 === 0 ? null : 24,
+    new: index === 0,
+  })),
+};
 // Os três jeitos de um personagem aparecer, com nome e descrição longos.
 const CHARACTERS = (["beaten", "unlocked", "locked"] as const).map((status, index) => ({
   id: `personagem-${index}`,
@@ -127,6 +146,8 @@ async function mockApi(page: Page) {
       "/api/packs": PACKS,
       "/api/decks": [{ ...DECK, counts: { main: 40, extra: 0 } }],
       "/api/decks/7": DECK,
+      "/api/shop": SHOP,
+      "/api/shop/converter": { min: 10, max: 99, cards: [{ card_id: 1, quantity: 12 }] },
       "/api/rooms": [{ ...ROOM, players: 1 }],
       "/api/rooms/ABC234": ROOM,
       "/api/matches/5": MATCH,
@@ -188,6 +209,8 @@ const PAGES: [string, string, boolean][] = [
   ["/colecao", "Coleção", true],
   ["/decks", "Decks", true],
   ["/decks/7", "Deck", true],
+  ["/loja", "Loja", true],
+  ["/loja/conversor", "Conversor", true],
   ["/salas", "Salas", true],
   ["/salas/ABC234", "Sala", true],
   ["/personagens", "Personagens", true],

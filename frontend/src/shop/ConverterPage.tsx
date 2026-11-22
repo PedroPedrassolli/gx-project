@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "../account/session.ts";
 import { CardImage } from "../catalog/CardImage.tsx";
 import { displayName, type CardSummary } from "../catalog/cards.ts";
+import { CardTile } from "../catalog/parts.tsx";
 import { useCatalog } from "../catalog/data.ts";
 import { useCardLanguage } from "../catalog/language.ts";
 import { SignInFirst } from "../PageNotice.tsx";
@@ -113,19 +114,19 @@ export function ConverterPage() {
               {convert.error.message}
             </p>
           )}
-          <ul className="converter-cards">
+          {/* A mesma grade da coleção e do deck (GXP-133): a carta com as repetidas por cima e,
+              embaixo, quantas entram na troca. */}
+          <ul className="card-grid converter-cards">
             {rows.map(({ card, quantity: spare }) => {
               const name = displayName(card, language);
               const count = chosen[card.id] ?? 0;
               return (
                 <li key={card.id} className={count > 0 ? "chosen" : undefined}>
-                  <CardImage card={card} size="p" width={48} height={70} lazy />
-                  <span className="converter-name">
-                    {name}
-                    <span className="hint">
+                  <CardTile card={card} language={language}>
+                    <span className="badge">
                       {spare} {spare === 1 ? "repetida" : "repetidas"}
                     </span>
-                  </span>
+                  </CardTile>
                   <span className="converter-count" role="group" aria-label={`Cópias de ${name}`}>
                     <button
                       type="button"

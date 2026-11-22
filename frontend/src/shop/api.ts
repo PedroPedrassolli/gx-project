@@ -9,6 +9,7 @@ export type ShopPack = {
   cards_per_pack: number;
   available: boolean;
   hint: string | null; // como liberar, quando bloqueado
+  progress: number | null; // quanto do caminho para liberar o jogador já fez (0 a 99)
   new: boolean; // liberado e ainda não visto na prateleira
 };
 

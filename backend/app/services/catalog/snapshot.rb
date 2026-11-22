@@ -10,6 +10,7 @@ module Catalog
     CHECK_EVERY = 30.seconds
     SOURCE = "https://yugipedia.com/index.php?oldid=%d".freeze
     SORTS = { "name" => :name, "atk" => :atk, "def" => :def, "level" => :level, "type" => :card_type }.freeze
+    RARITY_ORDER = %w[ultra_rare super_rare rare common].freeze
     # As colunas das cartas que a API usa: sem criar um objeto do Rails por carta, a montagem
     # fica umas 3 vezes mais rápida.
     COLUMNS = %i[id engine_code name name_pt card_type property card_attribute race monster_types level attack defense
@@ -117,10 +118,19 @@ module Catalog
     end
 
     # Sem a regra de liberação: ela fica só no servidor (a loja diz a cada jogador o que falta),
-    # e a regra "codigo" traz o código secreto (GXP-89).
+    # e a regra "codigo" traz o código secreto (GXP-89). cover: a carta da capa na loja.
     def pack_row(pack)
       { id: pack.id, name: pack.name, position: pack.position, price: pack.price, cards_per_pack: pack.cards_per_pack,
-        card_count: pack_rarities(pack.id).size }
+        card_count: pack_rarities(pack.id).size, cover: cover(pack.id) }
+    end
+
+    # A capa do pacote (GXP-133): a carta mais rara que tem imagem e, entre as de mesma
+    # raridade, a de maior ATK (magia e armadilha por último); no empate, a de id menor.
+    def cover(pack_id)
+      pack_rarities(pack_id).filter_map { |card_id, rarity|
+        card = @by_id[card_id]
+        [ RARITY_ORDER.index(rarity), -(card[:atk] || -1), card_id ] if card&.dig(:image)
+      }.min&.last
     end
 
     def banlist_row(banlist)

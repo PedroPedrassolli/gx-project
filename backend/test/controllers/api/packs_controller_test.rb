@@ -18,6 +18,19 @@ class Api::PacksControllerTest < ActionDispatch::IntegrationTest
       _(response.headers["Cache-Control"]).must_include "s-maxage=3600"
     end
 
+    it "cada pacote tem a capa da loja: a carta mais rara que tem imagem" do
+      ids = Card.where(name: [ "Night Assailant", "Trap Hole", "Ancient Gear" ]).where.not(image_code: nil).pluck(:name, :id).to_h
+      get api_packs_path
+      _(response.parsed_body["data"].pluck("cover")).must_equal [ ids["Night Assailant"], ids["Trap Hole"], ids["Night Assailant"], ids["Night Assailant"] ]
+
+      # Sem a imagem da ultra rara, o Pack A fica sem capa (as outras dele também não têm) e o
+      # Everything usa a super rara.
+      Card.find(ids["Night Assailant"]).update!(image_code: nil)
+      Catalog::Snapshot.reset!
+      get api_packs_path
+      _(response.parsed_body["data"].pluck("cover")).must_equal [ nil, ids["Trap Hole"], nil, ids["Ancient Gear"] ]
+    end
+
     it "responde 304, sem corpo, quando o navegador já tem a versão atual" do
       get api_packs_path
       get api_packs_path, headers: { "If-None-Match" => response.headers["ETag"] }

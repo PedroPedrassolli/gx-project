@@ -183,33 +183,30 @@ export function Detail({
   );
 }
 
-// Um item da grade de cartas (catálogo, coleção e Deck Edit): a carta grande com o nome
-// embaixo e as marcas (banlist, raridade, cópias) por cima da imagem; o nome vem primeiro
-// no código, para o leitor de tela começar por ele. children traz o que a tela quiser a
-// mais; missing apaga a carta que o jogador não tem.
+// Um item da grade de cartas (catálogo, coleção, Deck Edit e conversor): a carta grande com o
+// nome embaixo e as marcas (banlist, raridade, cópias) por cima da imagem; o nome vem primeiro
+// no código, para o leitor de tela começar por ele. Com onSelect, a carta é um botão que abre o
+// detalhe; sem, só mostra. children traz o que a tela quiser a mais; missing apaga a carta que
+// o jogador não tem.
 export function CardTile({
   card,
   language,
-  selected,
+  selected = false,
   onSelect,
   children,
   missing = false,
 }: {
   card: CardSummary;
   language: Language;
-  selected: boolean;
-  onSelect: () => void;
+  selected?: boolean;
+  onSelect?: () => void;
   children?: ReactNode;
   missing?: boolean;
 }) {
   const ban = card.banlist && <span className="badge">{label(BANLIST, card.banlist)}</span>;
-  return (
-    <button
-      type="button"
-      className={`card-tile frame-${frame(card)}${missing ? " missing" : ""}`}
-      aria-current={selected || undefined}
-      onClick={onSelect}
-    >
+  const className = `card-tile frame-${frame(card)}${missing ? " missing" : ""}`;
+  const content = (
+    <>
       <span className="tile-name">{displayName(card, language)}</span>
       <span className="tile-art">
         <CardImage card={card} size="m" width={IMAGE_WIDTHS.m} height={391} lazy />
@@ -220,6 +217,17 @@ export function CardTile({
           </span>
         )}
       </span>
+    </>
+  );
+  if (!onSelect) return <span className={className}>{content}</span>;
+  return (
+    <button
+      type="button"
+      className={className}
+      aria-current={selected || undefined}
+      onClick={onSelect}
+    >
+      {content}
     </button>
   );
 }

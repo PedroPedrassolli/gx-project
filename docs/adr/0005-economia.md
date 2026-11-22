@@ -123,7 +123,10 @@ farm de DP entre contas combinadas.
   desafios" pedem os 101 que dá para concluir. A página `/desafios` mostra o progresso.
 - **Loja** (GXP-86): `GET /api/shop` traz o saldo, o nível e cada pacote com a dica de como
   liberar (`Shop::Availability`, pelo `disponibilidade.yml`; a dica nunca mostra o código, e
-  o catálogo público não traz as regras). `POST /api/shop/purchases` (1 ou 10
+  o catálogo público não traz as regras) e, desde o GXP-133, o `progress`: quanto do caminho
+  o jogador já fez, de 0 a 99, para a barra da prateleira (nível, porcentagem da coleção ou
+  desafios; com várias regras, a mais adiantada; missão e código não têm barra). A capa do
+  pacote vem do catálogo (`cover` em `/api/packs`): a carta mais rara dele que tem imagem. `POST /api/shop/purchases` (1 ou 10
   pacotes, com a chave da compra) roda numa transação: jogador travado, pacote liberado,
   débito no razão (`compra:CHAVE`), sorteio (`Shop::Draw`: pesos 75, 18, 5 e 2 entre as
   raridades que o pacote tem) com a semente gravada em `pack_openings` e as cartas na coleção.
