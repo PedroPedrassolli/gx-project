@@ -127,8 +127,16 @@ function searchText(card: CardSummary): string {
   return text;
 }
 
+// A busca sem acento é a mesma para as 3.484 cartas de cada tecla: sai uma vez só.
+let lastQuery = { typed: "", plain: "" };
+
+function plainQuery(typed: string): string {
+  if (typed !== lastQuery.typed) lastQuery = { typed, plain: plain(typed.trim()) };
+  return lastQuery.plain;
+}
+
 export function matches(card: CardSummary, filters: Filters): boolean {
-  const query = plain(filters.q.trim());
+  const query = plainQuery(filters.q);
   return (
     (query === "" || searchText(card).includes(query)) &&
     (filters.cardType === "" || card.card_type === filters.cardType) &&
@@ -151,6 +159,10 @@ const SORT_VALUE: Record<
   type: (card) => card.card_type,
 };
 
+// Uma régua só para comparar nomes em português: o localeCompare com a língua monta outra a
+// cada comparação, e ordenar as 3.484 cartas ficava lento no celular.
+const COLLATOR = new Intl.Collator("pt-BR");
+
 // Ordena pelo campo pedido e desempata pelo nome exibido; quem não tem o valor (magia sem
 // nível, ATK "?") vai para o fim.
 export function sortCards(
@@ -159,7 +171,7 @@ export function sortCards(
   language: Language,
 ): CardSummary[] {
   const byName = (a: CardSummary, b: CardSummary) =>
-    displayName(a, language).localeCompare(displayName(b, language), "pt-BR");
+    COLLATOR.compare(displayName(a, language), displayName(b, language));
   const direction = filters.order === "desc" ? -1 : 1;
   if (filters.sort === "name") return [...cards].sort((a, b) => byName(a, b) * direction);
 

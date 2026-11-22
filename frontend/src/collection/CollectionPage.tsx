@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { useSession } from "../account/session.ts";
 import {
   EMPTY_FILTERS,
@@ -43,14 +43,17 @@ export function CollectionPage() {
     () => new Map(collection.data?.data.map((row) => [row.card_id, row.quantity])),
     [collection.data],
   );
+  // A lista filtra com o valor "atrasado" dos filtros: o campo responde na hora a cada tecla e
+  // a lista vem logo atrás, sem travar a digitação no celular.
+  const deferred = useDeferredValue(filters);
   const results = useMemo(() => {
     if (!catalog.data || (pack !== "" && !rarities)) return [];
     const list = catalog.data.cards.filter(
       (card) =>
-        owned.has(card.id) && matches(card, filters) && (!rarities || rarities.has(card.id)),
+        owned.has(card.id) && matches(card, deferred) && (!rarities || rarities.has(card.id)),
     );
-    return sortCards(list, filters, language);
-  }, [catalog.data, owned, filters, pack, rarities, language]);
+    return sortCards(list, deferred, language);
+  }, [catalog.data, owned, deferred, pack, rarities, language]);
   const packNames = catalog.data?.packNames ?? NO_PACKS;
 
   if (session.isSuccess && !user) {
@@ -142,8 +145,12 @@ export function CollectionPage() {
               </li>
             ))}
           </ul>
+          {/* Em transição: o toque responde na hora e as próximas cartas vêm logo atrás. */}
           {results.length > shown && (
-            <button type="button" onClick={() => setShown((value) => value + PAGE)}>
+            <button
+              type="button"
+              onClick={() => startTransition(() => setShown((value) => value + PAGE))}
+            >
               Mostrar mais
             </button>
           )}

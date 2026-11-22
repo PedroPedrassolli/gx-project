@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import { EMPTY_FILTERS, filtersChanged, matches, sortCards, type Filters } from "./cards.ts";
 import { CardPanel, WIDE, useMediaQuery } from "./CardPanel.tsx";
 import { NO_PACKS, useCatalog, usePackRarities } from "./data.ts";
@@ -23,13 +23,16 @@ export function Catalog() {
   const rarities = usePackRarities(pack).data ?? null;
   const wide = useMediaQuery(WIDE);
 
+  // A lista filtra com o valor "atrasado" dos filtros: o campo responde na hora a cada tecla e
+  // a lista vem logo atrás, sem travar a digitação no celular.
+  const deferred = useDeferredValue(filters);
   const results = useMemo(() => {
     if (!catalog.data || (pack !== "" && !rarities)) return [];
     const list = catalog.data.cards.filter(
-      (card) => matches(card, filters) && (!rarities || rarities.has(card.id)),
+      (card) => matches(card, deferred) && (!rarities || rarities.has(card.id)),
     );
-    return sortCards(list, filters, language);
-  }, [catalog.data, filters, pack, rarities, language]);
+    return sortCards(list, deferred, language);
+  }, [catalog.data, deferred, pack, rarities, language]);
   const packNames = catalog.data?.packNames ?? NO_PACKS;
 
   function update(change: Partial<Filters>) {
@@ -117,8 +120,12 @@ export function Catalog() {
               </li>
             ))}
           </ul>
+          {/* Em transição: o toque responde na hora e as próximas cartas vêm logo atrás. */}
           {results.length > shown && (
-            <button type="button" onClick={() => setShown((value) => value + PAGE)}>
+            <button
+              type="button"
+              onClick={() => startTransition(() => setShown((value) => value + PAGE))}
+            >
               Mostrar mais
             </button>
           )}
