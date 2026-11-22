@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 import {
   EMPTY_FILTERS,
   displayName,
@@ -59,16 +59,19 @@ export function Chest(props: Props) {
   // carta não a faz sumir da lista na mesma hora.
   const [newShown, setNewShown] = useState<Set<number>>(new Set());
 
+  // A lista filtra com o valor "atrasado" dos filtros: o campo responde na hora a cada tecla e
+  // a lista vem logo atrás, sem travar a digitação no celular.
+  const deferred = useDeferredValue(filters);
   const results = useMemo(() => {
     if (pack !== "" && !rarities) return [];
     const list = props.cards.filter(
       (card) =>
         (!onlyOwned || owned.has(card.id)) &&
         (!onlyNew || newShown.has(card.id)) &&
-        matches(card, filters) &&
+        matches(card, deferred) &&
         (!rarities || rarities.has(card.id)),
     );
-    const sorted = sortCards(list, filters, language);
+    const sorted = sortCards(list, deferred, language);
     if (!recentFirst) return sorted;
     // Mais recentes primeiro; as que o jogador não tem vão para o fim. O sort é estável: no
     // mesmo dia, vale a ordem escolhida nos filtros.
@@ -81,7 +84,7 @@ export function Chest(props: Props) {
     onlyNew,
     newShown,
     owned,
-    filters,
+    deferred,
     pack,
     rarities,
     language,
@@ -241,8 +244,12 @@ export function Chest(props: Props) {
           );
         })}
       </ul>
+      {/* Em transição: o toque responde na hora e as próximas cartas vêm logo atrás. */}
       {results.length > shown && (
-        <button type="button" onClick={() => setShown((value) => value + PAGE)}>
+        <button
+          type="button"
+          onClick={() => startTransition(() => setShown((value) => value + PAGE))}
+        >
           Mostrar mais
         </button>
       )}
