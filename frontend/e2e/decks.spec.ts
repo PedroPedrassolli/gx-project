@@ -253,16 +253,24 @@ test("a carta nova aparece marcada, dá para ver só as novas, e ela deixa de se
   expect(seen).toEqual([{ card_ids: [3] }]);
 
   await chest.getByRole("button", { name: "Ver todas" }).click();
-  await chest.getByText("Mais filtros").click();
+  await chest.getByRole("button", { name: /^Filtros/ }).click();
   await chest.getByLabel("Mais recentes primeiro").check();
+  await page
+    .getByRole("dialog", { name: "Filtros" })
+    .getByRole("button", { name: /^Ver / })
+    .click();
   await expect(chest.locator(".chest-item").first()).toContainText("Elemental HERO Flame Wingman");
 });
 
 test("o baú mostra também as cartas que o jogador não tem, se pedir", async ({ page }) => {
   await page.goto("/decks/7");
   const chest = page.getByRole("region", { name: "Baú" });
-  await chest.getByText("Mais filtros").click();
+  await chest.getByRole("button", { name: /^Filtros/ }).click();
   await chest.getByLabel("Só as que tenho").uncheck();
+  await page
+    .getByRole("dialog", { name: "Filtros" })
+    .getByRole("button", { name: /^Ver / })
+    .click();
 
   await expect(chest.getByRole("status")).toHaveText("4 cartas");
   await expect(chest.getByRole("listitem").filter({ hasText: "Força Espelho" })).toContainText(

@@ -25,7 +25,6 @@ type Props = {
   owned: Map<number, number>;
   rows: DeckRow[];
   language: Language;
-  onLanguage: (language: Language) => void;
   selected: number;
   onSelect: (id: number) => void;
   onAdd: (cardId: number, section: Section) => void;
@@ -118,8 +117,7 @@ export function Chest(props: Props) {
           reset();
         }}
         packs={props.packs}
-        language={language}
-        onLanguage={props.onLanguage}
+        results={results.length}
         onReset={() => {
           setFilters(EMPTY_FILTERS);
           setPack("");
@@ -185,7 +183,7 @@ export function Chest(props: Props) {
       )}
 
       <p role="status">{`${results.length} ${results.length === 1 ? "carta" : "cartas"}`}</p>
-      <ul className="card-grid">
+      <ul className="card-grid rows">
         {results.slice(0, shown).map((card) => {
           const name = displayName(card, language);
           const deckSection = goesToExtra(card) ? "extra" : "main";
@@ -199,6 +197,7 @@ export function Chest(props: Props) {
               onDragStart={(event) => dragCard(event, card.id)}
             >
               <CardTile
+                layout="row"
                 card={card}
                 language={language}
                 selected={props.selected === card.id}

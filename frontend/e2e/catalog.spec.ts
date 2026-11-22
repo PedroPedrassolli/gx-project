@@ -92,8 +92,11 @@ test("filtra pelo tipo de carta e pelo pacote, com a raridade", async ({ page })
   await page.getByRole("radio", { name: "Magia" }).check();
   await expect(page.getByRole("button", { name: /Pote da Ganância/ })).toContainText("Proibida");
   await page.getByRole("button", { name: "Limpar filtros" }).click();
-  await page.getByText("Mais filtros").click();
-  await page.getByLabel("Pacote").selectOption({ label: "Beginner Monsters" });
+  await page.getByRole("button", { name: /^Filtros/ }).click();
+  const sheet = page.getByRole("dialog", { name: "Filtros" });
+  await sheet.getByLabel("Pacote").selectOption({ label: "Beginner Monsters" });
+  await sheet.getByRole("button", { name: "Ver 1 carta" }).click();
+  await expect(page.getByRole("button", { name: /^Filtros\s*1$/ })).toBeVisible();
   await expect(page.getByRole("status")).toHaveText("1 carta");
   await expect(page.getByRole("button", { name: /Mago Negro/ })).toContainText("Ultra Rara");
 });
@@ -137,13 +140,13 @@ test("mostra a miniatura e a imagem da carta; sem imagem, a face com o nome", as
     page.locator('link[rel="preconnect"][href="https://gx-project-imagens.pages.dev"]'),
   ).toHaveCount(1);
   const thumb = page.getByRole("button", { name: /Mago Negro/ }).locator("img");
-  await expect(thumb).toHaveAttribute("src", /\/cards\/p\/46986414\.webp$/);
+  await expect(thumb).toHaveAttribute("src", /\/cards\/m\/46986414\.webp$/);
   await expect(thumb).toHaveAttribute("loading", "lazy");
   await expect(page.getByRole("img", { name: "Imagem da carta Mago Negro" })).toBeVisible();
-  // Por baixo da imagem grande, a miniatura que já veio com a lista aparece na hora.
+  // Por baixo da imagem grande, a que já veio com a grade aparece na hora.
   await expect(page.locator(".detail-image-thumb")).toHaveAttribute(
     "src",
-    /\/cards\/p\/46986414\.webp$/,
+    /\/cards\/m\/46986414\.webp$/,
   );
   // A que falha tenta de novo duas vezes e, sem jeito, vira a face da carta com o nome.
   const failed = page.getByRole("button", { name: /Pote da Ganância/ });
@@ -159,7 +162,7 @@ test("mostra a miniatura e a imagem da carta; sem imagem, a face com o nome", as
 
 test("imagem que falha uma vez tenta de novo e aparece", async ({ page }) => {
   let tries = 0;
-  await page.route(/\/cards\/p\/46986414\.webp/, (route) => {
+  await page.route(/\/cards\/m\/46986414\.webp/, (route) => {
     tries += 1;
     return tries === 1 ? route.abort() : route.fulfill({ contentType: "image/png", body: PIXEL });
   });

@@ -72,6 +72,15 @@ test("mostra só as cartas do jogador, com as cópias e o progresso", async ({ p
   await expect(results.getByRole("button", { name: /Força Espelho/ })).toContainText("1 cópia");
   await expect(results.getByRole("button", { name: /Pote da Ganância/ })).toHaveCount(0);
 
+  // "Todas" mostra o pool inteiro, com a carta que falta apagada e sem o número de cópias.
+  await page.getByRole("button", { name: "Todas" }).click();
+  await expect(results.getByRole("status")).toHaveText("3 cartas");
+  const missing = results.getByRole("button", { name: /Pote da Ganância/ });
+  await expect(missing).toHaveClass(/missing/);
+  await expect(missing).not.toContainText("cópia");
+  await page.getByRole("button", { name: "Tenho" }).click();
+  await expect(results.getByRole("status")).toHaveText("2 cartas");
+
   await page.getByText("Por pacote").click();
   await expect(page.getByRole("listitem").filter({ hasText: "Pack A" })).toHaveText(
     "Pack A 1 de 2 (50%)",

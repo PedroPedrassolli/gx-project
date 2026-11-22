@@ -518,27 +518,161 @@ progress::-moz-progress-bar {
   content: "";
 }
 
-/* Filtros: o nome em cima; tipo de carta, ordem, idioma e "Limpar" numa linha (que quebra
-   no celular); "Mais filtros" por último. */
+/* Filtros (ADR 0015): a busca e o botão "Filtros" numa linha; embaixo, as fichas do tipo de
+   carta e o "Limpar". O resto fica na gaveta, que no celular sobe de baixo. */
 .filters {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0 1.25rem;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.search-field {
+  position: relative;
+  flex: 1;
+}
+
+.search-field svg,
+.filter-button svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.search-field svg {
+  position: absolute;
+  top: 50%;
+  left: 0.75rem;
+  color: var(--color-muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* O seletor com o tipo do campo vence a regra geral dos campos, que vem depois no arquivo. */
+.search-field input[type="search"] {
+  min-height: 2.75rem;
+  padding-left: 2.5rem;
+  border-radius: 12px;
+}
+
+.filter-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  padding: 0 0.9rem;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.filter-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.filter-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
-  align-items: end;
-  margin: 1.5rem 0;
+  gap: 0.25rem 1rem;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.filters > .field:first-child {
-  flex: 1 1 100%;
+/* O título do grupo ("Tipo de carta") é para o leitor de tela: as fichas já dizem o que são. */
+.filter-chips legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-.filters > .field:not(.wide) {
-  min-width: 11rem;
+.filter-chips .choice {
+  margin-bottom: 0;
 }
 
-.filters .more {
-  flex: 1 1 100%;
-  order: 1;
+/* A gaveta: no celular, presa embaixo e da largura da tela; no computador, uma janela no
+   meio. Os campos em grade de duas ou três colunas; o botão de ver as cartas no fim. */
+.filter-sheet:modal {
+  width: min(40rem, 100% - 2rem);
+  max-height: min(42rem, 100dvh - 2rem);
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: var(--color-surface);
+  color: var(--color-text);
+
+  @media (width < 40rem) {
+    width: 100%;
+    max-width: none;
+    margin: auto 0 0;
+    border-radius: 18px 18px 0 0;
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  }
+}
+
+.filter-sheet::backdrop {
+  background: rgb(5 7 12 / 0.7);
+}
+
+.filter-sheet h2 {
+  margin: 0 0 1rem;
+}
+
+.filter-sheet .actions {
+  justify-content: flex-end;
+  margin: 1.25rem 0 0;
+
+  @media (width < 40rem) {
+    .cta {
+      flex: 1;
+    }
+  }
+}
+
+/* "Tenho" e "Todas" na coleção: duas metades de um botão só, a escolhida acesa. */
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem;
+  max-width: 22rem;
+  margin: 0.5rem 0 0;
+  padding: 0.25rem;
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.segmented button {
+  min-height: 2.5rem;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.segmented button[aria-pressed="true"] {
+  background: var(--color-surface-2);
+  box-shadow: inset 0 0 0 1px rgb(158 230 255 / 0.45);
+  color: var(--color-text);
 }
 
 .field {
@@ -647,24 +781,10 @@ button:disabled {
   opacity: 0.5;
 }
 
-.reset {
-  align-self: end;
-}
-
-.more {
-  grid-column: 1 / -1;
-}
-
-.more summary {
-  cursor: pointer;
-  color: var(--color-accent);
-}
-
 .more-fields {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
   gap: 0.75rem 1rem;
-  margin-top: 0.75rem;
 }
 
 :is(input, select, button):focus-visible {
@@ -703,12 +823,24 @@ button:disabled {
   }
 }
 
+/* Grade de cartas (ADR 0015): três por linha num celular de 390 px, mais conforme a tela. A
+   lista do baú (em linha, até o GXP-132) continua com as colunas largas. */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  gap: 1rem 0.75rem;
+  margin: 0.5rem 0 1rem;
   padding: 0;
   list-style: none;
+
+  @media (width >= 40rem) {
+    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  }
+}
+
+.card-grid.rows {
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.75rem;
 }
 
 .frame-normal {
@@ -739,9 +871,124 @@ button:disabled {
   --frame: var(--frame-trap);
 }
 
-/* Cada carta da lista com a moldura do seu tipo, um pouco da cor no fundo e o nome em
-   versaletes. A escolhida ganha o contorno do destaque. */
-.card-tile {
+/* A carta da grade: a imagem em cima (com as marcas por cima dela) e o nome embaixo, em duas
+   linhas no máximo. O nome vem primeiro no código, para o leitor de tela; a grade inverte. */
+.card-tile:not(.row) {
+  display: grid;
+  grid-template-areas:
+    "art"
+    "name";
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  text-align: left;
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  &:focus-visible .tile-art,
+  &[aria-current="true"] .tile-art {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+.tile-name {
+  display: -webkit-box;
+  grid-area: name;
+  overflow: hidden;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.tile-art {
+  position: relative;
+  display: block;
+  grid-area: art;
+  aspect-ratio: 421 / 614;
+  overflow: hidden;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--frame) 30%, var(--color-surface));
+  box-shadow: 0 8px 18px -10px rgb(0 0 0 / 0.9);
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition:
+      transform 150ms ease,
+      box-shadow 150ms ease;
+  }
+}
+
+.tile-art img,
+.tile-art .card-face {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tile-art .card-face {
+  border: 0;
+  border-radius: 0;
+}
+
+.card-tile:not(.row):hover .tile-art {
+  box-shadow: 0 12px 24px -10px rgb(122 176 255 / 0.55);
+  transform: translateY(-2px);
+}
+
+/* A carta que o jogador não tem ("Todas" na coleção): a imagem apagada; o nome continua
+   legível (texto apagado reprova no contraste). */
+.card-tile.missing .tile-art img,
+.card-tile.missing .tile-art .card-face {
+  filter: grayscale(1) brightness(0.45);
+}
+
+.card-tile.missing .tile-name {
+  color: var(--color-muted);
+}
+
+/* As marcas (banlist, raridade, cópias, "Nova") ficam por cima da imagem, embaixo à direita. */
+.tile-marks {
+  position: absolute;
+  right: 0.3rem;
+  bottom: 0.3rem;
+  left: 0.3rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+.tile-marks .badge {
+  margin: 0;
+  padding: 0.05rem 0.45rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(10 13 22 / 0.88);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.18);
+  color: var(--color-text);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.tile-marks .badge.new-card {
+  background: var(--holo);
+  box-shadow: none;
+  color: var(--color-bg);
+}
+
+/* A carta em linha (o baú do Deck Edit, até o GXP-132): a moldura do tipo, um pouco da cor no
+   fundo e o nome ao lado da miniatura. A escolhida ganha o contorno do destaque. */
+.card-tile.row {
   display: flex;
   gap: 0.6rem;
   align-items: start;
@@ -763,7 +1010,7 @@ button:disabled {
 /* Nome comprido ("Transformação") quebra com hífen em vez de sair da moldura. Só palavra
    de 10 letras ou mais: com menos, a regra do português cortava nome em inglês no lugar
    errado ("Bre-eding"). O overflow-wrap segura o que ainda não couber. */
-.card-tile strong {
+.card-tile.row strong {
   font-family: var(--font-title);
   font-weight: 600;
   line-height: 1.25;
@@ -772,7 +1019,7 @@ button:disabled {
   hyphenate-limit-chars: 10 4 4;
 }
 
-.card-tile[aria-current="true"] {
+.card-tile.row[aria-current="true"] {
   border-color: var(--frame);
   box-shadow: 0 0 0 2px var(--color-accent);
 }
@@ -927,7 +1174,7 @@ button:disabled {
   padding: 0 0.5rem;
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  background: rgb(216 184 104 / 0.12);
+  background: rgb(158 230 255 / 0.1);
   font-size: 0.8rem;
 }
 
