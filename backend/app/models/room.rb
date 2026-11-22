@@ -8,10 +8,6 @@ class Room < ApplicationRecord
   SEATS = { "1x1" => 2 }.freeze
   # Sala parada há mais que isso sai da lista: ninguém entra numa sala esquecida.
   LISTED_FOR = 1.hour
-  # Sem melhor de 3 (GXP-125), a coluna best_of não serve mais. O Rails a ignora até a migração
-  # que a apaga entrar no ar, num deploy depois deste: apagar junto quebraria o código antigo,
-  # que ainda roda por um ou dois minutos durante o deploy.
-  self.ignored_columns += [ "best_of" ]
 
   belongs_to :owner, class_name: "User"
   has_many :players, -> { order(:seat) }, class_name: "RoomPlayer", inverse_of: :room, dependent: :delete_all

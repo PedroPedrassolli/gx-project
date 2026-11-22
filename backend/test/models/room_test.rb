@@ -9,6 +9,10 @@ class RoomTest < ActiveSupport::TestCase
     assert(codes.all? { |code| code.match?(/\A[A-HJ-NP-Z2-9]{6}\z/) })
   end
 
+  it "não guarda best_of: não há melhor de 3 (GXP-129)" do
+    _(Room.connection.column_exists?(:rooms, :best_of)).must_equal false
+  end
+
   it "o primeiro lugar livre é o de número mais baixo" do
     room = Room.create!(owner:, code: "ABC234")
     room.players.create!(user: owner, seat: 1)
