@@ -53,6 +53,9 @@ module GameData
         "#   usar_oficial: carta do anime sem script; usa a carta impressa depois, de mesmo nome;",
         "#   tirar_do_pool: carta do anime sem script nenhum; fica fora até ganhar um script;",
         "#   sem_script: carta oficial sem script na engine.",
+        "# imagem: true (a do YGOPRODeck), false (nenhuma), o código da impressão oficial de mesmo",
+        "#   nome (carta do anime impressa depois) ou \"yugipedia\" (a impressão promocional ou a",
+        "#   carta como aparece no jogo de referência, que o workflow das imagens busca e recorta).",
         "# Gerado por `bin/rails dados:cobertura`: não edite à mão.",
         "resumo: #{flow(summary)}", "excecoes:", *exceptions.map { |entry| "  - #{flow(with_era_text(entry))}" } ].join("\n") + "\n"
     end
@@ -80,12 +83,18 @@ module GameData
     def anime(card)
       name = card["nome"]
       row = [ "#{name} (VG)", name, "#{name} (Anime)" ].lazy.filter_map { |candidate| unofficial(candidate) }.first
-      return entry(card, row[:id], "anime", image: false, script: row[:name]) if row
+      return entry(card, row[:id], "anime", image: anime_image(name), script: row[:name]) if row
 
       printed = printed_code(card)
       return entry(card, printed, "usar_oficial", image: @images.include?(printed)) if printed
 
       entry(card, nil, "tirar_do_pool", image: false)
+    end
+
+    # A imagem da carta do anime (GXP-142): a da impressão oficial de mesmo nome, quando o
+    # YGOPRODeck tem; senão, a da Yugipedia.
+    def anime_image(name)
+      @by_name[[ false, name.downcase ]]&.map { |row| row[:id] }&.find { |id| @images.include?(id) } || "yugipedia"
     end
 
     # A impressão oficial posterior: pelo passcode que a Yugipedia dá ou pelo mesmo nome no

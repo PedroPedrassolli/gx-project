@@ -54,11 +54,11 @@ describe Catalog::Importer do
     _(card(900).slice(:text_pt, :text_pt_unofficial)).must_equal({ "text_pt" => nil, "text_pt_unofficial" => false })
   end
 
-  it "guarda a imagem: a do passcode, a da carta oficial na pré-errata e a da impressão" do
+  it "guarda a imagem: a do passcode, a da carta oficial na pré-errata, a da impressão e a da Yugipedia" do
     importer.run
 
     _(Card.order(:engine_code).pluck(:engine_code, :image_code)).must_equal [ [ 110, 100 ], [ 200, 200 ], [ 500, 500 ],
-                                                                             [ 700, 700 ], [ 900, nil ] ]
+                                                                             [ 700, 700 ], [ 900, 900 ] ]
   end
 
   it "mostra os dados da carta impressa quando a carta do anime usa a oficial" do

@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { displayName, frame, IMAGE_WIDTHS, imageUrl, type CardSummary } from "./cards.ts";
-import { useCardLanguage } from "./language.ts";
+import { useEffect, useState } from "react";
+import { IMAGE_WIDTHS, imageUrl, type CardSummary } from "./cards.ts";
 
 // Espera antes de cada nova tentativa: a rede do celular derruba um pedido de vez em quando,
 // e a imagem não pode sumir por causa disso.
@@ -18,37 +17,50 @@ type Props = {
   ifMissing?: "face" | "nothing"; // "nothing" quando já há outra imagem por baixo
 };
 
-// A imagem de uma carta, igual em todas as telas. Se o pedido falha, tenta de novo duas
-// vezes; se ainda assim não vier, ou se a carta não tem imagem (as do anime), aparece a face
-// com o nome na cor da moldura: nunca um quadro vazio.
+// A imagem de uma carta, igual em todas as telas. Nunca um quadro vazio (GXP-142): enquanto
+// a imagem chega, o lugar já mostra o verso da carta; se o pedido falha, o verso fica e as
+// novas tentativas seguem por trás (se uma der certo, a imagem volta).
 export function CardImage(props: Props) {
   const { card, size } = props;
   const src = card?.image === undefined ? undefined : imageUrl(card.image, size);
-  const [attempt, setAttempt] = useState({ src, number: 0, failed: false });
+  // failures: quantas vezes o pedido falhou; recovered: uma nova tentativa deu certo.
+  const [attempt, setAttempt] = useState({ src, failures: 0, recovered: false });
   // Outra carta no mesmo lugar (a lista mudou, o pacote seguinte): começa do zero.
-  if (attempt.src !== src) setAttempt({ src, number: 0, failed: false });
+  if (attempt.src !== src) setAttempt({ src, failures: 0, recovered: false });
+  const { failures } = attempt;
+  const retrying = failures > 0 && !attempt.recovered;
 
-  if (!src || attempt.failed) {
-    if (props.ifMissing === "nothing") return null;
-    return <CardFace card={card} alt={props.alt} className={props.className} />;
-  }
-  // A nova tentativa muda o endereço (?tentativa=1): o navegador não reaproveita o erro.
-  const retry = (url: string) => (attempt.number ? `${url}?tentativa=${attempt.number}` : url);
-  const onError = () => {
-    const wait = RETRIES[attempt.number];
-    if (wait === undefined) {
-      setAttempt((current) => ({ ...current, failed: true }));
-      return;
-    }
-    setTimeout(() => {
-      setAttempt((current) =>
-        current.src === src ? { ...current, number: current.number + 1 } : current,
-      );
+  useEffect(() => {
+    const wait = RETRIES[failures - 1];
+    if (!src || !retrying || wait === undefined) return;
+    let current = true;
+    const update = (change: Partial<typeof attempt>) => {
+      if (current) setAttempt((old) => (old.src === src ? { ...old, ...change } : old));
+    };
+    const timer = setTimeout(() => {
+      const image = new Image();
+      image.onload = () => update({ recovered: true });
+      image.onerror = () => update({ failures: failures + 1 });
+      image.src = retryUrl(src, failures);
     }, wait);
-  };
+    return () => {
+      current = false;
+      clearTimeout(timer);
+    };
+  }, [src, retrying, failures]);
+
+  if (!src || retrying) {
+    if (props.ifMissing === "nothing") return null;
+    return <CardPlaceholder alt={props.alt} className={props.className} />;
+  }
+  // A imagem que voltou usa o mesmo endereço da tentativa que deu certo: vem do cache.
+  const retry = (url: string) => retryUrl(url, failures);
+  // Por baixo da imagem que ainda não chegou, o verso. Não na imagem grande do detalhe
+  // ("nothing"): ali a miniatura que já chegou fica à vista por baixo.
+  const classes = [props.className, props.ifMissing !== "nothing" && "card-img"];
   return (
     <img
-      className={props.className}
+      className={classes.filter(Boolean).join(" ") || undefined}
       src={retry(src)}
       srcSet={
         props.zoom && card?.image !== undefined
@@ -61,26 +73,30 @@ export function CardImage(props: Props) {
       height={props.height}
       loading={props.lazy ? "lazy" : undefined}
       decoding="async"
-      onError={onError}
+      onError={() =>
+        setAttempt((old) =>
+          old.src === src ? { ...old, failures: old.failures + 1, recovered: false } : old,
+        )
+      }
     />
   );
 }
 
-// A face da carta sem imagem: a cor da moldura e o nome (que some quando a face é pequena
-// demais para ler, como nas miniaturas de 28 px).
-function CardFace(props: { card: CardSummary | undefined; alt?: string; className?: string }) {
-  const [language] = useCardLanguage();
-  const { card } = props;
-  const classes = ["card-face", card && `frame-${frame(card)}`, props.className];
+// A nova tentativa muda o endereço (?tentativa=1): o navegador não reaproveita o erro.
+function retryUrl(url: string, attempt: number) {
+  return attempt ? `${url}?tentativa=${attempt}` : url;
+}
+
+// O verso da carta no lugar da imagem que não veio (GXP-142): toda carta parece uma carta.
+// O nome fica no texto alternativo, para o leitor de tela.
+function CardPlaceholder(props: { alt?: string; className?: string }) {
   return (
     <span
-      className={classes.filter(Boolean).join(" ")}
+      className={["card-placeholder", props.className].filter(Boolean).join(" ")}
       role={props.alt ? "img" : undefined}
       aria-label={props.alt || undefined}
       aria-hidden={props.alt ? undefined : true}
-    >
-      {card && <span className="card-face-name">{displayName(card, language)}</span>}
-    </span>
+    />
   );
 }
 

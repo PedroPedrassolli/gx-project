@@ -7,8 +7,11 @@
 #   usar_oficial: carta do anime sem script; usa a carta impressa depois, de mesmo nome;
 #   tirar_do_pool: carta do anime sem script nenhum; fica fora até ganhar um script;
 #   sem_script: carta oficial sem script na engine.
+# imagem: true (a do YGOPRODeck), false (nenhuma), o código da impressão oficial de mesmo
+#   nome (carta do anime impressa depois) ou "yugipedia" (a impressão promocional ou a
+#   carta como aparece no jogo de referência, que o workflow das imagens busca e recorta).
 # Gerado por `bin/rails dados:cobertura`: não edite à mão.
-resumo: { cartas: 3496, oficiais: 3418, normais: 617, pre_errata: 48, anime: 61, usar_oficial: 5, tirar_do_pool: 12, sem_script: 0, pre_errata_sem_texto: 0, sem_dados: 0, sem_imagem: 73 }
+resumo: { cartas: 3496, oficiais: 3418, normais: 617, pre_errata: 48, anime: 61, usar_oficial: 5, tirar_do_pool: 12, sem_script: 0, pre_errata_sem_texto: 0, sem_dados: 0, sem_imagem: 12 }
 excecoes:
   - { nome: "Night Assailant", passcode: 16226786, codigo: 16226796, motivo: "pre_errata", imagem: true, texto: "FLIP: Select 1 monster on your opponent's side of the field and destroy it. When this card is sent directly from your hand to the Graveyard, return 1 Flip Effect Monster from your Graveyard to your hand.", fonte_texto: 5705122 }
   - { nome: "Sangan", passcode: 26202165, codigo: 511002631, motivo: "pre_errata", imagem: true, texto: "When this card is sent from the field to the Graveyard, add 1 monster with 1500 or less ATK from your Deck to your hand. Your Deck is then shuffled.", fonte_texto: 5705263 }
@@ -17,39 +20,39 @@ excecoes:
   - { nome: "Brain Control", passcode: 87910978, codigo: 511002995, motivo: "pre_errata", imagem: true, texto: "Pay 800 Life Points. Select 1 face-up monster your opponent controls. Take control of it until the End Phase.", fonte_texto: 5704504 }
   - { nome: "Darkness Approaches", passcode: 80168720, codigo: 511003028, motivo: "pre_errata", imagem: true, texto: "Discard 2 cards from your hand. Select 1 face-up monster and flip it face-down, but do not change its battle position.", fonte_texto: 5704655 }
   - { nome: "Metalmorph", passcode: 68540058, codigo: 511006005, motivo: "pre_errata", imagem: true, texto: "After activation, equip this card to a face-up monster. The equipped monster gains 300 ATK and DEF. When the equipped monster attacks, it gains additional ATK, during damage calculation only, equal to half the ATK of the attack target.", fonte_texto: 5786143 }
-  - { nome: "Attribute Bomb", numero_interno: 3782, codigo: 100000197, motivo: "anime", script: "Attribute Bomb", imagem: false }
-  - { nome: "Attribute Mastery", numero_interno: 3781, codigo: 100000196, motivo: "anime", script: "Attribute Mastery", imagem: false }
-  - { nome: "Clear Wall", numero_interno: 3780, codigo: 100000164, motivo: "anime", script: "Clear Wall (VG)", imagem: false }
-  - { nome: "Clear World", numero_interno: 3779, codigo: 511000306, motivo: "anime", script: "Clear World (VG)", imagem: false }
+  - { nome: "Attribute Bomb", numero_interno: 3782, codigo: 100000197, motivo: "anime", script: "Attribute Bomb", imagem: "yugipedia" }
+  - { nome: "Attribute Mastery", numero_interno: 3781, codigo: 100000196, motivo: "anime", script: "Attribute Mastery", imagem: "yugipedia" }
+  - { nome: "Clear Wall", numero_interno: 3780, codigo: 100000164, motivo: "anime", script: "Clear Wall (VG)", imagem: 6089145 }
+  - { nome: "Clear World", numero_interno: 3779, codigo: 511000306, motivo: "anime", script: "Clear World (VG)", imagem: 33900648 }
   - { nome: "Inspection", passcode: 16227556, codigo: 511002982, motivo: "pre_errata", imagem: true, texto: "During your opponent's Standby Phase, you can pay 500 Life Points to randomly select 1 card in your opponent's hand and look at it.", fonte_texto: 5738188 }
-  - { nome: "Power Zone", numero_interno: 3788, codigo: 100000281, motivo: "anime", script: "Power Zone", imagem: false }
+  - { nome: "Power Zone", numero_interno: 3788, codigo: 100000281, motivo: "anime", script: "Power Zone", imagem: "yugipedia" }
   - { nome: "Recycle", passcode: 96316857, codigo: 511002983, motivo: "pre_errata", imagem: true, texto: "During your Standby Phase, by paying 300 Life Points, select 1 non-Monster Card in your Graveyard and return it to the bottom of your Deck.", fonte_texto: 5221853 }
   - { nome: "Senet Switch", passcode: 63394872, codigo: 63394882, motivo: "pre_errata", imagem: true, texto: "Once per turn, during your Main Phase, you can move 1 monster on your side of the field to an adjacent unoccupied Monster Card Zone.", fonte_texto: 5555188 }
   - { nome: "Ultimate Offering", passcode: 80604091, codigo: 511003023, motivo: "pre_errata", imagem: true, texto: "During your Main Phase or your opponent's Battle Phase: You can pay 500 Life Points; immediately after this effect resolves, Normal Summon/Set 1 monster.", fonte_texto: 5801699 }
-  - { nome: "Attribute Chameleon", numero_interno: 3784, codigo: 100000198, motivo: "anime", script: "Attribute Chameleon", imagem: false }
-  - { nome: "Attribute Gravity", numero_interno: 3783, codigo: 511000079, motivo: "anime", script: "Attribute Gravity", imagem: false }
+  - { nome: "Attribute Chameleon", numero_interno: 3784, codigo: 100000198, motivo: "anime", script: "Attribute Chameleon", imagem: "yugipedia" }
+  - { nome: "Attribute Gravity", numero_interno: 3783, codigo: 511000079, motivo: "anime", script: "Attribute Gravity", imagem: "yugipedia" }
   - { nome: "Mind Crush", passcode: 15800838, codigo: 511003026, motivo: "pre_errata", imagem: true, texto: "Declare 1 card name. If your opponent has the declared card(s) in their hand, discard all of the declared card(s) to the Graveyard. Otherwise, you randomly discard 1 card.", fonte_texto: 5783053 }
-  - { nome: "Zero Sprite", numero_interno: 3766, codigo: 511000003, motivo: "anime", script: "Zero Sprite", imagem: false }
+  - { nome: "Zero Sprite", numero_interno: 3766, codigo: 511000003, motivo: "anime", script: "Zero Sprite", imagem: "yugipedia" }
   - { nome: "Black Magic Revival Casket", numero_interno: 4822, codigo: 9287078, motivo: "usar_oficial", imagem: true }
   - { nome: "Brionac, Dragon of the Ice Barrier", passcode: 50321796, codigo: 511002993, motivo: "pre_errata", imagem: true, texto: "1 Tuner + 1 or more non-Tuner monsters\nYou can discard any number of cards to return the same number of cards from the field to the hand.", fonte_texto: 5762410 }
-  - { nome: "Amphibian Angel - Frog-hael", numero_interno: 3786, codigo: 511000046, motivo: "anime", script: "Amphibian Angel - Frog-Hael", imagem: false }
+  - { nome: "Amphibian Angel - Frog-hael", numero_interno: 3786, codigo: 511000046, motivo: "anime", script: "Amphibian Angel - Frog-Hael", imagem: "yugipedia" }
   - { nome: "Storm Shooter", passcode: 39188539, codigo: 39188549, motivo: "pre_errata", imagem: true, texto: "Once per turn, you can select and activate 1 of these effects: ● Move this card to an adjacent unoccupied Monster Card Zone. ● Return 1 Spell, Trap or Monster Card on your opponent's side of the field in the same column as this card to its owner's hand.", fonte_texto: 5114627 }
   - { nome: "Twin-Headed Behemoth", passcode: 43586926, codigo: 511000868, motivo: "pre_errata", imagem: true, texto: "If this card is destroyed and sent from the field to the Graveyard, Special Summon it during the End Phase of this turn with 1000 ATK and 1000 DEF. You can only use this effect once per Duel.", fonte_texto: 5982196 }
-  - { nome: "Emperor of Lightning", numero_interno: 7375, codigo: 501000007, motivo: "anime", script: "Emperor of Lightning", imagem: false }
+  - { nome: "Emperor of Lightning", numero_interno: 7375, codigo: 501000007, motivo: "anime", script: "Emperor of Lightning", imagem: "yugipedia" }
   - { nome: "Rescue Cat", passcode: 14878871, codigo: 511002992, motivo: "pre_errata", imagem: true, texto: "You can send this face-up card to the Graveyard to Special Summon 2 Level 3 or lower Beast-Type monsters from your Deck. Those monsters are destroyed during the End Phase.", fonte_texto: 5789261 }
   - { nome: "Alien Infiltrator", passcode: 76573247, codigo: 76573257, motivo: "pre_errata", imagem: true, texto: "Once per turn, this card can move to an adjacent unoccupied Monster Card Zone. If no Spell, Trap or Monster Card on your opponent's side of the field is in the same column as this card, it can attack your opponent directly.", fonte_texto: 5110813 }
-  - { nome: "Sauropod Brachion", codigo: 511003090, motivo: "anime", script: "Sauropod Brachion (Anime)", imagem: false }
+  - { nome: "Sauropod Brachion", codigo: 511003090, motivo: "anime", script: "Sauropod Brachion (Anime)", imagem: 41753322 }
   - { nome: "Stronghold the Moving Fortress", passcode: 13955608, codigo: 511003022, motivo: "pre_errata", imagem: true, texto: "After activation, Special Summon this card in Defense Position; it is treated as an Effect Monster Card (Machine-Type/EARTH/Level 4/ATK 0/DEF 2000). (This card is still treated as a Trap Card.) While \"Green Gadget\", \"Red Gadget\", and \"Yellow Gadget\" are all face-up on your side of the field, the ATK of this card becomes 3000.", fonte_texto: 5981803 }
   - { nome: "Emissary of the Afterlife", passcode: 75043725, codigo: 511003027, motivo: "pre_errata", imagem: true, texto: "When this card is sent from the field to the Graveyard, each player selects 1 Level 3 or lower Normal Monster from their Deck, and adds it to their hand after showing it to the opponent. The Decks are then shuffled.", fonte_texto: 5112111 }
-  - { nome: "Battle Fusion", numero_interno: 3755, codigo: 100005002, motivo: "anime", script: "Battle Fusion (VG)", imagem: false }
-  - { nome: "Final Fusion", numero_interno: 3756, codigo: 511003029, motivo: "anime", script: "Final Fusion (VG)", imagem: false }
-  - { nome: "The Rival's Name", numero_interno: 3753, codigo: 511000045, motivo: "anime", script: "The Rival's Name", imagem: false }
-  - { nome: "Kiteroid", numero_interno: 3762, codigo: 511000011, motivo: "anime", script: "Kiteroid (VG)", imagem: false }
-  - { nome: "Clear Cube", numero_interno: 3774, codigo: 100000160, motivo: "anime", script: "Clear Cube (VG)", imagem: false }
+  - { nome: "Battle Fusion", numero_interno: 3755, codigo: 100005002, motivo: "anime", script: "Battle Fusion (VG)", imagem: 43225434 }
+  - { nome: "Final Fusion", numero_interno: 3756, codigo: 511003029, motivo: "anime", script: "Final Fusion (VG)", imagem: 89719143 }
+  - { nome: "The Rival's Name", numero_interno: 3753, codigo: 511000045, motivo: "anime", script: "The Rival's Name", imagem: "yugipedia" }
+  - { nome: "Kiteroid", numero_interno: 3762, codigo: 511000011, motivo: "anime", script: "Kiteroid (VG)", imagem: "yugipedia" }
+  - { nome: "Clear Cube", numero_interno: 3774, codigo: 100000160, motivo: "anime", script: "Clear Cube (VG)", imagem: 33506331 }
   - { nome: "Heavy Mech Support Platform", passcode: 23265594, codigo: 511002851, motivo: "pre_errata", imagem: true, texto: "Once per turn, you can either: Target 1 Machine-Type monster you control; equip this card to that target, OR: Unequip this card and Special Summon it in face-up Attack Position. While equipped by this effect, the equipped monster gains 500 ATK and DEF. (A monster can only be equipped with 1 Union monster at a time. If the equipped monster would be destroyed, destroy this card instead.)", fonte_texto: 5733184 }
   - { nome: "Cipher Soldier", passcode: 79853073, codigo: 511006006, motivo: "pre_errata", imagem: true, texto: "When battling a Warrior-Type monster, this card gains 2000 ATK and DEF during damage calculation only.", fonte_texto: 5704554 }
-  - { nome: "Ojamandala", numero_interno: 3760, codigo: 100000101, motivo: "anime", script: "Ojamandala", imagem: false }
-  - { nome: "Pride Shout", numero_interno: 3761, codigo: 511000037, motivo: "anime", script: "Pride Shout", imagem: false }
+  - { nome: "Ojamandala", numero_interno: 3760, codigo: 100000101, motivo: "anime", script: "Ojamandala", imagem: "yugipedia" }
+  - { nome: "Pride Shout", numero_interno: 3761, codigo: 511000037, motivo: "anime", script: "Pride Shout", imagem: "yugipedia" }
   - { nome: "W-Wing Catapult", passcode: 96300057, codigo: 511002901, motivo: "pre_errata", imagem: true, texto: "Once per turn, you can equip this card to a \"V-Tiger Jet\" you control, OR unequip it to Special Summon this card in face-up Attack Position. When equipped to a monster by this card's effect, the equipped monster gains 400 ATK and DEF. (A monster can only be equipped with 1 Union Monster at a time. If the equipped monster would be destroyed by battle, destroy this card instead.)", fonte_texto: 5705496 }
   - { nome: "Y-Dragon Head", passcode: 65622692, codigo: 511002852, motivo: "pre_errata", imagem: true, texto: "Once per turn, during your Main Phase, if you control this card on the field, you can equip it to your \"X-Head Cannon\" as an Equip Card, OR unequip the Union equipment and Special Summon this card in face-up Attack Position. While equipped to a monster by this card's effect, increase the ATK and DEF of the equipped monster by 400 points. (1 monster can only be equipped with 1 Union Monster at a time. If the equipped monster is destroyed as a result of battle, destroy this card instead.)", fonte_texto: 5790150 }
   - { nome: "Z-Metal Tank", passcode: 64500000, codigo: 511002853, motivo: "pre_errata", imagem: true, texto: "Once per turn, during your Main Phase, if you control this card on the field, you can equip it to your \"X-Head Cannon\" or \"Y-Dragon Head\" as an Equip Card, OR unequip the Union equipment and Special Summon this card in face-up Attack Position. While equipped to a monster by this card's effect, increase the ATK and DEF of the equipped monster by 600 points. (1 monster can only be equipped with 1 Union Monster at a time. If the equipped monster is destroyed as a result of battle, destroy this card instead.)", fonte_texto: 5748940 }
@@ -65,19 +68,19 @@ excecoes:
   - { nome: "Ultimate Tyranno", passcode: 15894048, codigo: 511003009, motivo: "pre_errata", imagem: true, texto: "If this card is in Attack Position at the beginning of your Battle Phase, first, you can and must attack all monsters on your opponent's side of the field once each with this card.", fonte_texto: 5705602 }
   - { nome: "Gilasaurus", passcode: 45894482, codigo: 511003006, motivo: "pre_errata", imagem: true, texto: "You can Special Summon this card from your hand. If you do this, your opponent can Special Summon 1 monster from their Graveyard.", fonte_texto: 5746018 }
   - { nome: "Destiny Mind", numero_interno: 3759, motivo: "tirar_do_pool", imagem: false }
-  - { nome: "Volcanic Wall", numero_interno: 3772, codigo: 100000290, motivo: "anime", script: "Volcanic Wall", imagem: false }
+  - { nome: "Volcanic Wall", numero_interno: 3772, codigo: 100000290, motivo: "anime", script: "Volcanic Wall", imagem: "yugipedia" }
   - { nome: "Advanced Dark", numero_interno: 3757, codigo: 12644061, motivo: "usar_oficial", imagem: true }
-  - { nome: "Crystal Slicer", numero_interno: 3758, codigo: 111217602, motivo: "anime", script: "Crystal Slicer", imagem: false }
-  - { nome: "Flame Wall", numero_interno: 3771, codigo: 511000131, motivo: "anime", script: "Flame Wall", imagem: false }
+  - { nome: "Crystal Slicer", numero_interno: 3758, codigo: 111217602, motivo: "anime", script: "Crystal Slicer", imagem: "yugipedia" }
+  - { nome: "Flame Wall", numero_interno: 3771, codigo: 511000131, motivo: "anime", script: "Flame Wall", imagem: "yugipedia" }
   - { nome: "Fog Palace", numero_interno: 3767, motivo: "tirar_do_pool", imagem: false }
   - { nome: "Sacred Protective Barrier", numero_interno: 3768, motivo: "tirar_do_pool", imagem: false }
   - { nome: "Necrovalley", passcode: 47355498, codigo: 511002998, motivo: "pre_errata", imagem: true, texto: "Negate the effects of Spell, Trap, and Monster Cards that affect a card(s) in the Graveyard. Neither player can remove from play cards in the Graveyard. All \"Gravekeeper's\" monsters gain 500 ATK and DEF.", fonte_texto: 5848534 }
-  - { nome: "Dark Archetype", numero_interno: 3769, codigo: 100000032, motivo: "anime", script: "Dark Archetype", imagem: false }
-  - { nome: "Dark Psycho Eye", numero_interno: 3770, codigo: 100000033, motivo: "anime", script: "Dark Psycho Eye", imagem: false }
-  - { nome: "Clear Rage Golem", numero_interno: 3776, codigo: 100000162, motivo: "anime", script: "Clear Rage Golem (VG)", imagem: false }
+  - { nome: "Dark Archetype", numero_interno: 3769, codigo: 100000032, motivo: "anime", script: "Dark Archetype", imagem: "yugipedia" }
+  - { nome: "Dark Psycho Eye", numero_interno: 3770, codigo: 100000033, motivo: "anime", script: "Dark Psycho Eye", imagem: "yugipedia" }
+  - { nome: "Clear Rage Golem", numero_interno: 3776, codigo: 100000162, motivo: "anime", script: "Clear Rage Golem (VG)", imagem: 7102732 }
   - { nome: "Swords of Concealing Light", passcode: 12923641, codigo: 511003008, motivo: "pre_errata", imagem: true, texto: "When you activate this card, change all monsters on your opponent's side of the field to face-down Defense Position. Monsters on your opponent's side of the field cannot change their Battle Positions. Destroy this card during your 2nd Standby Phase after activation.", fonte_texto: 5858902 }
-  - { nome: "Clear Vice Dragon", numero_interno: 3778, codigo: 511000307, motivo: "anime", script: "Clear Vice Dragon (VG)", imagem: false }
-  - { nome: "Clear Phantom", numero_interno: 3775, codigo: 100000161, motivo: "anime", script: "Clear Phantom (VG)", imagem: false }
+  - { nome: "Clear Vice Dragon", numero_interno: 3778, codigo: 511000307, motivo: "anime", script: "Clear Vice Dragon (VG)", imagem: 97811903 }
+  - { nome: "Clear Phantom", numero_interno: 3775, codigo: 100000161, motivo: "anime", script: "Clear Phantom (VG)", imagem: 70717628 }
   - { nome: "Cyril, Monk of Dark World", numero_interno: 3785, codigo: 7623640, motivo: "usar_oficial", imagem: true }
   - { nome: "Lord of Dark Summons", numero_interno: 3765, codigo: 87917187, motivo: "usar_oficial", imagem: true }
   - { nome: "Temple of the Kings", passcode: 29762407, codigo: 511000821, motivo: "pre_errata", imagem: true, texto: "The controller of this card can activate Trap Cards the same turn they are Set. If you control \"Mystical Beast of Serket\" and this card, you can send both to the Graveyard to Special Summon 1 monster from your hand, Deck, or Extra Deck.", fonte_texto: 5722498 }
@@ -88,51 +91,51 @@ excecoes:
   - { nome: "Ring of Destruction", passcode: 83555666, codigo: 511000825, motivo: "pre_errata", imagem: true, texto: "Destroy 1 face-up monster and inflict damage to both players equal to its ATK.", fonte_texto: 5801962 }
   - { nome: "Sinister Serpent", passcode: 8131171, codigo: 511000818, motivo: "pre_errata", imagem: true, texto: "During your Standby Phase, if a \"Sinister Serpent\" exists in your Graveyard, you can return the \"Sinister Serpent\" to your hand.", fonte_texto: 6011324 }
   - { nome: "Witch of the Black Forest", passcode: 78010363, codigo: 511003012, motivo: "pre_errata", imagem: true, texto: "When this card is sent from the field to the Graveyard, add 1 monster with a DEF of 1500 or less from your Deck to your hand. Your Deck is then shuffled.", fonte_texto: 5737467 }
-  - { nome: "Clear Vicious Knight", numero_interno: 3777, codigo: 100000163, motivo: "anime", script: "Clear Vicious Knight (VG)", imagem: false }
+  - { nome: "Clear Vicious Knight", numero_interno: 3777, codigo: 100000163, motivo: "anime", script: "Clear Vicious Knight (VG)", imagem: 70095046 }
   - { nome: "Dark Magician of Chaos", passcode: 40737112, codigo: 511001039, motivo: "pre_errata", imagem: true, texto: "When this card is Normal or Special Summoned, you can select and add 1 Spell Card from your Graveyard to your hand. Monsters this card destroys by battle are removed from play instead of going to the Graveyard. If this face-up card is destroyed or removed from the field, it is removed from play.", fonte_texto: 5739946 }
   - { nome: "Goyo Guardian", passcode: 7391448, codigo: 511002994, motivo: "pre_errata", imagem: true, texto: "1 Tuner + 1 or more non-Tuner monsters\nWhen this card destroys an opponent's monster by battle and sends it to the Graveyard, you can Special Summon that monster to your side of the field in face-up Defense Position.", fonte_texto: 5704864 }
-  - { nome: "Burst Impact", numero_interno: 3754, codigo: 511000021, motivo: "anime", script: "Burst Impact", imagem: false }
+  - { nome: "Burst Impact", numero_interno: 3754, codigo: 511000021, motivo: "anime", script: "Burst Impact", imagem: "yugipedia" }
   - { nome: "Catapult Turtle", passcode: 95727991, codigo: 511000228, motivo: "pre_errata", imagem: true, texto: "You can Tribute 1 monster to inflict damage equal to half of its ATK to your opponent.", fonte_texto: 5800828 }
   - { nome: "Crush Card Virus", passcode: 57728570, codigo: 511000823, motivo: "pre_errata", imagem: true, texto: "Tribute 1 DARK monster with 1000 or less ATK. Check all monsters on your opponent's side of the field, your opponent's hand, and all cards they draw (until the end of your opponent's 3rd turn after this card's activation), and destroy all monsters with 1500 or more ATK.", fonte_texto: 5704581 }
   - { nome: "Swordsman Of Doom Lithmus", numero_interno: 5175, motivo: "tirar_do_pool", imagem: false }
-  - { nome: "Amazoness Arena", numero_interno: 5182, codigo: 511001731, motivo: "anime", script: "Amazoness Arena", imagem: false }
-  - { nome: "Armament of the Lethal Lords", numero_interno: 6959, codigo: 501000005, motivo: "anime", script: "Armament of the Lethal Lords", imagem: false }
+  - { nome: "Amazoness Arena", numero_interno: 5182, codigo: 511001731, motivo: "anime", script: "Amazoness Arena", imagem: "yugipedia" }
+  - { nome: "Armament of the Lethal Lords", numero_interno: 6959, codigo: 501000005, motivo: "anime", script: "Armament of the Lethal Lords", imagem: "yugipedia" }
   - { nome: "Cupid Kiss", numero_interno: 5178, motivo: "tirar_do_pool", imagem: false }
-  - { nome: "Dark Arena", numero_interno: 5187, codigo: 511000017, motivo: "anime", script: "Dark Arena", imagem: false }
-  - { nome: "Dark Scorpion - Tragedy of Love", numero_interno: 5184, codigo: 111203901, motivo: "anime", script: "Dark Scorpion - Tragedy of Love", imagem: false }
-  - { nome: "Dark Scorpion Retreat", numero_interno: 5183, codigo: 111203902, motivo: "anime", script: "Dark Scorpion Retreat", imagem: false }
-  - { nome: "Defense Maiden", numero_interno: 5179, codigo: 100000136, motivo: "anime", script: "Defense Maiden", imagem: false }
-  - { nome: "Dizzy Angel", numero_interno: 5172, codigo: 100000322, motivo: "anime", script: "Dizzy Angel", imagem: false }
-  - { nome: "Dizzy Tiger", numero_interno: 5171, codigo: 100000321, motivo: "anime", script: "Dizzy Tiger", imagem: false }
-  - { nome: "Flipping the Table", numero_interno: 5174, codigo: 100000323, motivo: "anime", script: "Flipping the Table", imagem: false }
-  - { nome: "Happy Marriage", numero_interno: 5180, codigo: 100000137, motivo: "anime", script: "Happy Marriage", imagem: false }
-  - { nome: "Hot Sauce Bottle", numero_interno: 5173, codigo: 100000320, motivo: "anime", script: "Hot Sauce Bottle", imagem: false }
-  - { nome: "King of Destruction - Xexex", numero_interno: 6533, codigo: 501000002, motivo: "anime", script: "King of Destruction - Xexex", imagem: false }
-  - { nome: "Meteo the Matchless", numero_interno: 5929, codigo: 501000001, motivo: "anime", script: "Meteo the Matchless", imagem: false }
-  - { nome: "Queen of Fate - Eternia", numero_interno: 6534, codigo: 501000003, motivo: "anime", script: "Queen of Fate - Eternia", imagem: false }
+  - { nome: "Dark Arena", numero_interno: 5187, codigo: 511000017, motivo: "anime", script: "Dark Arena", imagem: "yugipedia" }
+  - { nome: "Dark Scorpion - Tragedy of Love", numero_interno: 5184, codigo: 111203901, motivo: "anime", script: "Dark Scorpion - Tragedy of Love", imagem: "yugipedia" }
+  - { nome: "Dark Scorpion Retreat", numero_interno: 5183, codigo: 111203902, motivo: "anime", script: "Dark Scorpion Retreat", imagem: "yugipedia" }
+  - { nome: "Defense Maiden", numero_interno: 5179, codigo: 100000136, motivo: "anime", script: "Defense Maiden", imagem: "yugipedia" }
+  - { nome: "Dizzy Angel", numero_interno: 5172, codigo: 100000322, motivo: "anime", script: "Dizzy Angel", imagem: "yugipedia" }
+  - { nome: "Dizzy Tiger", numero_interno: 5171, codigo: 100000321, motivo: "anime", script: "Dizzy Tiger", imagem: "yugipedia" }
+  - { nome: "Flipping the Table", numero_interno: 5174, codigo: 100000323, motivo: "anime", script: "Flipping the Table", imagem: "yugipedia" }
+  - { nome: "Happy Marriage", numero_interno: 5180, codigo: 100000137, motivo: "anime", script: "Happy Marriage", imagem: "yugipedia" }
+  - { nome: "Hot Sauce Bottle", numero_interno: 5173, codigo: 100000320, motivo: "anime", script: "Hot Sauce Bottle", imagem: "yugipedia" }
+  - { nome: "King of Destruction - Xexex", numero_interno: 6533, codigo: 501000002, motivo: "anime", script: "King of Destruction - Xexex", imagem: "yugipedia" }
+  - { nome: "Meteo the Matchless", numero_interno: 5929, codigo: 501000001, motivo: "anime", script: "Meteo the Matchless", imagem: "yugipedia" }
+  - { nome: "Queen of Fate - Eternia", numero_interno: 6534, codigo: 501000003, motivo: "anime", script: "Queen of Fate - Eternia", imagem: "yugipedia" }
   - { nome: "Ritual of Lithmus", numero_interno: 5176, motivo: "tirar_do_pool", imagem: false }
-  - { nome: "Testament of the Arcane Lords", numero_interno: 6958, codigo: 501000004, motivo: "anime", script: "Testament of the Arcane Lords", imagem: false }
-  - { nome: "Ulevo", numero_interno: 5925, codigo: 501000000, motivo: "anime", script: "Ulevo", imagem: false }
-  - { nome: "Chimaera, the Master of Beasts", numero_interno: 7374, codigo: 501000006, motivo: "anime", script: "Chimaera, the Master of Beasts", imagem: false }
-  - { nome: "Lorelei, the Symphonic Arsenal", numero_interno: 7993, codigo: 501000009, motivo: "anime", script: "Lorelei, the Symphonic Arsenal", imagem: false }
+  - { nome: "Testament of the Arcane Lords", numero_interno: 6958, codigo: 501000004, motivo: "anime", script: "Testament of the Arcane Lords", imagem: "yugipedia" }
+  - { nome: "Ulevo", numero_interno: 5925, codigo: 501000000, motivo: "anime", script: "Ulevo", imagem: "yugipedia" }
+  - { nome: "Chimaera, the Master of Beasts", numero_interno: 7374, codigo: 501000006, motivo: "anime", script: "Chimaera, the Master of Beasts", imagem: "yugipedia" }
+  - { nome: "Lorelei, the Symphonic Arsenal", numero_interno: 7993, codigo: 501000009, motivo: "anime", script: "Lorelei, the Symphonic Arsenal", imagem: "yugipedia" }
   - { nome: "Mind Master", passcode: 96782886, codigo: 511003019, motivo: "pre_errata", imagem: true, texto: "You can pay 800 Life Points and Tribute 1 Psychic-Type monster, except \"Mind Master\", to Special Summon 1 Level 4 or lower Psychic-Type monster from your Deck in face-up Attack Position.", fonte_texto: 6028146 }
-  - { nome: "Tyr, the Vanquishing Warlord", numero_interno: 7992, codigo: 501000008, motivo: "anime", script: "Tyr, the Vanquishing Warlord", imagem: false }
-  - { nome: "Arcana Force VIII - The Strength", numero_interno: 3727, codigo: 100000105, motivo: "anime", script: "Arcana Force VIII - The Strength", imagem: false }
-  - { nome: "B.E.S. Assault Core", numero_interno: 3749, codigo: 100000085, motivo: "anime", script: "B.E.S. Assault Core", imagem: false }
+  - { nome: "Tyr, the Vanquishing Warlord", numero_interno: 7992, codigo: 501000008, motivo: "anime", script: "Tyr, the Vanquishing Warlord", imagem: "yugipedia" }
+  - { nome: "Arcana Force VIII - The Strength", numero_interno: 3727, codigo: 100000105, motivo: "anime", script: "Arcana Force VIII - The Strength", imagem: "yugipedia" }
+  - { nome: "B.E.S. Assault Core", numero_interno: 3749, codigo: 100000085, motivo: "anime", script: "B.E.S. Assault Core", imagem: "yugipedia" }
   - { nome: "Cenozoic Fossil Knight - Skullger", numero_interno: 3745, motivo: "tirar_do_pool", imagem: false }
-  - { nome: "Crowning of the Emperor", numero_interno: 3741, codigo: 511000007, motivo: "anime", script: "Crowning of the Emperor", imagem: false }
+  - { nome: "Crowning of the Emperor", numero_interno: 3741, codigo: 511000007, motivo: "anime", script: "Crowning of the Emperor", imagem: "yugipedia" }
   - { nome: "Efflorescent Knight", numero_interno: 3744, motivo: "tirar_do_pool", imagem: false }
-  - { nome: "Infinite Fiend Mirror", numero_interno: 3723, codigo: 100000080, motivo: "anime", script: "Infinite Fiend Mirror", imagem: false }
-  - { nome: "Last Machine Acid Virus", numero_interno: 3738, codigo: 100000166, motivo: "anime", script: "Last Machine Acid Virus", imagem: false }
+  - { nome: "Infinite Fiend Mirror", numero_interno: 3723, codigo: 100000080, motivo: "anime", script: "Infinite Fiend Mirror", imagem: "yugipedia" }
+  - { nome: "Last Machine Acid Virus", numero_interno: 3738, codigo: 100000166, motivo: "anime", script: "Last Machine Acid Virus", imagem: "yugipedia" }
   - { nome: "Mesozoic Fossil Knight - Skullknight", numero_interno: 3746, motivo: "tirar_do_pool", imagem: false }
   - { nome: "Paleozoic Fossil Dragon - Skullgeoth", numero_interno: 7263, motivo: "tirar_do_pool", imagem: false }
   - { nome: "Paleozoic Fossil Knight - Skullking", numero_interno: 7253, motivo: "tirar_do_pool", imagem: false }
-  - { nome: "Scab Scar Knight", numero_interno: 3743, codigo: 100000224, motivo: "anime", script: "Scab Scar Knight", imagem: false }
-  - { nome: "Shield Recovery", numero_interno: 3750, codigo: 511000019, motivo: "anime", script: "Shield Recovery", imagem: false }
-  - { nome: "Suit of Sword X", numero_interno: 3734, codigo: 511000022, motivo: "anime", script: "Suit of Sword X", imagem: false }
-  - { nome: "The Material Lord", numero_interno: 3731, codigo: 100000107, motivo: "anime", script: "The Material Lord", imagem: false }
-  - { nome: "The Sky Lord", numero_interno: 3730, codigo: 100000109, motivo: "anime", script: "The Sky Lord", imagem: false }
-  - { nome: "The Spiritual Lord", numero_interno: 3732, codigo: 100000108, motivo: "anime", script: "The Spiritual Lord", imagem: false }
-  - { nome: "Toy Emperor", numero_interno: 3740, codigo: 511000006, motivo: "anime", script: "Toy Emperor", imagem: false }
-  - { nome: "Toon Kingdom", numero_interno: 3789, codigo: 511001251, motivo: "anime", script: "Toon Kingdom (VG)", imagem: false }
-  - { nome: "Miracle Contact", numero_interno: 3752, codigo: 511600380, motivo: "anime", script: "Miracle Contact (Anime)", imagem: false }
+  - { nome: "Scab Scar Knight", numero_interno: 3743, codigo: 100000224, motivo: "anime", script: "Scab Scar Knight", imagem: "yugipedia" }
+  - { nome: "Shield Recovery", numero_interno: 3750, codigo: 511000019, motivo: "anime", script: "Shield Recovery", imagem: "yugipedia" }
+  - { nome: "Suit of Sword X", numero_interno: 3734, codigo: 511000022, motivo: "anime", script: "Suit of Sword X", imagem: "yugipedia" }
+  - { nome: "The Material Lord", numero_interno: 3731, codigo: 100000107, motivo: "anime", script: "The Material Lord", imagem: "yugipedia" }
+  - { nome: "The Sky Lord", numero_interno: 3730, codigo: 100000109, motivo: "anime", script: "The Sky Lord", imagem: "yugipedia" }
+  - { nome: "The Spiritual Lord", numero_interno: 3732, codigo: 100000108, motivo: "anime", script: "The Spiritual Lord", imagem: "yugipedia" }
+  - { nome: "Toy Emperor", numero_interno: 3740, codigo: 511000006, motivo: "anime", script: "Toy Emperor", imagem: "yugipedia" }
+  - { nome: "Toon Kingdom", numero_interno: 3789, codigo: 511001251, motivo: "anime", script: "Toon Kingdom (VG)", imagem: 43175858 }
+  - { nome: "Miracle Contact", numero_interno: 3752, codigo: 511600380, motivo: "anime", script: "Miracle Contact (Anime)", imagem: 35255456 }

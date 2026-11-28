@@ -5,8 +5,8 @@ import { mockSession } from "./support.ts";
 const cards = [
   { id: 1, name: "Dark Magician", name_pt: "Mago Negro", card_type: "Monster", image: 46986414 },
   { id: 2, name: "Pot of Greed", name_pt: "Pote da Ganância", card_type: "Spell", image: 55144522 },
-  // Carta do anime: não tem imagem.
-  { id: 3, name: "Clear World", name_pt: "Mundo Claro", card_type: "Spell" },
+  // Carta do anime: a imagem é a da Yugipedia, publicada pelo código da engine (GXP-142).
+  { id: 3, name: "Clear World", name_pt: "Mundo Claro", card_type: "Spell", image: 511000306 },
 ];
 const PIXEL = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=",
@@ -52,10 +52,13 @@ const opening = [
   { ...drawn(1, "ultra_rare", false), rare_slot: true },
 ];
 
-// Os pedidos de imagem que a página fez (as imagens são simuladas).
-async function mockShop(page: Page, images: string[] = []) {
+// Os pedidos de imagem que a página fez (as imagens são simuladas). failFirst: o primeiro
+// pedido de cada imagem falha, e a nova tentativa (?tentativa=1) dá certo.
+async function mockShop(page: Page, images: string[] = [], failFirst = false) {
   await page.route(/\.pages\.dev\//, (route) => {
-    images.push(new URL(route.request().url()).pathname);
+    const url = new URL(route.request().url());
+    images.push(url.pathname);
+    if (failFirst && !url.search.includes("tentativa")) return route.abort();
     return route.fulfill({ contentType: "image/png", body: PIXEL });
   });
   await mockSession(page, { loggedIn: true });
@@ -140,8 +143,11 @@ test("comprar abre o pacote em tela cheia: a mais rara no meio e as outras para 
   await expect(status).toHaveText("5 de 5 cartas viradas.");
   await expect(featured).toContainText("Mago Negro");
   await expect(dialog.getByText("Nova")).toHaveCount(2);
-  // A carta do anime aparece com a face e o nome, não com um quadro vazio.
-  await expect(dialog.locator(".card-face")).toContainText("Mundo Claro");
+  // A carta do anime também vem com a imagem.
+  await expect(dialog.getByRole("img", { name: "Mundo Claro" })).toHaveAttribute(
+    "src",
+    /511000306/,
+  );
   await expect(dialog).toContainText("Saldo: 70 DP.");
   await expect(dialog.getByRole("button", { name: "Abrir outro (50 DP)" })).toBeFocused();
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
@@ -156,6 +162,46 @@ test("comprar abre o pacote em tela cheia: a mais rara no meio e as outras para 
   await dialog.getByRole("button", { name: "Fechar o pacote" }).click();
   await expect(dialog).toBeHidden();
   await expect(page.getByRole("button", { name: "Comprar 1", exact: true })).toBeVisible();
+});
+
+test("a imagem que falha dá lugar ao verso da carta na hora e volta na nova tentativa", async ({
+  page,
+}) => {
+  await mockShop(page, [], true);
+  await page.goto("/loja");
+  await page.getByRole("button", { name: "Comprar 1", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: "Virar a carta 2" }).click();
+  const card = dialog.getByRole("listitem").nth(1);
+
+  // Sem esperar as novas tentativas: o verso aparece logo, com o nome para o leitor de tela.
+  await expect(card.getByRole("img", { name: "Pote da Ganância" })).toHaveClass(
+    /card-placeholder/,
+    { timeout: 700 },
+  );
+  // A nova tentativa dá certo e a imagem volta no lugar.
+  await expect(card.locator("img")).toHaveAttribute("src", /tentativa=1/);
+  await expect(card.locator(".card-placeholder")).toHaveCount(0);
+});
+
+test("enquanto o catálogo não chega, as cartas viradas esperam fechadas", async ({ page }) => {
+  await mockShop(page);
+  let release = () => {};
+  const arrived = new Promise<void>((resolve) => (release = resolve));
+  await page.route("**/api/cards", async (route) => {
+    await arrived;
+    await route.fulfill({ json: { data: cards } });
+  });
+  await page.goto("/loja");
+  await page.getByRole("button", { name: "Comprar 1", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: "Virar todas" }).click();
+
+  await expect(dialog.getByText("Carregando as cartas…")).toBeVisible();
+  await expect(dialog.locator(".card-placeholder, .face img")).toHaveCount(0);
+  release();
+  await expect(dialog.getByRole("status")).toHaveText("5 de 5 cartas viradas.");
+  await expect(dialog.getByRole("img", { name: "Mago Negro" }).first()).toBeVisible();
 });
 
 test("comprar 10 abre um pacote por vez, cada um com as 5 cartas dele", async ({ page }) => {

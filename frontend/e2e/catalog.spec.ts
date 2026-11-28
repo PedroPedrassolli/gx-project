@@ -133,7 +133,7 @@ test("avisa quando o texto em português é tradução nossa, não a oficial", a
   );
 });
 
-test("mostra a miniatura e a imagem da carta; sem imagem, a face com o nome", async ({ page }) => {
+test("mostra a miniatura e a imagem da carta; sem imagem, o verso", async ({ page }) => {
   await page.goto("/cartas?carta=1");
   // A conexão com o site das imagens abre junto com a página, antes de a lista chegar.
   await expect(
@@ -148,14 +148,14 @@ test("mostra a miniatura e a imagem da carta; sem imagem, a face com o nome", as
     "src",
     /\/cards\/m\/46986414\.webp$/,
   );
-  // A que falha tenta de novo duas vezes e, sem jeito, vira a face da carta com o nome.
+  // A que falha mostra o verso na hora e tenta de novo por trás; sem jeito, o verso fica.
   const failed = page.getByRole("button", { name: /Pote da Ganância/ });
-  await expect(failed.locator(".card-face")).toContainText("Pote da Ganância", { timeout: 8_000 });
+  await expect(failed.locator(".card-placeholder")).toBeVisible();
   await expect(failed.locator("img")).toHaveCount(0);
-  // A carta do anime, que não tem imagem, mostra a face desde o começo, também no detalhe.
+  // A carta sem imagem nenhuma mostra o verso desde o começo, também no detalhe.
   const anime = page.getByRole("button", { name: /Força Espelho/ });
   await expect(anime.locator("img")).toHaveCount(0);
-  await expect(anime.locator(".card-face")).toContainText("Força Espelho");
+  await expect(anime.locator(".card-placeholder")).toBeVisible();
   await anime.click();
   await expect(page.getByRole("img", { name: "Carta Força Espelho, sem imagem" })).toBeVisible();
 });

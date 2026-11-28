@@ -1,13 +1,27 @@
 #!/usr/bin/env ruby
-# Lista, uma por linha, as imagens do YGOPRODeck que o jogo usa: as das cartas do pool
-# (GXP-26) e as das que entram no duelo sem estar nele, como as fichas (GXP-141). O workflow
-# "Imagens das cartas" baixa só essas. Lê os scripts e o banco da engine (submódulos), e o
-# banco precisa da gem sqlite3: rode com "bundle exec bin/image-codes".
+# Lista as imagens que o jogo usa, para o workflow "Imagens das cartas".
+#
+# Sem argumento, uma por linha, os códigos das imagens do YGOPRODeck: as das cartas do pool
+# (GXP-26) e as das que entram no duelo sem estar nele, como as fichas (GXP-141). Lê os
+# scripts e o banco da engine (submódulos).
+#
+# Com --yugipedia, as das cartas do anime sem impressão oficial (GXP-142), uma por linha,
+# separadas por tab: o código, o endereço na Yugipedia e o recorte, quando é uma tela do jogo.
+# Pede à API da Yugipedia.
+#
+# Usa a gem sqlite3: rode com "bundle exec bin/image-codes".
 require_relative "../lib/game_data/pool"
 require_relative "../lib/game_data/auxiliary"
+require_relative "../lib/game_data/yugipedia"
+require_relative "../lib/game_data/card_pictures"
 
 backend = File.expand_path("..", __dir__)
 seeds = File.join(backend, "db/seeds/jogo")
+if ARGV.first == "--yugipedia"
+  puts GameData::CardPictures.new(GameData::Yugipedia.new).lines(GameData::Pool.yugipedia_cards(seeds))
+  exit
+end
+
 engine = File.join(backend, "vendor/engine")
 auxiliary = GameData::Auxiliary.codes(scripts: File.join(engine, "CardScripts"), database: File.join(engine, "BabelCDB/cards.cdb"),
                                       pool: GameData::Pool.codes(seeds))

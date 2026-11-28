@@ -20,4 +20,15 @@ describe GameData::Pool do
     _(GameData::Pool.engine_code({ "nome" => "Trap Hole", "passcode" => 200 }, exceptions)).must_equal 200
     _(GameData::Pool.engine_code({ "nome" => "Labyrinth", "numero_interno" => 4 }, exceptions)).must_be_nil
   end
+
+  it "lista as cartas com imagem da Yugipedia: o código da engine, o nome e a página" do
+    _(GameData::Pool.yugipedia_cards(seeds)).must_equal [ { code: 900, name: "Clear Wall", source: 3 } ]
+  end
+
+  it "usa a imagem da impressão oficial de mesmo nome na carta do anime" do
+    exceptions = { [ "Clear Wall", nil, 3 ] => { "codigo" => 900, "motivo" => "anime", "imagem" => 6_089_145 } }
+
+    _(GameData::Pool.image_code({ "nome" => "Clear Wall", "numero_interno" => 3 }, exceptions)).must_equal 6_089_145
+    _(GameData::Pool.image_code({ "nome" => "Labyrinth", "numero_interno" => 3 }, {})).must_be_nil
+  end
 end

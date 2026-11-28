@@ -39,6 +39,24 @@ describe GameData::Yugipedia do
     _(pages["alkana Knight Joker"].title).must_equal "Arcana Knight Joker"
   end
 
+  it "acha a imagem principal pelo título, seguindo o redirecionamento, e pela revisão" do
+    by_title = { "query" => {
+      "redirects" => [ { "from" => "Ulevo", "to" => "Ulevo (Game)" } ],
+      "pages" => [ { "title" => "Ulevo (Game)", "original" => { "source" => "https://img/Ulevo.png" } }, { "title" => "Sem Imagem" } ]
+    } }
+    Net::HTTP.expects(:get_response).with { |uri, _headers| uri.query.include?("titles=Ulevo%7CSem+Imagem") }.returns(answer(by_title))
+
+    _(client.images_by_title([ "Ulevo", "Sem Imagem" ])).must_equal({ "Ulevo" => "https://img/Ulevo.png" })
+
+    by_revision = { "query" => { "pages" => [
+      { "title" => "Ulevo (Game)", "original" => { "source" => "https://img/tela.png" }, "revisions" => [ { "revid" => 5 } ] },
+      { "title" => "Sem Imagem", "revisions" => [ { "revid" => 6 } ] }
+    ] } }
+    Net::HTTP.expects(:get_response).with { |uri, _headers| uri.query.include?("revids=5%7C6") }.returns(answer(by_revision))
+
+    _(client.images_by_revision([ 5, 6, 5 ])).must_equal({ 5 => "https://img/tela.png" })
+  end
+
   it "lista os títulos de uma categoria" do
     body = { "query" => { "categorymembers" => [ { "title" => "Pacote A" }, { "title" => "Pacote B" } ] } }
     Net::HTTP.expects(:get_response).with { |uri, _headers| uri.query.include?("cmpageid=7") }.returns(answer(body))

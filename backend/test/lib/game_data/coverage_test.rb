@@ -16,14 +16,14 @@ describe GameData::Coverage do
     [ row(100, "Night Assailant"), row(110, "Night Assailant (Pre-Errata)", aka: 100, unofficial: true),
       row(200, "Normal Guy", type: 0x11), row(300, "Effect Guy"), row(400, "Old Script"), row(500, "Broken"),
       row(900, "Clear Wall (VG)", aka: 66, unofficial: true), row(901, "Frog-Hael", unofficial: true),
-      row(902, "Miracle (Anime)", unofficial: true), row(600, "Advanced Dark"), row(700, "Ceruli"),
+      row(902, "Miracle (Anime)", unofficial: true), row(800, "Miracle"), row(600, "Advanced Dark"), row(700, "Ceruli"),
       row(15_259_703, "Toon World"), row(511_000_001, "Toon World (Pre-Errata)", aka: 15_259_703, unofficial: true) ]
   end
   let(:scripts) do
     { "official" => Set[100, 300, 600, 700, 15_259_703], "pre-errata" => Set[110, 400, 511_000_001],
       "unofficial" => Set[900, 901, 902] }
   end
-  let(:coverage) { GameData::Coverage.new(cards:, database:, scripts:, images: Set[100, 200, 300, 600]) }
+  let(:coverage) { GameData::Coverage.new(cards:, database:, scripts:, images: Set[100, 200, 300, 600, 800]) }
 
   it "decide o código e o motivo de cada carta" do
     _(coverage.entries.map { |entry| entry.values_at(:nome, :codigo, :motivo) }).must_equal [
@@ -37,7 +37,7 @@ describe GameData::Coverage do
   it "resume a cobertura" do
     _(coverage.summary).must_equal({ cartas: 12, oficiais: 6, normais: 1, pre_errata: 1, anime: 3, usar_oficial: 2,
                                      tirar_do_pool: 1, sem_script: 1, pre_errata_sem_texto: 1, sem_dados: 0,
-                                     sem_imagem: 8 })
+                                     sem_imagem: 5 })
   end
 
   it "grava o texto da época das cartas pré-errata, com a fonte" do
@@ -55,7 +55,13 @@ describe GameData::Coverage do
 
     _(data["excecoes"].pluck("nome")).must_equal [ "Night Assailant", "Broken", "Clear Wall", "Frog-hael", "Miracle", "Advanced Dark", "Labyrinth", "Cyril" ]
     _(data["excecoes"][2]).must_equal({ "nome" => "Clear Wall", "numero_interno" => 1, "codigo" => 900,
-                                        "motivo" => "anime", "script" => "Clear Wall (VG)", "imagem" => false })
+                                        "motivo" => "anime", "script" => "Clear Wall (VG)", "imagem" => "yugipedia" })
     _(data["resumo"]["cartas"]).must_equal 12
+  end
+
+  it "dá à carta do anime a imagem da impressão oficial de mesmo nome ou a da Yugipedia" do
+    images = coverage.entries.select { |entry| entry[:motivo] == "anime" }.to_h { |entry| entry.values_at(:nome, :imagem) }
+
+    _(images).must_equal({ "Clear Wall" => "yugipedia", "Frog-hael" => "yugipedia", "Miracle" => 800 })
   end
 end
