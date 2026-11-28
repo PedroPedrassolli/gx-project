@@ -295,9 +295,21 @@ module Matches
     # A resposta que o servidor dá sozinho, ou nil quando a pergunta é do jogador.
     def automatic(prompt)
       case prompt&.fetch(:type)
-      when :select_chain then PASS if prompt[:chains].empty? && !prompt[:forced] && !always_asks?(prompt[:player])
+      when :select_chain then PASS if pass_chain?(prompt)
       when :select_place then AutoPlace.pick(prompt)
       end
+    end
+
+    # A corrente que o servidor passa sozinho (GXP-143), como o modo Automático do YGOPro e do
+    # Master Duel: sem nada para encadear ou, para quem joga, sem carta com motivo para
+    # responder naquele momento. O spe_count da engine conta as cartas que respondem ao que
+    # aconteceu (invocação, ataque, ativação) e as que estão no momento que o script sugere; a
+    # carta que dá para ativar a qualquer hora (Scapegoat) não pergunta a cada passo. O
+    # computador decide a corrente dele, e "sempre perguntar" (GXP-84) vê toda janela.
+    def pass_chain?(prompt)
+      return false if prompt[:forced] || always_asks?(prompt[:player])
+
+      prompt[:chains].empty? || (prompt[:spe_count].to_i.zero? && !bot?(prompt[:player]))
     end
 
     # "Sempre perguntar" (GXP-84): esse time quer a pergunta da corrente mesmo sem o que

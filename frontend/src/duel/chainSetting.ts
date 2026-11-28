@@ -1,8 +1,9 @@
 import { useState } from "react";
 
-// "Sempre perguntar" na corrente (escopo 3.7; GXP-84): a mesa pergunta mesmo quando você não
-// tem o que encadear, e o oponente não fica sabendo pelo passe automático. Fica no navegador,
-// como as animações; a mesa manda a escolha para cada duelo.
+// A pergunta da corrente (escopo 3.7): no Automático (GXP-143), a mesa só pergunta quando
+// alguma carta tem motivo para responder; com "Sempre" (GXP-84), pergunta em toda janela,
+// até sem nada para encadear, e o oponente não fica sabendo pelo passe automático. Fica no
+// navegador, como as animações; a mesa manda a escolha para cada duelo.
 const KEY = "gx-corrente-do-duelo";
 
 function saved() {

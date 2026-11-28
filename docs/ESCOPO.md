@@ -139,7 +139,7 @@
 - **Servidor autoritativo:** cada jogador recebe só o que pode ver.
 - Fichas e cartas criadas por efeito, que não estão no catálogo: a mesa manda o resumo delas (nome, tipo, números e texto, do banco da engine). Aparecem com nome e imagem e abrem o detalhe como as outras (GXP-141).
 - Quem começa: pedra, papel e tesoura entre os dois jogadores. Quem ganha escolhe ir primeiro ou segundo. Contra personagem, quem começa é sorteado.
-- Pergunta de cadeia: por padrão, o jogador só é consultado se tiver resposta possível. Configurações: "sempre perguntar" e velocidade das animações.
+- Pergunta de corrente: no Automático (o padrão), o jogador só é consultado quando alguma carta tem motivo para responder ao que aconteceu, ou está no momento que o script dela sugere (o spe_count da engine, como no YGOPro e no Master Duel; GXP-143). Configurações: "Sempre" (toda janela, até sem nada para encadear) e velocidade das animações.
 - Destiny Draw igual ao jogo, quando a sala permitir.
 - Timer por turno e por decisão. Desistência. Reconexão com o estado completo. Desconexão vira derrota depois do prazo.
 - Tempo máximo de duelo (padrão 60 min), com desempate por LP.

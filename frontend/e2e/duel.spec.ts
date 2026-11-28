@@ -399,6 +399,9 @@ test("'sempre perguntar' na corrente fica no navegador e vai para cada duelo", a
   });
   await page.goto("/duelo/5");
 
+  // O padrão é o Automático: pergunta só quando alguma carta tem motivo para responder.
+  await expect(page.getByLabel("Perguntar na corrente")).toHaveValue("auto");
+  await expect(page.getByRole("option", { name: "Automático" })).toHaveCount(1);
   await page.getByLabel("Perguntar na corrente").selectOption("Sempre");
   await expect.poll(() => sent).toEqual([{ always_chain: true }]);
 

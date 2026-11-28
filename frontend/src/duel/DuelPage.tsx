@@ -411,7 +411,7 @@ function DuelSettings(props: {
         value={props.alwaysChain ? "always" : "auto"}
         onChange={(event) => props.onAlwaysChain(event.target.value === "always")}
       >
-        <option value="auto">Só quando der</option>
+        <option value="auto">Automático</option>
         <option value="always">Sempre</option>
       </select>
     </div>
