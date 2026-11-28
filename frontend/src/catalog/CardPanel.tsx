@@ -1,5 +1,5 @@
 import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
-import type { Language } from "./cards.ts";
+import type { CardDetail, Language } from "./cards.ts";
 import { useCardDetail, useCatalog } from "./data.ts";
 import { Detail } from "./parts.tsx";
 
@@ -20,6 +20,7 @@ export function useMediaQuery(query: string) {
 
 type Props = {
   cardId: number;
+  card?: CardDetail; // a carta que não está no catálogo (uma ficha do duelo), já com o texto
   language: Language;
   onLanguage?: (language: Language) => void;
   packs: Map<number, string>;
@@ -36,8 +37,8 @@ type Props = {
 export function CardPanel(props: Props) {
   const detail = useCardDetail(props.cardId);
   const summary = useCatalog().data?.byId.get(props.cardId);
-  const card = detail.data ?? summary;
-  const pending = detail.data ? undefined : detail.isError ? "failed" : "loading";
+  const card = props.card ?? detail.data ?? summary;
+  const pending = props.card || detail.data ? undefined : detail.isError ? "failed" : "loading";
   const body = card ? (
     <Detail
       card={card}

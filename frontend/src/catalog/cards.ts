@@ -198,8 +198,9 @@ export function frame(card: CardSummary): string {
   if (card.card_type === "Trap") return "trap";
   const types = card.monster_types ?? [];
   return (
-    ["Fusion", "Ritual", "Synchro", "Normal"].find((type) => types.includes(type))?.toLowerCase() ??
-    "effect"
+    ["Fusion", "Ritual", "Synchro", "Token", "Normal"]
+      .find((type) => types.includes(type))
+      ?.toLowerCase() ?? "effect"
   );
 }
 

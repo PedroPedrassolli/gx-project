@@ -22,8 +22,9 @@ Os itens 9 (Destiny Draw) e 10 (PV do Tag) estão no ADR 0001.
 
 Para gravar o catálogo no banco: `bin/rails catalogo:importar`. Ele usa o código da engine
 do `cobertura.yml`, deixa de fora as cartas que saíram do pool e monta a lista dos pacotes
-que juntam outros. Pode rodar quantas vezes quiser. Mudou o pool? Rode também o workflow
-*Imagens das cartas*: ele baixa do YGOPRODeck só as imagens que ainda não estão no ar.
+que juntam outros. Pode rodar quantas vezes quiser. Mudou o pool ou a engine (submódulos)?
+Rode também o workflow *Imagens das cartas*: ele baixa do YGOPRODeck só as imagens que ainda
+não estão no ar, das cartas do pool e das fichas que elas criam.
 
 ## Fonte e licença
 

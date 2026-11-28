@@ -137,6 +137,7 @@
 ### 3.7 Duelo
 - Regras: MR1 pela engine (seção 5.3) e a banlist escolhida.
 - **Servidor autoritativo:** cada jogador recebe só o que pode ver.
+- Fichas e cartas criadas por efeito, que não estão no catálogo: a mesa manda o resumo delas (nome, tipo, números e texto, do banco da engine). Aparecem com nome e imagem e abrem o detalhe como as outras (GXP-141).
 - Quem começa: pedra, papel e tesoura entre os dois jogadores. Quem ganha escolhe ir primeiro ou segundo. Contra personagem, quem começa é sorteado.
 - Pergunta de cadeia: por padrão, o jogador só é consultado se tiver resposta possível. Configurações: "sempre perguntar" e velocidade das animações.
 - Destiny Draw igual ao jogo, quando a sala permitir.

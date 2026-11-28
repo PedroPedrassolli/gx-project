@@ -17,7 +17,8 @@ module Catalog
                  image_code passcode name_in_game text text_pt text_pt_unofficial source_revision].freeze
     LOCK = Mutex.new
 
-    attr_reader :version, :stamp, :packs, :banlists
+    # codes: os códigos da engine das cartas do catálogo; o duelo resume as outras (GXP-141).
+    attr_reader :version, :stamp, :packs, :banlists, :codes
 
     # Um pedido por vez: quem chega enquanto outro monta espera o mesmo catálogo, em vez de
     # montar outro junto.
@@ -64,6 +65,7 @@ module Catalog
       @cards = rows.map { |card| summary(card) }
       @names = rows.to_h { |card| [ card[:id], plain([ card[:name], card[:name_pt], card[:name_in_game] ].compact.join(" | ")) ] }
       @by_id = @cards.index_by { |card| card[:id] }
+      @codes = @cards.to_set { |card| card[:code] }
       @extras = rows.to_h { |card| [ card[:id], extra(card) ] }
       @covers = Set.new # as capas já usadas, na ordem da loja
       @packs = Pack.order(:position).map { |pack| pack_row(pack) }

@@ -28,6 +28,7 @@
   --frame-synchro: #e6e6ee;
   --frame-spell: #35b892;
   --frame-trap: #d85a97;
+  --frame-token: #a9b0c0;
   --radius: 14px;
   --gutter: clamp(1rem, 4vw, 2rem);
   /* A barra de abas fixa embaixo: só no celular (o tamanho vem no fim do bloco da barra). */
@@ -863,6 +864,10 @@ button:disabled {
 
 .frame-trap {
   --frame: var(--frame-trap);
+}
+
+.frame-token {
+  --frame: var(--frame-token);
 }
 
 /* A carta da grade: a imagem em cima (com as marcas por cima dela) e o nome embaixo, em duas

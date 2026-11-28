@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router";
 import { request } from "../api.ts";
@@ -11,6 +11,7 @@ import { usePageTitle } from "../pageTitle.ts";
 import type { View } from "./api.ts";
 import { Board, PhaseTrack } from "./Board.tsx";
 import { DuelDetail } from "./DuelDetail.tsx";
+import { withEngineCards } from "./engineCards.ts";
 import { ChainStack, DuelLog } from "./DuelSide.tsx";
 
 // Replay do duelo (escopo 3.7): um turno por vez, a mesa de quem assiste depois de cada lance
@@ -49,11 +50,20 @@ export function ReplayPage() {
   const catalog = useCatalog();
   const [language] = useCardLanguage();
   const [selected, setSelected] = useState<number | null>(null);
-  const cards = catalog.data?.byCode ?? NO_CARDS;
   const packs = catalog.data?.packNames ?? NO_PACKS;
 
   const data = replay.data;
   const frames = data?.frames ?? [];
+  // As fichas e as cartas de fora do catálogo de todos os quadros do turno: o histórico mostra
+  // o turno até o quadro atual (GXP-141).
+  const cards = useMemo(
+    () =>
+      withEngineCards(
+        catalog.data?.byCode ?? NO_CARDS,
+        (data?.frames ?? []).map((item) => item.view.cards),
+      ),
+    [catalog.data, data],
+  );
   const index = frame < 0 ? frames.length - 1 : Math.min(frame, frames.length - 1);
   const turns = data?.turns ?? 1;
   const atStart = turn === 1 && index <= 0;

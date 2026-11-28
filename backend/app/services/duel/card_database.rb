@@ -12,6 +12,7 @@ module Duel
     DEFAULT_FILES = %w[cards.cdb cards-unofficial.cdb].freeze
     QUERY = "SELECT id, alias, setcode, type, atk, def, level, race, attribute FROM datas WHERE id = ?".freeze
     STRINGS = "SELECT #{(1..16).map { |number| "str#{number}" }.join(", ")} FROM texts WHERE id = ?".freeze
+    TEXTS = "SELECT name, desc FROM texts WHERE id = ?".freeze
 
     Card = Data.define(:code, :alias_code, :setcodes, :type, :level, :lscale, :rscale,
                        :attack, :defense, :link_marker, :race, :attribute)
@@ -41,6 +42,15 @@ module Duel
       @mutex.synchronize do
         @strings ||= {}
         @strings[code] ||= @databases.lazy.map { |database| database.get_first_row(STRINGS, [ code ]) }.find(&:itself) || []
+      end
+    end
+
+    # O nome e o texto da carta, em inglês, como estão no BabelCDB: é o que a mesa mostra da
+    # carta que o catálogo não tem, como as fichas (Duel::CardSummary). nil quando não existe.
+    def texts(code)
+      @mutex.synchronize do
+        @texts ||= {}
+        @texts.fetch(code) { @texts[code] = @databases.lazy.map { |database| database.get_first_row(TEXTS, [ code ]) }.find(&:itself) }
       end
     end
 
