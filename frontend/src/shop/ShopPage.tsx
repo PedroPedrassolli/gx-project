@@ -140,7 +140,7 @@ export function ShopPage() {
               <>
                 <p className="pack-hint">{pack.hint}</p>
                 {pack.progress !== null && (
-                  <p className="pack-progress">
+                  <p className="unlock-progress">
                     <progress
                       max={100}
                       value={pack.progress}
