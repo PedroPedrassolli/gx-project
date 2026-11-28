@@ -50,6 +50,17 @@ export function AccountPage() {
   return (
     <main className="page narrow">
       <h1>Minha conta</h1>
+      {/* Quem é, como na barra do topo: a inicial, o apelido, o nível e o saldo (GXP-136). */}
+      <div className="profile-head">
+        <span className="avatar-initial" aria-hidden="true">
+          {user.nickname.slice(0, 1).toUpperCase()}
+        </span>
+        <p className="profile-name">{user.nickname}</p>
+        <p className="profile-chips">
+          <span className="level-chip">Nível {user.level}</span>
+          <span className="wallet-chip">{user.dp.toLocaleString("pt-BR")} DP</span>
+        </p>
+      </div>
       <dl className="account-data">
         <dt>E-mail</dt>
         <dd>
@@ -59,10 +70,6 @@ export function AccountPage() {
         <dd>{user.nickname}</dd>
         <dt>Faixa de idade</dt>
         <dd>{AGE_GROUPS[user.age_group]}</dd>
-        <dt>DP</dt>
-        <dd>{user.dp.toLocaleString("pt-BR")}</dd>
-        <dt>Nível</dt>
-        <dd>{user.level}</dd>
       </dl>
       <p className="account-actions">
         <Link to="/desafios">Ver as missões e os desafios</Link>

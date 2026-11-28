@@ -79,5 +79,11 @@ grande, campo simples) e os Tag Force.
   a corrente) vai para a coluna da direita, acima do histórico; no celular, continua no meio
   da mesa. O replay segue o mesmo desenho e, no celular, rola a página em vez de apertar a mesa
   numa altura fixa. A vitória aparece em dourado no resultado.
+- No acabamento (GXP-136), os formulários de conta ganharam o cartão com o fio holográfico e a
+  Minha conta, o topo com a inicial, o nível e o saldo. Duas classes com o mesmo nome em telas
+  diferentes quebraram páginas sem nenhum teste vermelho (a mesa do duelo e a lista por pacote
+  da coleção); por isso o `styles.test.ts` recusa o mesmo seletor em duas regras do
+  `styles.css`, e o verificador de layout recusa `<dialog>` fechado aparecendo. Lighthouse no
+  celular (sem a API): acessibilidade e SEO 100.
 - As fontes antigas (Spectral) saíram; as novas são variáveis, um arquivo para todos os pesos
   (uns 50 KB no total, contra uns 60 KB de antes).
