@@ -19,8 +19,9 @@ type Mission = {
 };
 
 // As missões e os desafios (escopo 3.5; GXP-88 e GXP-89). As missões contam vitórias e
-// liberam pacotes ou dão cartas; os desafios são os 104 do jogo, na ordem, cada um conta uma
-// vez e cada desafio concluído paga 2 DP em todo duelo.
+// liberam pacotes ou dão cartas; os desafios são os do jogo, na ordem (102: os dois de
+// partida melhor de 3 saíram no GXP-125), cada um conta uma vez e cada desafio concluído
+// paga 2 DP em todo duelo.
 export function ChallengesPage() {
   usePageTitle("Missões e desafios");
   const session = useSession();
