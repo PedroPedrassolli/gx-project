@@ -1,8 +1,8 @@
 name: Imagens das cartas
 
-# Publica as imagens das cartas do pool no projeto só de imagens do Cloudflare Pages
-# (GXP-26, ADR 0004), em WebP com 3 tamanhos: p (lista), m (campo) e g (zoom). Manual: as
-# imagens só mudam quando o pool muda.
+# Publica as imagens das cartas do pool e das fichas que elas criam (GXP-141) no projeto só
+# de imagens do Cloudflare Pages (GXP-26, ADR 0004), em WebP com 3 tamanhos: p (lista), m
+# (campo) e g (zoom). Manual: as imagens só mudam quando o pool ou a engine mudam.
 #
 # O YGOPRODeck pede para baixar uma vez e hospedar por conta própria. Por isso, a imagem
 # que já está no ar vem do próprio site (banda sem limite), e só a nova vem do YGOPRODeck,
@@ -26,9 +26,16 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
+      # Os submódulos da engine: a lista das fichas sai dos scripts e do banco das cartas.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          submodules: true
+
+      - uses: ruby/setup-ruby@be3c7df29b3349ec6bcfc6b4792f1cf9f5237d18 # v1.343.0
+        with:
+          working-directory: backend
+          bundler-cache: true
 
       # Tira espaços e quebras de linha que vêm junto ao colar (comum no celular) e confere o
       # formato do ID da conta. Os passos seguintes usam os valores limpos.
@@ -99,7 +106,7 @@ jobs:
           SITE: ${{ steps.projeto.outputs.site }}
         run: |
           sudo apt-get install -y -q webp > /dev/null
-          ruby backend/bin/image-codes > codes.txt
+          (cd backend && bundle exec bin/image-codes) > codes.txt
           mkdir -p originais site/cards/p site/cards/m site/cards/g
           image() {
             code=$1

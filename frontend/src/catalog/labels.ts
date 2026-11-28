@@ -64,6 +64,7 @@ export const MONSTER_TYPES: Record<string, string> = {
   Spirit: "Espírito",
   Toon: "Toon",
   Union: "União",
+  Token: "Ficha",
 };
 
 export const RARITIES: Record<string, string> = {

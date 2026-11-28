@@ -1,6 +1,14 @@
 #!/usr/bin/env ruby
-# Lista, uma por linha, as imagens do YGOPRODeck que o pool usa (GXP-26). O workflow
-# "Imagens das cartas" baixa só essas.
+# Lista, uma por linha, as imagens do YGOPRODeck que o jogo usa: as das cartas do pool
+# (GXP-26) e as das que entram no duelo sem estar nele, como as fichas (GXP-141). O workflow
+# "Imagens das cartas" baixa só essas. Lê os scripts e o banco da engine (submódulos), e o
+# banco precisa da gem sqlite3: rode com "bundle exec bin/image-codes".
 require_relative "../lib/game_data/pool"
+require_relative "../lib/game_data/auxiliary"
 
-puts GameData::Pool.image_codes(File.expand_path("../db/seeds/jogo", __dir__))
+backend = File.expand_path("..", __dir__)
+seeds = File.join(backend, "db/seeds/jogo")
+engine = File.join(backend, "vendor/engine")
+auxiliary = GameData::Auxiliary.codes(scripts: File.join(engine, "CardScripts"), database: File.join(engine, "BabelCDB/cards.cdb"),
+                                      pool: GameData::Pool.codes(seeds))
+puts (GameData::Pool.image_codes(seeds) + auxiliary).uniq

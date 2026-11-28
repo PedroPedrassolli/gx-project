@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { request } from "../api.ts";
+import type { CardDetail } from "../catalog/cards.ts";
 import { POLL_MS, type RealtimeMode } from "../realtime/useRealtime.ts";
 
 // A partida pela API (ADR 0011). A mesa vem pronta do servidor, já sem o que o jogador não
@@ -50,6 +51,10 @@ export type ChainLink = Place & {
   negated?: boolean;
 };
 
+// A carta que o catálogo não tem (uma ficha, uma carta criada por efeito): a mesa manda o
+// resumo dela, pelo código, no formato do catálogo e com o texto (GXP-141).
+export type EngineCard = Omit<CardDetail, "id"> & { code: number };
+
 export type View = {
   you: number;
   turn: number;
@@ -60,6 +65,7 @@ export type View = {
   prompt?: Prompt;
   events?: DuelEvent[];
   chain?: ChainLink[];
+  cards?: Record<string, EngineCard>;
 };
 
 // O DP do fim do duelo (GXP-85): os bônus, os cortes do anti-farm (negativos), a subida de

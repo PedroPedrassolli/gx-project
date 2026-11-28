@@ -158,6 +158,40 @@ test("clicar numa carta mostra o detalhe dela", async ({ page }) => {
   await expect(page.getByText("O mago supremo.")).toBeVisible();
 });
 
+test("a ficha que o catálogo não tem aparece com o nome e abre o detalhe", async ({ page }) => {
+  const match = await mockMatch(page);
+  // A mesa manda o resumo da carta que o catálogo não tem (GXP-141).
+  const token = {
+    code: 46173680,
+    name: "Doomsday Token",
+    card_type: "Monster",
+    attribute: "DARK",
+    race: "Fiend",
+    monster_types: ["Token"],
+    level: 1,
+    atk: 0,
+    def: 0,
+    text: 'Special Summoned with the effect of "Fires of Doomsday".',
+    image: 46173680,
+  };
+  const theirs = STATE.view.sides[1];
+  const monsters = [null, { face_down: true, defense: true }, { ...token, face_down: false }];
+  match.set({
+    ...STATE,
+    view: {
+      ...STATE.view,
+      sides: [STATE.view.sides[0], { ...theirs, monsters: [...monsters, null, null] }],
+      cards: { [token.code]: token },
+    },
+  });
+  await page.goto("/duelo/5");
+  await page.getByRole("button", { name: /Doomsday Token/ }).click();
+
+  await expect(page.getByRole("heading", { name: "Doomsday Token" })).toBeVisible();
+  await expect(page.getByText("Demônio / Ficha")).toBeVisible();
+  await expect(page.getByText(/Special Summoned with the effect/)).toBeVisible();
+});
+
 test("o texto de todas as cartas vem num pedido só, sem esperar o toque", async ({ page }) => {
   await mockMatch(page);
   const asked: string[] = [];

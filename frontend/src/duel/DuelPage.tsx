@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiError, request } from "../api.ts";
 import { Link, useParams } from "react-router";
@@ -17,6 +17,7 @@ import { DuelDetail } from "./DuelDetail.tsx";
 import { CardActionsDialog, CommandsDialog, PlainDialog, PromptDialog } from "./DuelDialogs.tsx";
 import { ChainStack, DuelLog } from "./DuelSide.tsx";
 import { useAlwaysChain } from "./chainSetting.ts";
+import { withEngineCards } from "./engineCards.ts";
 import { DuelBar, ResultDialog } from "./DuelStatus.tsx";
 import { EmotePicker, useEmoteBubbles } from "./Emotes.tsx";
 import { withEmote, type EmotePlayer } from "./emotes.ts";
@@ -100,7 +101,11 @@ export function DuelPage() {
   const [more, setMore] = useState(false);
   const [resultClosed, setResultClosed] = useState(false);
   const wide = useMediaQuery("(width >= 72rem)");
-  const cards = catalog.data?.byCode ?? NO_CARDS;
+  const engineCards = match.data?.view.cards;
+  const cards = useMemo(
+    () => withEngineCards(catalog.data?.byCode ?? NO_CARDS, [engineCards]),
+    [catalog.data, engineCards],
+  );
   const packs = catalog.data?.packNames ?? NO_PACKS;
   const emotes = useEmoteBubbles(match.data?.players ?? []);
   // "Sempre perguntar" (GXP-84): o navegador guarda; quando a mesa diz outra coisa (duelo

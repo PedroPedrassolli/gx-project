@@ -13,6 +13,16 @@ class Duel::CardDatabaseTest < ActiveSupport::TestCase
     end
   end
 
+  describe "#texts" do
+    it "traz o nome e o texto da carta, e nil para código que não existe" do
+      name, text = subject.texts(73915052) # Sheep Token
+
+      assert_equal "Sheep Token", name
+      assert_match(/Scapegoat/, text)
+      assert_nil subject.texts(1)
+    end
+  end
+
   describe "#find" do
     it "traz os dados de um monstro Normal" do
       card = subject.find(46986414) # Dark Magician

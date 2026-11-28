@@ -1,8 +1,9 @@
-import type { CardSummary, Language } from "../catalog/cards.ts";
+import type { CardDetail, CardSummary, Language } from "../catalog/cards.ts";
 import { CardPanel, useMediaQuery } from "../catalog/CardPanel.tsx";
 
 // O detalhe da carta tocada na mesa (no duelo e no replay): o painel da carta, ou o convite
-// para tocar numa, que só aparece no computador.
+// para tocar numa, que só aparece no computador. A carta de fora do catálogo (id negativo,
+// como as fichas) já vem com o texto da mesa (GXP-141).
 export function DuelDetail(props: {
   code: number | null;
   cards: Map<number, CardSummary>;
@@ -16,6 +17,7 @@ export function DuelDetail(props: {
     return (
       <CardPanel
         cardId={card.id}
+        card={card.id < 0 ? (card as CardDetail) : undefined}
         language={props.language}
         packs={props.packs}
         wide={wide}

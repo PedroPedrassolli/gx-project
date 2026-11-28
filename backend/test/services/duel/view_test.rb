@@ -96,4 +96,22 @@ class Duel::ViewTest < ActiveSupport::TestCase
   it "todas as etapas da batalha aparecem como battle" do
     assert_equal %w[battle battle end], [ 0x08, 0x40, 0x200 ].map { |phase| Duel::View.new(engine, 0).to_h(**state, phase:, prompt: nil)[:phase] }
   end
+
+  it "manda junto o resumo das cartas à vista que o catálogo não tem, como as fichas" do
+    Card.create!(engine_code: 46986414, name: "Dark Magician", source_revision: 1)
+    Catalog::Snapshot.reset!
+    # A ficha está virada para baixo: o outro não vê o código, nem o resumo.
+    monsters = [ { code: 46986414, position: 0x1, atk: 2500, def: 2100 }, { code: 46173680, position: 0x8, atk: 0, def: 0 } ]
+    fake = Object.new
+    fake.define_singleton_method(:query_field) { [ { lp: 8000, deck: 30, extra: 0 }, { lp: 8000, deck: 30, extra: 0 } ] }
+    fake.define_singleton_method(:query_location) { |team, location| team.zero? && location == Duel::Query::MONSTERS ? monsters : [] }
+    # A carta comprada vem em "codes"; a do outro, virada, chega com o código 0.
+    events = [ { type: "draw", team: 0, codes: [ 33900648 ] }, { type: "set", controller: 1, code: 0, location: 0x4, sequence: 0 } ]
+    view = Duel::View.new(fake, 0).to_h(**state, prompt: nil, events:)
+
+    _(view[:cards].keys).must_equal [ 46173680, 33900648 ]
+    _(view[:cards][46173680]).must_equal Duel::CardSummary.call(46173680)
+    _(Duel::View.new(fake, 1).to_h(**state, prompt: nil, events: [])).wont_include :cards
+    Catalog::Snapshot.reset!
+  end
 end

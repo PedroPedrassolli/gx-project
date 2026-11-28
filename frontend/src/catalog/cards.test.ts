@@ -113,6 +113,18 @@ test("monta a linha de tipo em português", () => {
   );
 });
 
+test("a ficha tem moldura e tipo próprios", () => {
+  const token = {
+    id: -73915052,
+    name: "Sheep Token",
+    card_type: "Monster" as const,
+    race: "Beast",
+    monster_types: ["Token"],
+  };
+  assert.equal(frame(token), "token");
+  assert.equal(typeLine(token), "Besta / Ficha");
+});
+
 test("mostra o texto no idioma escolhido e avisa quando o português falta ou não é oficial", () => {
   const card = { id: 1, name: "Pot", text: "Draw 2 cards.", source: "" };
   assert.deepEqual(cardText(card, "en"), { text: "Draw 2 cards." });
