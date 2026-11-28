@@ -10,6 +10,10 @@ test("mostra os dados da conta, o link para baixar e passa no axe", async ({ pag
   await expect(page.getByRole("heading", { level: 1, name: "Minha conta" })).toBeVisible();
   await expect(page.getByText("jaden@example.com (ainda não confirmado)")).toBeVisible();
   await expect(page.getByText("13 a 17 anos")).toBeVisible();
+  // O topo da conta: o nível e o saldo, como na barra.
+  const main = page.getByRole("main");
+  await expect(main.getByText("Nível 2", { exact: true })).toBeVisible();
+  await expect(main.getByText("1.234 DP", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Baixar meus dados" })).toHaveAttribute(
     "href",
     "/api/me/export",

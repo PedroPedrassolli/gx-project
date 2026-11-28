@@ -31,7 +31,10 @@ const collection = {
   ],
   meta: {
     total: { owned: 2, cards: 3, percent: 66.7 },
-    packs: [{ id: 10, owned: 1, cards: 2, percent: 50.0 }],
+    packs: [
+      { id: 10, owned: 1, cards: 2, percent: 50.0 },
+      { id: 11, owned: 0, cards: 1, percent: 0.0 },
+    ],
   },
 };
 
@@ -51,7 +54,14 @@ test("mostra só as cartas do jogador, com as cópias e o progresso", async ({ p
     route.fulfill({ json: { data: cards, meta: { total: 3 } } }),
   );
   await page.route("**/api/packs", (route) =>
-    route.fulfill({ json: { data: [{ id: 10, name: "Pack A" }] } }),
+    route.fulfill({
+      json: {
+        data: [
+          { id: 10, name: "Pack A" },
+          { id: 11, name: "Pack B" },
+        ],
+      },
+    }),
   );
   await page.route("**/api/collection", (route) => route.fulfill({ json: collection }));
   await page.goto("/");
@@ -85,6 +95,12 @@ test("mostra só as cartas do jogador, com as cópias e o progresso", async ({ p
   await expect(page.getByRole("listitem").filter({ hasText: "Pack A" })).toHaveText(
     "Pack A 1 de 2 (50%)",
   );
+  // Um pacote embaixo do outro, cada um com a barra na linha de baixo (a barra da loja usava a
+  // mesma classe e deixava tudo numa linha só).
+  const packs = page.locator("details").getByRole("listitem");
+  const first = await packs.nth(0).boundingBox();
+  const second = await packs.nth(1).boundingBox();
+  expect(second?.y ?? 0).toBeGreaterThan((first?.y ?? 0) + (first?.height ?? 0) - 1);
 
   const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(axe.violations).toEqual([]);

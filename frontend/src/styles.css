@@ -1418,9 +1418,64 @@ button:disabled {
   text-decoration: underline;
 }
 
-/* Formulários de conta. */
+/* Formulários de conta (GXP-136): cada um num cartão com o fio holográfico em cima e o
+   botão principal na largura toda, como o resto do front novo. */
 .page.narrow {
   max-width: 28rem;
+}
+
+.page.narrow .form {
+  position: relative;
+  padding: 1.25rem;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.page.narrow .form::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: var(--holo);
+  content: "";
+}
+
+.page.narrow .form button[type="submit"] {
+  justify-self: stretch;
+}
+
+/* O topo da Minha conta: a inicial grande, o apelido e as fichas do nível e do saldo. */
+.profile-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.25rem 1rem;
+  align-items: center;
+  margin: 1rem 0 1.5rem;
+
+  .avatar-initial {
+    grid-row: span 2;
+    width: 4rem;
+    height: 4rem;
+    font-size: 1.75rem;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.profile-name {
+  overflow-wrap: anywhere;
+  font-family: var(--font-title);
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+.profile-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .form {
@@ -1896,15 +1951,12 @@ html:has(.deck-bar) {
 /* E-mail longo quebra a linha em vez de passar da tela no celular. */
 .account-data dd {
   min-width: 0;
+  margin: 0;
   overflow-wrap: anywhere;
 }
 
 .account-data dt {
   color: var(--color-muted);
-}
-
-.account-data dd {
-  margin: 0;
 }
 
 /* Termos de uso e política de privacidade. */
@@ -2652,7 +2704,8 @@ html:has(.deck-bar) {
   font-size: 0.8125rem;
 }
 
-.pack-progress {
+/* A barra do quanto falta para liberar (não ".pack-progress": é a lista por pacote da coleção). */
+.unlock-progress {
   display: flex;
   gap: 0.5rem;
   align-items: center;
@@ -3331,7 +3384,9 @@ button.pile {
   }
 }
 
+/* position: a frase (emote) aparece em cima do nome, sem empurrar nada da mesa. */
 .side-info {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem 0.75rem;
@@ -3348,10 +3403,6 @@ button.pile {
 }
 
 /* A frase (emote) aparece em cima do nome, sem empurrar nada da mesa, e some sozinha. */
-.side-info {
-  position: relative;
-}
-
 .emote {
   position: absolute;
   bottom: calc(100% + 0.35rem);
@@ -3492,14 +3543,11 @@ button.pile {
   justify-items: center;
   padding: 0.4rem 0;
   border-block: 1px solid var(--color-border);
+  container-type: inline-size;
 }
 
 .phase-track p {
   margin: 0;
-}
-
-.phase-track {
-  container-type: inline-size;
 }
 
 .phase-list {
