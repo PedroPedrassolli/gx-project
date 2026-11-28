@@ -65,6 +65,7 @@ module Catalog
       @names = rows.to_h { |card| [ card[:id], plain([ card[:name], card[:name_pt], card[:name_in_game] ].compact.join(" | ")) ] }
       @by_id = @cards.index_by { |card| card[:id] }
       @extras = rows.to_h { |card| [ card[:id], extra(card) ] }
+      @covers = Set.new # as capas já usadas, na ordem da loja
       @packs = Pack.order(:position).map { |pack| pack_row(pack) }
       @banlists = Banlist.order(:id).includes(:entries).map { |banlist| banlist_row(banlist) }
       @version = Digest::SHA256.hexdigest(JSON.generate([ @cards, @extras, @packs, @banlists ]))[0, 16]
@@ -125,12 +126,17 @@ module Catalog
     end
 
     # A capa do pacote (GXP-133): a carta mais rara que tem imagem e, entre as de mesma
-    # raridade, a de maior ATK (magia e armadilha por último); no empate, a de id menor.
+    # raridade, a de maior ATK (magia e armadilha por último); no empate, a de id menor. A que
+    # já é capa de um pacote anterior fica de fora (GXP-140): os pacotes que juntam outros não
+    # repetem a capa deles. Só repete quando o pacote não tem outra carta com imagem.
     def cover(pack_id)
-      pack_rarities(pack_id).filter_map { |card_id, rarity|
+      ranked = pack_rarities(pack_id).filter_map { |card_id, rarity|
         card = @by_id[card_id]
         [ RARITY_ORDER.index(rarity), -(card[:atk] || -1), card_id ] if card&.dig(:image)
-      }.min&.last
+      }.sort.map(&:last)
+      choice = ranked.find { |card_id| !@covers.include?(card_id) } || ranked.first
+      @covers << choice if choice
+      choice
     end
 
     def banlist_row(banlist)

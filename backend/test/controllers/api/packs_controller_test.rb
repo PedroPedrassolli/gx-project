@@ -18,10 +18,12 @@ class Api::PacksControllerTest < ActionDispatch::IntegrationTest
       _(response.headers["Cache-Control"]).must_include "s-maxage=3600"
     end
 
-    it "cada pacote tem a capa da loja: a carta mais rara que tem imagem" do
+    it "cada pacote tem a capa da loja: a carta mais rara que tem imagem, sem repetir a de outro" do
       ids = Card.where(name: [ "Night Assailant", "Trap Hole", "Ancient Gear" ]).where.not(image_code: nil).pluck(:name, :id).to_h
       get api_packs_path
-      _(response.parsed_body["data"].pluck("cover")).must_equal [ ids["Night Assailant"], ids["Trap Hole"], ids["Night Assailant"], ids["Night Assailant"] ]
+      # O Flag só tem as cartas do Pack A: sem outra com imagem, repete a capa dele. O
+      # Everything tem tudo e pula a do Pack A para a próxima (GXP-140).
+      _(response.parsed_body["data"].pluck("cover")).must_equal [ ids["Night Assailant"], ids["Trap Hole"], ids["Night Assailant"], ids["Ancient Gear"] ]
 
       # Sem a imagem da ultra rara, o Pack A fica sem capa (as outras dele também não têm) e o
       # Everything usa a super rara.
