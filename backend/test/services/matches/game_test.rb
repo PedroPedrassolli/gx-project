@@ -36,6 +36,38 @@ class Matches::GameTest < ActiveSupport::TestCase
     assert(match.responses.all? { |response| response.team == 1 })
   end
 
+  # A pergunta de corrente montada à mão: spe_count é quantas cartas têm motivo para responder
+  # naquele momento (a engine conta); chains, o que dá para encadear.
+  def chain_prompt(player, spe_count:, chains: [ { code: 73_915_051 } ], forced: false)
+    { type: :select_chain, player:, spe_count:, forced:, hint_timing: 0, hint_timing_other: 0, chains: }
+  end
+
+  it "na corrente, passa sozinho quando nenhuma carta tem motivo para responder, como o modo Automático" do
+    match = Match.create!(mode: "1x1", banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current)
+    match.players.create!(team: 0, seat: 0, deck: { main: [ CHAMBERLAIN ] * 40, extra: [] })
+    match.players.create!(team: 1, seat: 1, always_chain: true, deck: { main: [ CHAMBERLAIN ] * 40, extra: [] })
+    game = Matches::Game.new(match)
+
+    # Só a carta que dá para ativar a qualquer hora, fora do momento sugerido: passa.
+    assert_equal Matches::Game::PASS, game.send(:automatic, chain_prompt(0, spe_count: 0))
+    # Com motivo (resposta ao que aconteceu, ou o momento sugerido), ou obrigatória: pergunta.
+    assert_nil game.send(:automatic, chain_prompt(0, spe_count: 1))
+    assert_nil game.send(:automatic, chain_prompt(0, spe_count: 0, forced: true))
+    # "Sempre perguntar" (GXP-84) vê toda janela, até a sem nada para encadear.
+    assert_nil game.send(:automatic, chain_prompt(1, spe_count: 0))
+    assert_nil game.send(:automatic, chain_prompt(1, spe_count: 0, chains: []))
+  end
+
+  it "o computador decide a própria corrente: o passe automático dele é só sem nada para encadear" do
+    match = Match.create!(mode: "1x1", banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current)
+    match.players.create!(team: 0, seat: 0, deck: { main: [ CHAMBERLAIN ] * 40, extra: [] })
+    match.players.create!(team: 1, seat: 1, character: "chumley", deck: { main: [ CHAMBERLAIN ] * 40, extra: [] })
+    game = Matches::Game.new(match)
+
+    assert_nil game.send(:automatic, chain_prompt(1, spe_count: 0))
+    assert_equal Matches::Game::PASS, game.send(:automatic, chain_prompt(1, spe_count: 0, chains: []))
+  end
+
   # Partida previsível: semente fixa e 40 cópias do mesmo monstro normal nos dois decks.
   def chamberlain_match(**times)
     match = Match.create!(mode: "1x1", banlist: true, destiny_draw: false, seed: [ 1, 2, 3, 4 ], started_at: Time.current, **times)
