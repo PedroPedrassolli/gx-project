@@ -107,13 +107,17 @@ jobs:
         run: |
           sudo apt-get install -y -q webp > /dev/null
           (cd backend && bundle exec bin/image-codes) > codes.txt
+          (cd backend && bundle exec bin/image-codes --yugipedia) > yugipedia.txt
           mkdir -p originais site/cards/p site/cards/m site/cards/g
+          # A imagem que já está no ar vem do próprio site (os 3 tamanhos); 1 quando falta.
+          published() {
+            for size in g m p; do
+              curl -fsS -o "site/cards/$size/$1.webp" "$SITE/cards/$size/$1.webp" 2> /dev/null || return 1
+            done
+          }
           image() {
             code=$1
-            for size in g m p; do
-              curl -fsS -o "site/cards/$size/$code.webp" "$SITE/cards/$size/$code.webp" 2> /dev/null || break
-              [ "$size" = p ] && return 0
-            done
+            published "$code" && return 0
             # Ainda não está no ar: baixa a original uma vez e gera os 3 tamanhos.
             sleep 0.25
             if ! curl -fsS --retry 3 -o "originais/$code.jpg" "https://images.ygoprodeck.com/images/cards/$code.jpg"; then
@@ -125,14 +129,40 @@ jobs:
             cwebp -quiet -q 75 -resize 268 0 "originais/$code.jpg" -o "site/cards/m/$code.webp"
             cwebp -quiet -q 75 -resize 112 0 "originais/$code.jpg" -o "site/cards/p/$code.webp"
           }
-          export -f image
+          export -f published image
           # 4 por vez: o "$1" fica entre aspas simples para valer dentro do bash -c.
           # shellcheck disable=SC2016
           xargs -P 4 -I{} bash -c 'image "$1"' _ {} < codes.txt
+
+          # As cartas do anime sem impressão oficial vêm da Yugipedia (GXP-142), uma por vez e
+          # com pausa, como a API pede: a impressão promocional, ou a carta recortada da tela de
+          # informações do jogo de referência. A carta recortada fica na proporção de carta.
+          # g fica com o dobro do m: a original é pequena, e mais que isso só borraria.
+          while IFS=$'\t' read -r code url crop; do
+            published "$code" && continue
+            sleep 1
+            if ! curl -fsS --retry 3 -A "gx-project-imagens/1.0 (https://github.com/PedroPedrassolli/gx-project)" \
+              -o "originais/$code.yugipedia" "$url"; then
+              echo "$code" >> falhas.txt
+              continue
+            fi
+            cut=()
+            # shellcheck disable=SC2206 # o recorte são 4 números: x, y, largura e altura
+            [ -n "$crop" ] && cut=(-crop $crop)
+            for size in g:536 m:268 p:112; do
+              width=${size#*:}
+              height=0
+              [ -n "$crop" ] && height=$((width * 614 / 421))
+              cwebp -quiet -q 75 "${cut[@]}" -resize "$width" "$height" "originais/$code.yugipedia" \
+                -o "site/cards/${size%%:*}/$code.webp"
+            done
+          done < yugipedia.txt
+
           # Um ano em cache: a imagem de um código não muda.
           printf '/cards/*\n  Cache-Control: public, max-age=31536000, immutable\n' > site/_headers
-          novas=$(find originais -name '*.jpg' | wc -l)
-          echo "::notice title=Imagens::$(find site/cards/g -name '*.webp' | wc -l) de $(wc -l < codes.txt) cartas; $novas novas do YGOPRODeck; $(du -sh --apparent-size site | cut -f1)"
+          novas=$(find originais -type f | wc -l)
+          total=$(($(wc -l < codes.txt) + $(wc -l < yugipedia.txt)))
+          echo "::notice title=Imagens::$(find site/cards/g -name '*.webp' | wc -l) de $total cartas; $novas novas; $(du -sh --apparent-size site | cut -f1)"
           if [ -s falhas.txt ]; then
             echo "::warning title=Sem imagem::$(wc -l < falhas.txt) cartas: $(head -n 20 falhas.txt | tr '\n' ' ')"
           fi

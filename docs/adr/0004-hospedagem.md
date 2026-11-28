@@ -54,7 +54,7 @@ Descartados na conferência:
    Na prática (GXP-26): projeto `gx-project-imagens`, workflow *Imagens das cartas*
    (`imagens.yml`), caminhos `/cards/{p,m,g}/<código>.webp` (112 e 268 de largura e a
    original, 813 x 1185), cache de um ano. São 3.423 cartas com imagem: 10.269 arquivos,
-   uns 360 MB; as 61 do anime sem carta impressa ficam só com o texto. Desde o GXP-141, o
+   uns 360 MB; as 61 do anime ganharam imagem no GXP-142: 12 pela impressão oficial de mesmo nome (YGOPRODeck) e 49 pela Yugipedia (11 impressões promocionais e 38 cartas recortadas da tela do jogo de referência). Desde o GXP-141, o
    workflow também publica as fichas e as cartas citadas nos scripts do pool (68 a mais,
    lidas dos submódulos da engine por `bin/image-codes`). A imagem que já está no ar vem do
    próprio site na próxima execução: o YGOPRODeck só recebe pedido de imagem nova.

@@ -18,7 +18,8 @@ class Api::CardsControllerTest < ActionDispatch::IntegrationTest
       _(response.parsed_body["meta"]["total"]).must_equal 5
       _(data.last).must_equal({ "id" => card_id(200), "code" => 200, "name" => "Trap Hole", "card_type" => "Trap",
                                 "property" => "Normal", "banlist" => "limited", "image" => 200 })
-      _(data.find { |card| card["name"] == "Clear Wall" }).wont_include "image"
+      # A carta do anime vem com a imagem publicada pelo código da engine (GXP-142).
+      _(data.find { |card| card["name"] == "Clear Wall" }).must_equal({ "id" => card_id(900), "code" => 900, "name" => "Clear Wall", "image" => 900 })
     end
 
     it "corta cada filtro em 100 caracteres: texto maior não acha nada e só gastaria CPU" do

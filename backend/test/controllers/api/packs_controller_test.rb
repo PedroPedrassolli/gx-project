@@ -20,6 +20,9 @@ class Api::PacksControllerTest < ActionDispatch::IntegrationTest
 
     it "cada pacote tem a capa da loja: a carta mais rara que tem imagem, sem repetir a de outro" do
       ids = Card.where(name: [ "Night Assailant", "Trap Hole", "Ancient Gear" ]).where.not(image_code: nil).pluck(:name, :id).to_h
+      # Uma carta sem imagem, como as do anime antes do GXP-142.
+      Card.find_by!(name: "Clear Wall").update!(image_code: nil)
+      Catalog::Snapshot.reset!
       get api_packs_path
       # O Flag só tem as cartas do Pack A: sem outra com imagem, repete a capa dele. O
       # Everything tem tudo e pula a do Pack A para a próxima (GXP-140).

@@ -364,8 +364,8 @@ function Packs(props: { opened: Opened; buying: boolean; error?: string; onBuyAg
           </button>
         </form>
       </header>
-      <p role="status" className="visually-hidden">
-        {flipped.size} de {cards.length} cartas viradas.
+      <p role="status" className={byId ? "visually-hidden" : "muted"}>
+        {byId ? `${flipped.size} de ${cards.length} cartas viradas.` : "Carregando as cartas…"}
       </p>
 
       <ol ref={list} className="pack-cards" aria-label="Cartas do pacote">
@@ -373,7 +373,9 @@ function Packs(props: { opened: Opened; buying: boolean; error?: string; onBuyAg
           const card = byId?.get(drawn.id);
           const name = card ? displayName(card, language) : "Carta";
           const classes = ["drawn", index === featured && "featured", `rarity-${drawn.rarity}`];
-          if (!flipped.has(index)) {
+          // Sem o catálogo ainda (a primeira visita, a rede lenta), a carta espera fechada:
+          // virada antes, seria uma face sem nome (GXP-142).
+          if (!flipped.has(index) || !byId) {
             return (
               <li key={`${packIndex}-${index}`} className={classes.filter(Boolean).join(" ")}>
                 <button

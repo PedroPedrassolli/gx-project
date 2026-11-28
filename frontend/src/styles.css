@@ -29,6 +29,16 @@
   --frame-spell: #35b892;
   --frame-trap: #d85a97;
   --frame-token: #a9b0c0;
+  /* O verso das cartas: desenho nosso, a cor do tema com um anel claro no meio. */
+  --card-back:
+    radial-gradient(ellipse 34% 26% at 50% 50%, rgb(169 139 255 / 0.55), transparent 70%),
+    radial-gradient(
+      ellipse 46% 36% at 50% 50%,
+      transparent 60%,
+      rgb(255 255 255 / 0.18) 61% 63%,
+      transparent 64%
+    ),
+    linear-gradient(160deg, #1a2140, #0d1124);
   --radius: 14px;
   --gutter: clamp(1rem, 4vw, 2rem);
   /* A barra de abas fixa embaixo: só no celular (o tamanho vem no fim do bloco da barra). */
@@ -926,14 +936,14 @@ button:disabled {
 }
 
 .tile-art img,
-.tile-art .card-face {
+.tile-art .card-placeholder {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.tile-art .card-face {
+.tile-art .card-placeholder {
   border: 0;
   border-radius: 0;
 }
@@ -946,7 +956,7 @@ button:disabled {
 /* A carta que o jogador não tem ("Todas" na coleção): a imagem apagada; o nome continua
    legível (texto apagado reprova no contraste). */
 .card-tile.missing .tile-art img,
-.card-tile.missing .tile-art .card-face {
+.card-tile.missing .tile-art .card-placeholder {
   filter: grayscale(1) brightness(0.45);
 }
 
@@ -996,61 +1006,35 @@ button:disabled {
 }
 
 .thumb img,
-.thumb .card-face {
+.thumb .card-placeholder {
   width: 100%;
   height: 100%;
 }
 
-.thumb .card-face {
+.thumb .card-placeholder {
   border: 0;
   border-radius: 0;
 }
 
-/* Carta sem imagem (as do anime, ou a imagem que não veio nem depois das novas
-   tentativas): a cor da moldura e o nome, na proporção da carta. O nome acompanha o tamanho
-   da face e some quando ela é pequena demais para ler. */
-.card-face {
-  display: grid;
-  place-items: center;
+/* O lugar da imagem que ainda não chegou (ou que falhou e está sendo pedida de novo): o
+   verso da carta, o mesmo desenho do verso no pacote. Toda carta parece uma carta, nunca um
+   quadro vazio (GXP-142). */
+.card-img {
+  background: var(--card-back);
+  color: transparent;
+}
+
+.card-placeholder {
+  display: block;
   box-sizing: border-box;
   aspect-ratio: 421 / 614;
-  padding: 8%;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--frame, #8b93a7) 60%, black);
   border-radius: 4px;
-  background: linear-gradient(
-    160deg,
-    color-mix(in srgb, var(--frame, #8b93a7) 65%, white),
-    var(--frame, #8b93a7)
-  );
-  color: #1d1708;
-  text-align: center;
-  container-type: inline-size;
+  background: var(--card-back);
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.16);
 }
 
-.card-face-name {
-  display: -webkit-box;
-  overflow: hidden;
-  font-size: clamp(0.5rem, 13cqi, 1.1rem);
-  line-height: 1.15;
-  overflow-wrap: anywhere;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 5;
-}
-
-/* Nas miniaturas o nome já está do lado; só na mesa, onde a carta está sozinha, ele fica. */
-@container (width < 60px) {
-  .card-face-name {
-    display: none;
-  }
-}
-
-.card .card-face-name {
-  display: -webkit-box;
-}
-
-/* A miniatura fica por baixo, esticada, enquanto a imagem grande não chega. Sem imagem, a
-   face da carta fica no lugar dela, no mesmo tamanho. */
+/* A miniatura fica por baixo, esticada, enquanto a imagem grande não chega. Sem imagem, o
+   verso da carta fica no lugar dela, no mesmo tamanho. */
 .detail-image-box {
   position: relative;
   width: 100%;
@@ -2658,7 +2642,7 @@ html:has(.deck-bar) {
 }
 
 .pack-cover img,
-.pack-cover .card-face {
+.pack-cover .card-placeholder {
   width: 62%;
   height: auto;
   border-radius: 4px;
@@ -2675,7 +2659,7 @@ html:has(.deck-bar) {
 }
 
 .pack-tile.locked .pack-cover img,
-.pack-tile.locked .pack-cover .card-face {
+.pack-tile.locked .pack-cover .card-placeholder {
   filter: grayscale(1) brightness(0.4);
 }
 
@@ -2850,15 +2834,7 @@ html:has(.deck-bar) {
   padding: 0;
   border: 0;
   border-radius: 6px;
-  background:
-    radial-gradient(ellipse 34% 26% at 50% 50%, rgb(169 139 255 / 0.55), transparent 70%),
-    radial-gradient(
-      ellipse 46% 36% at 50% 50%,
-      transparent 60%,
-      rgb(255 255 255 / 0.18) 61% 63%,
-      transparent 64%
-    ),
-    linear-gradient(160deg, #1a2140, #0d1124);
+  background: var(--card-back);
   box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.16);
 }
 
@@ -2873,9 +2849,9 @@ html:has(.deck-bar) {
 }
 
 .pack-cards .face img,
-.pack-cards .face .card-face,
+.pack-cards .face .card-placeholder,
 .featured-card img,
-.featured-card .card-face {
+.featured-card .card-placeholder {
   display: block;
   width: 100%;
   height: auto;
@@ -3274,7 +3250,7 @@ button.pile {
 }
 
 .card img,
-.card .card-face {
+.card .card-placeholder {
   width: 100%;
   height: 100%;
 }
@@ -3283,9 +3259,7 @@ button.pile {
   object-fit: cover;
 }
 
-.card .card-face {
-  padding: 4%;
-  border: 0;
+.card .card-placeholder {
   border-radius: 0;
 }
 
@@ -3306,7 +3280,7 @@ button.pile {
 
 /* Virada para baixo, mas sua: aparece escurecida. Do outro: o verso, desenho próprio. */
 .card.face-down img,
-.card.face-down .card-face {
+.card.face-down .card-placeholder {
   filter: brightness(0.5);
 }
 
@@ -3610,7 +3584,7 @@ button.pile {
 }
 
 .chain-strip img,
-.chain-strip .card-face {
+.chain-strip .card-placeholder {
   width: 1.9rem;
   height: auto;
   aspect-ratio: 56 / 82;
@@ -3623,7 +3597,7 @@ button.pile {
 }
 
 .chain-strip .negated img,
-.chain-strip .negated .card-face {
+.chain-strip .negated .card-placeholder {
   opacity: 0.45;
 }
 
@@ -4111,7 +4085,7 @@ button.danger {
   align-items: start;
 
   img,
-  .card-face {
+  .card-placeholder {
     width: 100%;
     height: auto;
     border-radius: 6px;
@@ -4304,7 +4278,7 @@ button.pile-card {
 }
 
 .pile-card img,
-.pile-card .card-face {
+.pile-card .card-placeholder {
   flex: none;
   width: 28px;
   height: auto;
@@ -4394,7 +4368,7 @@ button.pile-card {
   grid-area: card;
 
   img,
-  .card-face {
+  .card-placeholder {
     display: block;
     width: 100%;
     height: auto;

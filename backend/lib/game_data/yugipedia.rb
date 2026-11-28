@@ -1,3 +1,4 @@
+require "json"
 require "net/http"
 
 module GameData
@@ -42,6 +43,30 @@ module GameData
       end
     end
 
+    # O endereço da imagem principal de cada página, pelo título (seguindo redirecionamentos):
+    # { título pedido => endereço }. Página sem imagem fica de fora.
+    def images_by_title(titles)
+      titles.uniq.each_slice(BATCH).each_with_object({}) do |slice, found|
+        wiki_titles = slice.map { |title| wiki_title(title) }
+        result = images(titles: wiki_titles.join("|"), redirects: 1)
+        urls = result["pages"].to_h { |data| [ data["title"], data.dig("original", "source") ] }
+        slice.zip(wiki_titles).each do |title, wiki|
+          url = urls[final_title(result, wiki)]
+          found[title] = url if url
+        end
+      end
+    end
+
+    # O mesmo, pela revisão da página (a fonte de cada carta): { revisão => endereço }.
+    def images_by_revision(revisions)
+      revisions.uniq.each_slice(BATCH).each_with_object({}) do |slice, found|
+        images(revids: slice.join("|"), prop: "pageimages|revisions", rvprop: "ids")["pages"].each do |data|
+          url = data.dig("original", "source")
+          data["revisions"].each { |revision| found[revision["revid"]] = url } if url
+        end
+      end
+    end
+
     # Títulos das páginas de uma categoria, pelo id da categoria.
     def category_members(category_id)
       request(action: "query", list: "categorymembers", cmpageid: category_id, cmlimit: 500)
@@ -53,6 +78,11 @@ module GameData
     def query(params)
       request(action: "query", prop: "revisions", rvprop: "ids|content", rvslots: "main", **params)
         .fetch("query")
+    end
+
+    # A imagem principal (a da infobox), no tamanho original.
+    def images(params)
+      request(action: "query", prop: "pageimages", piprop: "original", **params).fetch("query")
     end
 
     def request(params)

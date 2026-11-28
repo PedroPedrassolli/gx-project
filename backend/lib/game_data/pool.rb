@@ -23,17 +23,35 @@ module GameData
 
     def codes(seeds) = each_code(seeds) { |card, exceptions| engine_code(card, exceptions) }
 
-    # Imagem do YGOPRODeck: a do passcode (a pré-errata usa a da carta oficial); na carta do
-    # anime que usa a impressão posterior, a da impressão. As outras do anime não têm.
+    # O código da imagem da carta: a do passcode (a pré-errata usa a da carta oficial); na carta
+    # do anime que usa a impressão posterior, a da impressão. A carta do anime que tem script
+    # usa a da impressão oficial de mesmo nome ou a da Yugipedia, publicada pelo código da
+    # engine (GXP-142).
     def image_code(card, exceptions)
       exception = exceptions[key(card)]
       return card["passcode"] unless exception
-      return unless exception["imagem"]
 
-      exception["motivo"] == "usar_oficial" ? exception["codigo"] : card["passcode"]
+      case exception["imagem"]
+      when Integer then exception["imagem"]
+      when "yugipedia" then exception["codigo"]
+      when true then exception["motivo"] == "usar_oficial" ? exception["codigo"] : card["passcode"]
+      end
     end
 
-    def image_codes(seeds) = each_code(seeds) { |card, exceptions| image_code(card, exceptions) }
+    # As imagens que vêm do YGOPRODeck (as da Yugipedia ficam de fora: yugipedia_cards).
+    def image_codes(seeds)
+      each_code(seeds) { |card, exceptions| image_code(card, exceptions) unless yugipedia?(card, exceptions) }
+    end
+
+    # As cartas cuja imagem vem da Yugipedia: o código da engine, o nome e a revisão da página
+    # da carta (fonte), de onde o workflow das imagens tira a imagem (GameData::CardPictures).
+    def yugipedia_cards(seeds)
+      each_code(seeds) do |card, exceptions|
+        { code: exceptions[key(card)]["codigo"], name: card["nome"], source: card["fonte"] } if yugipedia?(card, exceptions)
+      end
+    end
+
+    def yugipedia?(card, exceptions) = exceptions.dig(key(card), "imagem") == "yugipedia"
 
     def each_code(seeds)
       exceptions = exceptions(seeds)
